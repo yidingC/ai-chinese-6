@@ -12,7 +12,8 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:var(--page)}
-  body{font-family:ui-rounded,"SF Pro Rounded","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  /* 字体栈：与原型设计系统一致（原用二台的圆体栈，非 Apple 设备上会掉到微软雅黑，数字比其它页宽 5%） */
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
   button,input{font-family:inherit}
   button{cursor:pointer}
   button:focus-visible,input:focus-visible{outline:2px solid #cfcaff;outline-offset:2px}
@@ -26,7 +27,8 @@
   .status-icons .battery::before{content:"";position:absolute;inset:1.5px;width:10px;background:currentColor;border-radius:1px}
   .status-icons .battery::after{content:"";position:absolute;top:2px;right:-3px;width:2px;height:4px;border-radius:0 2px 2px 0;background:currentColor}
 
-  .chat-nav{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;background:#fff;border-bottom:1px solid #f0eff7}
+  /* 页头底色 = 页面底色：状态栏下方不再是一条纯白盖，和别的页对齐 */
+  .chat-nav{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;background:var(--page);border-bottom:1px solid #f0eff7}
   .chat-avatar{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;box-shadow:0 6px 14px rgba(101,82,255,.3)}
   .chat-id{flex:1;min-width:0}
   .chat-name{display:flex;align-items:center;gap:6px;font-size:15.5px;font-weight:800}
