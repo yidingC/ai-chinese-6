@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 今天</title>
+<style>
+/* ---------- 内容层：外壳 / 状态栏 / Home 条 / 悬浮导航都归 shell.css + shell.js ---------- */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#E9E8F5}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;color:#17171A}
+svg{display:block}
+
+/* ---------- 顶部信息行 ---------- */
+.hd-label{position:absolute;left:28px;top:60px;font-size:12.5px;font-weight:700;color:#8B8B95}
+.hd-days{position:absolute;left:27px;top:74px;display:flex;align-items:baseline;gap:7px}
+.hd-days .num{font-size:33px;line-height:1;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(128deg,#3B2BD8 10%,#7B68FF 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hd-days .unit{font-size:14px;font-weight:800;color:#3A3A44}
+.hd-rlab{position:absolute;right:28px;top:66px;font-size:12px;font-weight:700;color:#8B8B95;text-align:right;white-space:nowrap}
+.hd-rlab b{color:#17171A;font-weight:800}
+.hd-bar{position:absolute;right:28px;top:90px;width:132px;height:6px;border-radius:3px;background:#E2E4EC;overflow:hidden}
+.hd-bar i{position:absolute;left:0;top:0;bottom:0;width:26px;border-radius:3px;background:linear-gradient(90deg,#7B68FF,#4A3AE0)}
+
+/* ---------- 问候 ---------- */
+.greet{position:absolute;left:28px;top:146px;font-size:37px;line-height:1.14;font-weight:800;letter-spacing:-.02em}
+.greet-sub{position:absolute;left:28px;top:200px;font-size:14px;font-weight:600;color:#8B8B95}
+
+/* ---------- 牌堆：前卡 340×350 落在 (25,300)，后卡照 today-blue 的三层几何 ---------- */
+.deck{position:absolute;left:25px;top:300px;width:340px;height:350px;touch-action:none;user-select:none;-webkit-user-select:none}
+.tcard{position:absolute;left:0;top:0;width:340px;height:350px;border-radius:38px;color:#fff;
+  background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);
+  box-shadow:0 14px 30px rgba(38,22,120,.20);
+  transition:transform .42s cubic-bezier(.22,1,.36,1),width .42s cubic-bezier(.22,1,.36,1),height .42s cubic-bezier(.22,1,.36,1),opacity .3s,background .3s}
+.tcard.is-front{cursor:grab}
+.tcard.dragging{transition:none;cursor:grabbing}
+.tcard.is-behind{box-shadow:none}
+.tcard.is-behind.lv1{background:#7E6BFF;width:316px;height:346px}
+.tcard.is-behind.lv2{background:#C9C0FB;width:300px;height:350px}
+.tcard > *{transition:opacity .22s}
+.tcard.is-behind > *{opacity:0}
+
+/* 卡内四角：左上标签 / 右上时长 / 左下滑条 / 右下下一个 */
+.tc-tag{position:absolute;left:24px;top:24px;height:36px;padding:0 17px;border-radius:18px;background:#fff;color:#6552FF;
+  font-size:14.5px;font-weight:800;display:flex;align-items:center}
+.tc-cap{position:absolute;right:24px;top:24px;height:36px;padding:0 16px 0 12px;border-radius:18px;background:rgba(255,255,255,.28);
+  display:flex;align-items:center;gap:8px;color:#fff;white-space:nowrap}
+.tc-cap .ring{width:21px;height:21px;border-radius:50%;border:2px solid rgba(255,255,255,.92);position:relative;flex:none}
+.tc-cap .ring::after{content:"";position:absolute;left:8.4px;top:3.6px;width:2px;height:7.6px;background:rgba(255,255,255,.92);border-radius:1px}
+.tc-cap .ring::before{content:"";position:absolute;left:8.4px;top:9.6px;width:5.6px;height:2px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center}
+.tc-cap b{font-size:13.5px;font-weight:700}
+.tc-cap.is-done{background:#fff;color:#0B7B5C;padding:0 16px}
+.tc-cap.is-done b{font-weight:800}
+.tc-title{position:absolute;left:24px;top:186px;width:292px;font-size:30px;line-height:1.26;font-weight:700;letter-spacing:-.01em;color:#fff}
+.tc-sub{position:absolute;left:24px;top:234px;font-size:15px;font-weight:600;color:rgba(255,255,255,.84)}
+.slide{position:absolute;left:24px;top:278px;width:232px;height:48px;border-radius:24px;background:rgba(255,255,255,.32);overflow:hidden}
+.slide-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(255,255,255,.38);transition:width .18s ease-out}
+.slide-label{position:absolute;left:0;right:0;top:15.5px;text-align:center;font-size:15.5px;font-weight:700;color:#fff;letter-spacing:.02em;transition:opacity .15s}
+.chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.chev i{width:6px;height:6px;border-right:2px solid rgba(255,255,255,.9);border-top:2px solid rgba(255,255,255,.9);transform:rotate(45deg);border-radius:1px}
+.slide.is-done .chev{display:none}
+.slide.is-done{background:rgba(255,255,255,.42)}
+.slide-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;
+  box-shadow:0 0 0 2px rgba(255,255,255,.95);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;
+  transition:transform .24s cubic-bezier(.22,1,.36,1)}
+.slide-knob svg{width:19px;height:19px}
+.slide.grabbing .slide-knob{cursor:grabbing}
+.slide.grabbing .slide-knob,.slide.grabbing .slide-fill,.slide.grabbing .slide-label{transition:none}
+.next{position:absolute;right:24px;top:278px;width:48px;height:48px;border:0;border-radius:50%;background:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.next:active{transform:scale(.94)}
+
+/* 全完成 */
+.fin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.fin[hidden]{display:none}
+.fin-card{width:100%;padding:34px 24px;border-radius:38px;background:#fff;text-align:center;box-shadow:0 18px 40px rgba(20,30,60,.16);animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+.fin-spark{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;background:linear-gradient(150deg,#FFE7B8,#FFC65C);font-size:26px;box-shadow:0 10px 22px rgba(255,178,60,.35)}
+.fin-card h2{margin:14px 0 0;font-size:21px;font-weight:900;color:#17171A}
+.fin-card p{margin:9px 0 0;font-size:12.5px;font-weight:700;color:#8B8B95}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+
+/* ---------- 进入学习的模拟遮罩 / 轻提示 ---------- */
+.overlay{position:absolute;inset:0;z-index:300;display:grid;place-items:center;background:rgba(23,20,45,.46);
+  opacity:0;pointer-events:none;transition:opacity .25s;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.overlay.show{opacity:1;pointer-events:auto}
+.ov{width:min(86%,320px);padding:24px 22px;border-radius:28px;background:#fff;text-align:center;box-shadow:0 18px 40px rgba(20,30,60,.28)}
+.ov-kicker{font-size:12px;font-weight:800;color:#8B8B95;letter-spacing:.06em}
+.ov h2{margin:10px 0 0;font-size:20px;font-weight:900}
+.ov-bar{position:relative;height:5px;margin-top:16px;border-radius:999px;background:rgba(35,32,58,.08);overflow:hidden}
+.ov-bar i{position:absolute;left:-40%;top:0;bottom:0;width:40%;border-radius:999px;background:linear-gradient(90deg,#7B68FF,#4A3AE0);animation:sweep 1s linear infinite}
+@keyframes sweep{to{left:100%}}
+.ov-note{margin:14px 0 0;font-size:11.5px;font-weight:600;color:#8B8B95}
+.toast{position:absolute;left:50%;bottom:118px;transform:translate(-50%,8px);padding:8px 16px;border-radius:999px;
+  background:rgba(35,32,58,.86);color:#fff;font-size:12.5px;font-weight:800;opacity:0;pointer-events:none;transition:.25s;z-index:400}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+<link rel="stylesheet" href="shell-slide.css">
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen bg-today">
+  <div class="shell-edge"></div>
+
+  <div class="hd-label">距离加入中资企业还有</div>
+  <div class="hd-days"><span class="num">58</span><span class="unit">天</span></div>
+  <div class="hd-rlab">已准备好 <b>2 / 10</b> 项能力</div>
+  <div class="hd-bar"><i></i></div>
+
+  <div class="greet">下午好，Alia</div>
+  <div class="greet-sub">今天有 4 件事要收走</div>
+
+  <section class="deck" id="deck" aria-label="任务牌堆">
+    <div class="stack" id="stack"></div>
+    <div class="fin" id="finished" hidden>
+      <div class="fin-card">
+        <span class="fin-spark" aria-hidden="true">✨</span>
+        <h2>今天完成</h2>
+        <p>4 件事都收走了 · 已点亮：听懂工作安排</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="ov">
+      <span class="ov-kicker">正在进入</span>
+      <h2 id="ovTitle">复习 · 快问快答</h2>
+      <div class="ov-bar"><i></i></div>
+      <p class="ov-note">模拟：正式版在这里接任务流 · 1.6 秒后自动返回</p>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+</div>
+
+<script src="shell-slide.js"></script>
+<script>
+(function(){
+  var TASKS = [
+    {tag:"复习", title:"请求说明（第 2 次）", sub:"快问快答 · 3 题", time:"约 2 分钟", stage:"复习 · 快问快答"},
+    {tag:"新学", title:"把……一下 / 发给", sub:"视频课 + 跟读重点句", time:"约 8 分钟", stage:"新学 · 视频课"},
+    {tag:"练习", title:"听音选词 ＋ 排序", sub:"2 道题", time:"约 4 分钟", stage:"练习 · 题库"},
+    {tag:"实战", title:"跟虚拟主管演一遍", sub:"情景对话 · 听一遍复述", time:"约 5 分钟", stage:"实战 · 情景对话"}
+  ];
+  var stack = document.getElementById("stack");
+  var deckEl = document.getElementById("deck");
+  var finishedEl = document.getElementById("finished");
+  var overlay = document.getElementById("overlay");
+  var ovTitle = document.getElementById("ovTitle");
+  var toastEl = document.getElementById("toast");
+  var toastT = null;
+  var queue = [];
+  var front = 0;
+  var lock = false;
+
+  /* 三层几何（照 today-blue.html）：中卡 316×346 转 -3°，后卡 300×350 浅紫，尺寸走 CSS，位移走 transform */
+  var LV = [
+    {tx:0,  ty:0,   rot:0},
+    {tx:12, ty:-18, rot:-3},
+    {tx:20, ty:-36, rot:0}
+  ];
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ toastEl.classList.remove("show"); }, 1300);
+  }
+
+  function lvTransform(k, dy){
+    var lv = LV[Math.min(k, 2)];
+    var ty = lv.ty - dy * 0.05 * Math.min(k, 2);
+    return "translate(" + lv.tx + "px," + ty.toFixed(1) + "px) rotate(" + lv.rot + "deg)";
+  }
+
+  function applyDrag(el, dy){
+    if (dy > 160) dy = 160;
+    if (dy < -160) dy = -160;
+    el.style.transform = "translate(0px," + dy.toFixed(1) + "px) rotate(" + (dy * 0.02).toFixed(2) + "deg)";
+    var n = queue.length;
+    for (var k = 1; k < n; k++){
+      queue[(front + k) % n].el.style.transform = lvTransform(k, dy);
+    }
+  }
+
+  function makeCard(t){
+    var el = document.createElement("article");
+    el.className = "tcard";
+    el.innerHTML =
+      '<span class="tc-tag">' + t.tag + '</span>' +
+      '<span class="tc-cap"><span class="ring"></span><b>' + t.time + '</b></span>' +
+      '<h3 class="tc-title">' + t.title + '</h3>' +
+      '<p class="tc-sub">' + t.sub + '</p>' +
+      '<div class="slide">' +
+        '<span class="slide-fill"></span>' +
+        '<span class="slide-label">滑动开始</span>' +
+        '<span class="chev"><i></i><i></i><i></i></span>' +
+        '<button class="slide-knob" type="button" aria-label="滑动开始">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg>' +
+        '</button>' +
+      '</div>' +
+      '<button class="next" type="button" aria-label="下一个">' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg>' +
+      '</button>';
+    t.el = el;
+    bindCard(el, t);
+    bindSlide(el, t);
+    el.querySelector(".next").addEventListener("click", function(e){
+      e.stopPropagation();
+      if (lock) return;
+      flip(1);
+    });
+    return el;
+  }
+
+  function layout(){
+    var n = queue.length;
+    for (var k = 0; k < n; k++){
+      var el = queue[(front + k) % n].el;
+      el.classList.toggle("is-front", k === 0);
+      el.classList.toggle("is-behind", k > 0);
+      el.classList.toggle("lv1", k === 1);
+      el.classList.toggle("lv2", k === 2);
+      el.style.zIndex = String(120 - k);
+      el.style.pointerEvents = k === 0 ? "auto" : "none";
+      el.style.opacity = k >= 3 ? "0" : "1";
+      el.style.transform = lvTransform(Math.min(k, 2), 0);
+    }
+  }
+
+  function flip(dir){
+    var n = queue.length;
+    if (n < 2) return;
+    front = (front + dir + n) % n;
+    layout();
+  }
+
+  function bindCard(el, t){
+    var y0 = 0, dy = 0, dragging = false;
+    el.addEventListener("pointerdown", function(e){
+      if (lock || !el.classList.contains("is-front")) return;
+      if (e.target.closest(".slide") || e.target.closest(".next")) return;
+      dragging = true; y0 = e.clientY; dy = 0;
+      el.classList.add("dragging");
+      try { el.setPointerCapture(e.pointerId); } catch(err){}
+    });
+    el.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      dy = e.clientY - y0;
+      applyDrag(el, dy);
+    });
+    function up(){
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove("dragging");
+      if (dy <= -56) flip(1);
+      else if (dy >= 56) flip(-1);
+      else layout();
+    }
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointercancel", up);
+    el.addEventListener("dblclick", function(){ if (lock) return; trigger(el, t); });
+  }
+
+  function bindSlide(el, t){
+    var slide = el.querySelector(".slide");
+    var knob = slide.querySelector(".slide-knob");
+    var fill = slide.querySelector(".slide-fill");
+    var label = slide.querySelector(".slide-label");
+    var x0 = 0, x = 0, maxX = 1, dragging = false;
+
+    function apply(px){
+      x = px;
+      knob.style.transform = "translateX(" + px + "px)";
+      fill.style.width = (px + 48) + "px";
+      label.style.opacity = String(Math.max(0, 1 - px / Math.max(1, maxX * 0.55)));
+    }
+    knob.addEventListener("pointerdown", function(e){
+      if (lock) return;
+      e.stopPropagation();
+      e.preventDefault();
+      dragging = true;
+      maxX = slide.clientWidth - 48;
+      x0 = e.clientX;
+      slide.classList.add("grabbing");
+      try { knob.setPointerCapture(e.pointerId); } catch(err){}
+    });
+    knob.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      var px = e.clientX - x0;
+      if (px < 0) px = 0;
+      if (px > maxX) px = maxX;
+      apply(px);
+    });
+    function up(){
+      if (!dragging) return;
+      dragging = false;
+      slide.classList.remove("grabbing");
+      if (x >= maxX * 0.9){
+        apply(maxX);
+        setTimeout(function(){ trigger(el, t); }, 120);
+      } else {
+        apply(0);
+      }
+    }
+    knob.addEventListener("pointerup", up);
+    knob.addEventListener("pointercancel", up);
+  }
+
+  function trigger(el, t){
+    if (lock) return;
+    if (!t.done) enterTask(t); else collect(t);
+  }
+
+  function enterTask(t, hold){
+    lock = true;
+    ovTitle.textContent = t.stage;
+    overlay.classList.add("show");
+    if (hold) return;
+    setTimeout(function(){
+      overlay.classList.remove("show");
+      t.done = true;
+      markDone(t);
+      lock = false;
+    }, 1600);
+  }
+
+  function markDone(t){
+    var el = t.el;
+    el.classList.add("is-done");
+    var cap = el.querySelector(".tc-cap");
+    cap.classList.add("is-done");
+    cap.innerHTML = '<b>✓ 已完成</b>';
+    var slide = el.querySelector(".slide");
+    slide.classList.add("is-done");
+    slide.querySelector(".slide-label").textContent = "滑动收走";
+    slide.querySelector(".slide-label").style.opacity = "1";
+    slide.querySelector(".slide-fill").style.width = "0px";
+    var knob = slide.querySelector(".slide-knob");
+    knob.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.3 4.3L19 7"/></svg>';
+    knob.style.transform = "translateX(0)";
+  }
+
+  function collect(t){
+    lock = true;
+    var el = t.el;
+    el.style.transform = "translate(140%,-6%) rotate(9deg)";
+    el.style.opacity = "0";
+    setTimeout(function(){
+      var i = queue.indexOf(t);
+      if (i >= 0) queue.splice(i, 1);
+      if (i < front) front--;
+      if (front >= queue.length) front = 0;
+      if (front < 0) front = 0;
+      if (el.parentNode) el.parentNode.removeChild(el);
+      if (queue.length === 0) showFinished();
+      else { layout(); toast("已收走 ✓"); }
+      lock = false;
+    }, 420);
+  }
+
+  function showFinished(){
+    stack.style.display = "none";
+    finishedEl.hidden = false;
+  }
+
+  function reset(){
+    lock = false;
+    queue = TASKS.slice();
+    front = 0;
+    stack.innerHTML = "";
+    stack.style.display = "";
+    finishedEl.hidden = true;
+    overlay.classList.remove("show");
+    queue.forEach(function(t){
+      t.done = false;
+      t.el = null;
+      stack.appendChild(makeCard(t));
+    });
+    layout();
+  }
+
+  window.addEventListener("keydown", function(e){ if (e.key === "r" || e.key === "R") reset(); });
+  window.__deckReset = reset;
+  reset();
+
+  /* 截图辅助（不影响正常交互）：?demo=flip&dy=-120 / enter&hold=1 / done / collected / finished */
+  (function(){
+    var qs = new URLSearchParams(location.search);
+    var demo = qs.get("demo");
+    if (!demo) return;
+    if (demo === "flip"){
+      var dy = Number(qs.get("dy") || -120);
+      if (!isFinite(dy)) dy = -120;
+      applyDrag(queue[front].el, dy);
+    } else if (demo === "enter"){
+      enterTask(queue[front], qs.get("hold") === "1");
+    } else if (demo === "done"){
+      markDone(queue[front]);
+    } else if (demo === "collected"){
+      markDone(queue[front]);
+      collect(queue[front]);
+    } else if (demo === "finished"){
+      (function step(){
+        if (!queue.length) return;
+        markDone(queue[front]);
+        collect(queue[front]);
+        setTimeout(step, 560);
+      })();
+    }
+  })();
+})();
+</script>
+<script>
+(function () {
+  /* ?days= / ?date=：从「选日期」页过来时，倒计时用真的选出来的天数；没带参数兜底 58 */
+  var qs = new URLSearchParams(window.location.search);
+  var raw = qs.get("days");
+  var n = raw !== null && raw.trim() !== "" ? Number(raw) : 58;
+  if (!isFinite(n) || n < 0) n = 58;
+  var num = document.querySelector(".hd-days .num");
+  if (num) num.textContent = String(Math.round(n));
+})();
+</script>
+</body>
+</html>

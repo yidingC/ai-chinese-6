@@ -476,6 +476,7 @@ button { font-family: inherit; }
 
 .date-main { display: grid; gap: 16px; align-content: start; padding: 8px 20px calc(48px + var(--safe-bottom)); }
 .date-title { margin: 6px 2px 0; font-size: 24px; font-weight: 800; letter-spacing: .01em; }
+.date-sub { margin: -10px 2px 0; font-size: 13.5px; font-weight: 600; color: var(--ink-faint); }
 
 .date-quick { display: grid; gap: 8px; }
 .date-quick[hidden] { display: none; }

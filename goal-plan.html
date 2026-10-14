@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F5F3FA">
+  <title>AI Chinese 6.0 · 你的学习计划</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ---------- 计划生成页（新）：诊断 + 处方 + 开始 ---------- */
+
+    .plan-main { display: grid; align-content: start; gap: 18px; padding: 6px 20px 170px; }
+
+    .plan-head { display: grid; gap: 9px; margin: 6px 2px 0; }
+    .plan-pill { justify-self: start; margin: 0; padding: 6px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-deep); font-size: 13px; font-weight: 900; letter-spacing: .03em; }
+    .plan-title { margin: 0; font-size: 27px; font-weight: 800; letter-spacing: .01em; }
+
+    .plan-sec { display: grid; gap: 9px; animation: pRise .42s cubic-bezier(.22, .61, .36, 1) both; animation-delay: var(--d, 0s); }
+    @keyframes pRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .sec-cap { margin: 0 2px; font-size: 13px; font-weight: 800; letter-spacing: .04em; color: var(--ink-soft); }
+
+    /* 诊断块 */
+    .diag-card { display: grid; gap: 13px; padding: 16px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-card); }
+    .diag-top { display: flex; align-items: center; gap: 9px; }
+    .diag-badge { font-size: 14.5px; font-weight: 900; color: #fff; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%); border-radius: 11px; padding: 5px 10px; letter-spacing: .02em; white-space: nowrap; }
+    .diag-leveltext { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+    .diag-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
+    .diag-item { display: flex; align-items: center; gap: 11px; }
+    .diag-ico { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 12px; display: grid; place-items: center; font-size: 17px; }
+    .diag-item.warn .diag-ico { background: #FFF4E8; }
+    .diag-item.ok .diag-ico { background: var(--accent-soft); }
+    .diag-main { display: grid; gap: 1px; min-width: 0; }
+    .diag-name { font-size: 14.5px; font-weight: 800; }
+    .diag-item.warn .diag-name { color: #8A5410; }
+    .diag-sub { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+
+    /* 处方块 */
+    .rx-card { display: grid; gap: 11px; padding: 16px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-card); }
+    .rx-daily { display: flex; align-items: center; gap: 10px; }
+    .rx-tag { flex: 0 0 auto; font-size: 12px; font-weight: 900; color: #fff; background: var(--accent); border-radius: 9px; padding: 4px 8px; letter-spacing: .04em; }
+    .rx-line { margin: 0; font-size: 14.5px; font-weight: 800; }
+    .why { display: flex; gap: 5px; margin: 0; font-size: 12px; line-height: 1.6; font-weight: 600; color: var(--ink-soft); }
+    .why-tag { flex: 0 0 auto; font: inherit; color: inherit; }
+    .why-inline { margin-top: -5px; }
+
+    .rx-weeks { display: grid; margin: 0 -8px; }
+    .wk-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: baseline; gap: 10px; padding: 8px 10px; border-top: 1px dashed #EFEDF8; }
+    .wk-row:first-child { border-top: 0; }
+    .wk-tag { font-size: 12px; font-weight: 800; color: var(--ink-faint); letter-spacing: .02em; }
+    .wk-name { font-size: 13px; font-weight: 700; min-width: 0; }
+    .wk-row.mile { background: #FFF8E9; border-top-color: transparent; border-radius: 10px; }
+    .wk-row.mile .wk-name { font-weight: 800; }
+    .wk-verify { font-size: 12px; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+
+    /* 10 项能力清单（紧凑） */
+    .plan-abil { gap: 10px; }
+    .abil-grid { grid-template-columns: 1fr 1fr; gap: 9px 12px; }
+    .abil-grid .abil-item { font-size: 12.5px; gap: 7px; }
+    .abil-grid .abil-item .n { width: 17px; height: 17px; }
+    .abil-grid .abil-item .n svg { width: 9px; height: 9px; }
+    .plan-abil .abil-cap { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+
+    /* 底部固定：开始 */
+    .plan-foot { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 40; width: min(100%, 430px); display: grid; gap: 8px; padding: 16px 20px calc(14px + var(--safe-bottom)); background: linear-gradient(180deg, rgba(245, 243, 250, 0) 0%, #F5F3FA 62%); }
+    .plan-cta { margin-top: 0; height: 56px; }
+    .plan-note { margin: 0; text-align: center; font-size: 12px; font-weight: 700; color: var(--ink-faint); }
+
+    /* 演示数据切换点（很淡，右下角） */
+    .demo-dot { position: absolute; right: 12px; top: -38px; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid rgba(101, 82, 255, .14); background: rgba(101, 82, 255, .06); color: var(--accent-deep); display: grid; place-items: center; cursor: pointer; opacity: .58; transition: transform .14s ease, opacity .14s ease; }
+    .demo-dot:active { transform: scale(.92); }
+    .demo-dot svg { width: 14px; height: 14px; opacity: .8; }
+
+    @media (min-width: 700px) {
+      .plan-main { padding-bottom: 26px; }
+      .plan-foot { position: relative; transform: none; width: auto; flex: 0 0 auto; background: none; padding-bottom: 18px; }
+      .demo-dot { top: -36px; right: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app plan-app">
+    <div class="status-bar" aria-hidden="true">
+      <span data-status-time>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <main class="plan-main">
+      <header class="plan-head">
+        <p class="plan-pill" data-pill>入职中资企业 · 58 天</p>
+        <h1 class="plan-title">你的学习计划</h1>
+      </header>
+
+      <section class="plan-sec" style="--d:.06s">
+        <p class="sec-cap">现在的你</p>
+        <div class="diag-card">
+          <div class="diag-top">
+            <span class="diag-badge" data-level-badge>HSK 2 级</span>
+            <span class="diag-leveltext" data-level-note>· 今天测出的水平</span>
+          </div>
+          <ul class="diag-list" data-findings></ul>
+        </div>
+      </section>
+
+      <section class="plan-sec" style="--d:.14s">
+        <p class="sec-cap" data-rx-cap>58 天这么排</p>
+        <div class="rx-card">
+          <div class="rx-daily">
+            <span class="rx-tag">每天</span>
+            <p class="rx-line" data-daily></p>
+          </div>
+          <p class="why why-inline"><span class="why-tag">为什么</span><span data-why-daily></span></p>
+          <div class="rx-weeks" data-weeks></div>
+          <p class="why"><span class="why-tag">为什么</span><span data-why-weeks></span></p>
+        </div>
+      </section>
+
+      <section class="plan-sec" style="--d:.22s">
+        <p class="sec-cap">最后你会拿到</p>
+        <div class="abil-card plan-abil">
+          <p class="abil-cap" data-abil-cap></p>
+          <ul class="abil-list abil-grid" data-abil></ul>
+        </div>
+      </section>
+    </main>
+
+    <div class="plan-foot">
+      <button class="demo-dot" type="button" data-demo aria-label="切换演示数据（演示用）">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 4 7l3 3"/><path d="M4 7h13a3 3 0 0 1 3 3"/><path d="M17 20l3-3-3-3"/><path d="M20 17H7a3 3 0 0 1-3-3"/></svg>
+      </button>
+      <button class="cta plan-cta" type="button" data-start>开始</button>
+      <p class="plan-note">随时可以在日历看全盘，也可以找小安调整</p>
+    </div>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      /* 计划生成页：诊断 + 处方 + 10 项能力；两组预置数据一键切（?demo=work|hsk|study） */
+      var params = new URLSearchParams(window.location.search);
+      var rawDemo = params.get('demo');
+      var rawGoal = params.get('goal');
+      var rawDays = params.get('days');
+      var urlDays = (rawDays !== null && /^\d+$/.test(rawDays.trim())) ? Math.round(Number(rawDays)) : null;
+
+      var ORDER = ['work', 'hsk', 'study'];
+      var START = null;
+      if (rawDemo === 'work' || rawDemo === 'hsk' || rawDemo === 'study') START = rawDemo;
+      else if (rawGoal === 'work' || rawGoal === 'hsk' || rawGoal === 'study') START = rawGoal;
+      else START = 'work';
+
+      var DATA = {
+        work: {
+          label: '入职中资企业', days: 58, until: 43,
+          levelBadge: 'HSK 2 级', levelNote: '· 今天测出的水平',
+          findings: [
+            { icon: '🎵', name: '声调不稳', sub: '三声、四声容易混', kind: 'warn' },
+            { icon: '📖', name: '能读不会说', sub: '看得懂，开口少', kind: 'warn' },
+            { icon: '🧠', name: '词汇够用', sub: '日常词都认识', kind: 'ok' }
+          ],
+          daily: '复习、新学、练习、实战 · 约 20 分钟',
+          whyDaily: '声调丢分最多，所以每天配一轮声调练习',
+          weeks: [
+            ['W1', '打招呼与自我介绍'],
+            ['W2', '时间与数字'],
+            ['W3', '听懂工作安排', '验证①'],
+            ['W4', '没听懂就问'],
+            ['W5', '回复工作消息'],
+            ['W6', '汇报工作进度', '验证②'],
+            ['W7', '参加早会'],
+            ['W8', '交接与综合演练']
+          ],
+          whyWeeks: '前 3 周先练听懂，因为上班第一天就要用',
+          abil: [
+            ['中文面试', 1], ['上班自我介绍', 1], ['听懂工作安排', 0], ['没听懂就问', 0], ['回复消息', 0],
+            ['汇报进度', 0], ['参加早会', 0], ['请人帮忙', 0], ['打工作电话', 0], ['交接任务', 0]
+          ]
+        },
+        hsk: {
+          label: 'HSK 3 级备考', days: 30,
+          levelBadge: '接近 HSK 3 级', levelNote: '· 今天测出的水平',
+          findings: [
+            { icon: '🎧', name: '听力偏弱', sub: '语速一快就跟丢', kind: 'warn' },
+            { icon: '🧩', name: '语法点不稳', sub: '单句会，长句乱', kind: 'warn' },
+            { icon: '🧠', name: '词汇量够用', sub: '核心词基本认识', kind: 'ok' }
+          ],
+          daily: '1 套听力训练 ＋ 30 个新词 ＋ 1 组模拟题',
+          whyDaily: '听力偏弱 → 每天加练 20 分钟，因为测试里听力丢分最多',
+          weeks: [
+            ['W1', '摸底与词汇补救'],
+            ['W2', '听力专项', true],
+            ['W3', '阅读与语法冲刺'],
+            ['W4', '完整模拟', true]
+          ],
+          whyWeeks: '最后一周只做整卷模拟，因为 HSK 的节奏比词汇更影响分数',
+          abil: [
+            ['初始能力诊断', 1], ['拼音与声调', 0], ['核心词汇', 0], ['基础语法点', 0], ['听力专项', 0],
+            ['阅读与语法', 0], ['阶段能力验证', 0], ['薄弱项补习', 0], ['完整模拟考试', 0], ['应试节奏管理', 0]
+          ]
+        },
+        study: {
+          label: '出发留学', days: 83,
+          levelBadge: '日常入门', levelNote: '· 今天测出的水平',
+          findings: [
+            { icon: '🗣️', name: '敢开口', sub: '简单句说得出来', kind: 'ok' },
+            { icon: '🔍', name: '认字偏慢', sub: '招牌、表格看着费劲', kind: 'warn' },
+            { icon: '🧳', name: '场景词汇缺', sub: '机场、宿舍的词没攒够', kind: 'warn' }
+          ],
+          daily: '复习、新学、练习、情景对话 · 约 20 分钟',
+          whyDaily: '认字偏慢 → 每天加 1 组场景词卡，因为落地第一周到处要认字',
+          weeks: [
+            ['W1', '出发前准备'],
+            ['W2', '基础自我介绍'],
+            ['W3', '常见信息填写', true],
+            ['W4', '机场入境'],
+            ['W5', '前往学校'],
+            ['W6', '办理报到', true],
+            ['W7', '入住宿舍'],
+            ['W8', '认识同学与校园'],
+            ['W9', '听懂课堂要求'],
+            ['W10', '校园求助'],
+            ['W11', '综合复习'],
+            ['W12', '出发前总演练']
+          ],
+          whyWeeks: '先练“能开口”的场景，因为你敢说、缺的是词和字',
+          abil: [
+            ['出发前准备', 1], ['基础自我介绍', 1], ['常见信息填写', 1], ['机场入境', 0], ['前往学校', 0],
+            ['办理报到', 0], ['入住宿舍', 0], ['认识同学', 0], ['听懂课堂要求', 0], ['校园求助', 0]
+          ]
+        }
+      };
+
+      var current = START;
+
+      function effDays(key) {
+        if (key === rawGoal && urlDays !== null) return urlDays;
+        return DATA[key].days;
+      }
+
+      function el(sel) { return document.querySelector(sel); }
+
+      function renderFindings(list) {
+        var ul = el('[data-findings]');
+        ul.innerHTML = '';
+        list.forEach(function (f) {
+          var li = document.createElement('li');
+          li.className = 'diag-item ' + f.kind;
+          var ico = document.createElement('span');
+          ico.className = 'diag-ico';
+          ico.textContent = f.icon;
+          ico.setAttribute('aria-hidden', 'true');
+          var main = document.createElement('span');
+          main.className = 'diag-main';
+          var nm = document.createElement('span');
+          nm.className = 'diag-name';
+          nm.textContent = f.name;
+          var sb = document.createElement('span');
+          sb.className = 'diag-sub';
+          sb.textContent = f.sub;
+          main.appendChild(nm);
+          main.appendChild(sb);
+          li.appendChild(ico);
+          li.appendChild(main);
+          ul.appendChild(li);
+        });
+      }
+
+      function renderWeeks(weeks) {
+        var wrap = el('[data-weeks]');
+        wrap.innerHTML = '';
+        weeks.forEach(function (row) {
+          var li = document.createElement('div');
+          li.className = 'wk-row' + (row[2] ? ' mile' : '');
+          var tag = document.createElement('span');
+          tag.className = 'wk-tag';
+          tag.textContent = row[0];
+          var nm = document.createElement('span');
+          nm.className = 'wk-name';
+          nm.textContent = row[1];
+          li.appendChild(tag);
+          li.appendChild(nm);
+          if (row[2]) {
+            var b = document.createElement('span');
+            b.className = 'wk-verify';
+            b.textContent = (typeof row[2] === 'string' ? row[2] : '验证');
+            li.appendChild(b);
+          }
+          wrap.appendChild(li);
+        });
+      }
+
+      var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>';
+
+      function renderAbil(items) {
+        var ul = el('[data-abil]');
+        ul.innerHTML = '';
+        items.forEach(function (pair) {
+          var li = document.createElement('li');
+          li.className = 'abil-item ' + (pair[1] ? 'can' : 'todo');
+          var n = document.createElement('span');
+          n.className = 'n';
+          n.setAttribute('aria-hidden', 'true');
+          if (pair[1]) n.innerHTML = CHECK;
+          var t = document.createElement('span');
+          t.textContent = pair[0];
+          li.appendChild(n);
+          li.appendChild(t);
+          ul.appendChild(li);
+        });
+      }
+
+      var toastEl = document.querySelector('.toast');
+      var toastTimer = null;
+      function toast(text) {
+        if (!toastEl) return;
+        toastEl.textContent = text;
+        toastEl.classList.add('show');
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(function () { toastEl.classList.remove('show'); }, 2000);
+      }
+
+      function apply(key) {
+        current = key;
+        var d = DATA[key];
+        var days = effDays(key);
+        var doneCount = d.abil.filter(function (p) { return p[1]; }).length;
+
+        el('[data-pill]').textContent = d.label + ' · ' + days + ' 天';
+        el('[data-rx-cap]').textContent = days + ' 天这么排';
+        el('[data-level-badge]').textContent = d.levelBadge;
+        el('[data-level-note]').textContent = d.levelNote;
+        el('[data-daily]').textContent = d.daily;
+        el('[data-why-daily]').textContent = d.whyDaily;
+        el('[data-why-weeks]').textContent = d.whyWeeks;
+        el('[data-abil-cap]').textContent = days + ' 天 · 10 项能力，已经到手 ' + doneCount + ' 项';
+
+        renderFindings(d.findings);
+        renderWeeks(d.weeks);
+        renderAbil(d.abil);
+      }
+
+      el('[data-demo]').addEventListener('click', function () {
+        var idx = ORDER.indexOf(current);
+        var next = ORDER[(idx + 1) % ORDER.length];
+        apply(next);
+        var d = DATA[next];
+        toast('演示数据 · ' + d.label + ' ' + effDays(next) + ' 天');
+      });
+
+      el('[data-start]').addEventListener('click', function () {
+        /* 今天页已搬回正式位：goal-work.html（其余目标首页接新版后再跟着换），把 goal / days / date 带过去 */
+        var q = new URLSearchParams();
+        q.set('goal', current);
+        var cfg = DATA[current];
+        var cd = cfg.until || effDays(current);
+        var sel = params.get('date');
+        if (sel) {
+          var picked = new Date(sel + 'T00:00:00');
+          if (!isNaN(picked.getTime())) {
+            var now = new Date();
+            var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            var diff = Math.round((picked - t0) / 86400000);
+            if (isFinite(diff) && diff >= 0) cd = diff;
+          }
+          q.set('date', sel);
+        }
+        q.set('days', String(cd));
+        window.location.href = 'goal-work.html?' + q.toString();
+      });
+
+      apply(START);
+    })();
+  </script>
+</body>
+</html>

@@ -20,6 +20,7 @@
 
     <main class="date-main">
       <h1 class="date-title" data-date-title>你哪天入职？</h1>
+      <p class="date-sub">选个日期，我们倒着排计划</p>
 
       <section class="date-quick" data-quick hidden>
         <p class="date-quick-cap">最近考试场次</p>
@@ -38,7 +39,7 @@
 
       <p class="date-readout" data-readout aria-live="polite"></p>
 
-      <button class="cta date-cta" type="button" data-generate>生成准备路线</button>
+      <button class="cta date-cta" type="button" data-generate>就这天</button>
       <p class="date-note">日期之后可以随时在「我的」里修改</p>
     </main>
   </div>
@@ -48,9 +49,9 @@
   <script>
     (function () {
       var GOALS = {
-        work:  { addDays: 58, title: '你哪天入职？', page: 'goal-work.html' },
-        study: { addDays: 83, title: '你哪天出发？', page: 'goal-study.html' },
-        hsk:   { addDays: 72, title: '你哪天考试？', page: 'goal-hsk.html', sessions: [53, 67, 81] }
+        work:  { addDays: 43, planDays: 58, title: '你哪天入职？', page: 'goal-test.html' },
+        study: { addDays: 63, planDays: 83, title: '你哪天出发？', page: 'goal-test.html' },
+        hsk:   { addDays: 72, planDays: 30, title: '你哪天考试？', page: 'goal-test.html', sessions: [53, 67, 81] }
       };
       var key = new URLSearchParams(location.search).get('goal');
       var goal = GOALS[key] || GOALS.work;
@@ -173,7 +174,7 @@
         renderCalendar();
       });
       generateBtn.addEventListener('click', function () {
-        location.href = goal.page + '?days=' + daysLeft(selected) + '&date=' + iso(selected);
+        location.href = goal.page + '?goal=' + key + '&days=' + goal.planDays + '&date=' + iso(selected);
       });
 
       render();

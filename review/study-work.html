@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 今天（留学线）</title>
+<style>
+/* ---------- 内容层：外壳 / 状态栏 / Home 条 / 悬浮导航都归 shell.css + shell.js ---------- */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#E9E8F5}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;color:#17171A}
+svg{display:block}
+
+/* ---------- 顶部信息行 ---------- */
+.hd-label{position:absolute;left:28px;top:60px;font-size:12.5px;font-weight:700;color:#8B8B95}
+.hd-days{position:absolute;left:27px;top:74px;display:flex;align-items:baseline;gap:7px}
+.hd-days .num{font-size:33px;line-height:1;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(128deg,#3B2BD8 10%,#7B68FF 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hd-days .unit{font-size:14px;font-weight:800;color:#3A3A44}
+.hd-rgroup{position:absolute;right:28px;top:63px;height:44px;display:flex;align-items:flex-end;gap:10px}
+.hd-rlab{font-size:12px;font-weight:700;color:#8B8B95;text-align:right;white-space:nowrap}
+.hd-rlab b{color:#17171A;font-weight:800}
+/* 能力环：连续弧线（12 点起顺时针），轨道淡灰紫，填充紫渐变 */
+.hd-ring{width:38px;height:38px;flex:none}
+.hd-ring svg{width:38px;height:38px;display:block}
+.hd-ring .rg-track{stroke:#CBC9D9}
+.hd-ring .rg-fill.anim{transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
+
+/* ---------- 问候 ---------- */
+.greet{position:absolute;left:28px;top:146px;font-size:37px;line-height:1.14;font-weight:800;letter-spacing:-.02em}
+.greet-sub{position:absolute;left:28px;top:200px;font-size:14px;font-weight:600;color:#8B8B95}
+
+/* ---------- 牌堆：前卡 340×350 落在 (25,300)，后卡照 today-blue 的三层几何 ---------- */
+.deck{position:absolute;left:25px;top:300px;width:340px;height:350px;touch-action:none;user-select:none;-webkit-user-select:none}
+.tcard{position:absolute;left:0;top:0;width:340px;height:350px;border-radius:38px;color:#fff;
+  background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);
+  box-shadow:0 14px 30px rgba(38,22,120,.20);
+  transition:transform .42s cubic-bezier(.22,1,.36,1),width .42s cubic-bezier(.22,1,.36,1),height .42s cubic-bezier(.22,1,.36,1),opacity .3s,background .3s}
+.tcard.is-front{cursor:grab}
+.tcard.dragging{transition:none;cursor:grabbing}
+.tcard.is-behind{box-shadow:none}
+.tcard.is-behind.lv1{background:#7E6BFF;width:316px;height:346px}
+.tcard.is-behind.lv2{background:#C9C0FB;width:300px;height:350px}
+.tcard > *{transition:opacity .22s}
+.tcard.is-behind > *{opacity:0}
+/* 往下一拽露出下面那张时，才显示它的内容（静止时一点不变；最底下那张先不显示） */
+.deck.is-revealing .tcard.lv1 > *{opacity:1}
+/* 上推翻上一张：被带出来的那张也显示内容 */
+.deck.is-back .tcard.is-coming > *{opacity:1}
+
+/* 卡内四角：左上标签 / 右上时长 / 左下滑条 / 右下下一个 */
+.tc-tag{position:absolute;left:24px;top:24px;height:36px;padding:0 17px;border-radius:18px;background:#fff;color:#6552FF;
+  font-size:14.5px;font-weight:800;display:flex;align-items:center}
+.tc-cap{position:absolute;right:24px;top:24px;height:36px;padding:0 16px 0 12px;border-radius:18px;background:rgba(255,255,255,.28);
+  display:flex;align-items:center;gap:8px;color:#fff;white-space:nowrap}
+.tc-cap .ring{width:21px;height:21px;border-radius:50%;border:2px solid rgba(255,255,255,.92);position:relative;flex:none}
+.tc-cap .ring::after{content:"";position:absolute;left:8.4px;top:3.6px;width:2px;height:7.6px;background:rgba(255,255,255,.92);border-radius:1px}
+.tc-cap .ring::before{content:"";position:absolute;left:8.4px;top:9.6px;width:5.6px;height:2px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center}
+.tc-cap b{font-size:13.5px;font-weight:700}
+
+/* 卡面配图（做法照 review/card-image-lab.html 的 A / B）
+   v-top = A 顶带图：图上、紫色下，硬边；v-full = B 全图铺底：底部紫色渐变压文字 */
+.tc-photo{position:absolute;left:0;top:0;width:100%;overflow:hidden}
+.tc-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.tcard.v-top .tc-photo{height:156px;border-radius:38px 38px 0 0}
+.tcard.v-top .tc-photo::after{content:"";position:absolute;left:0;top:0;width:100%;height:96px;
+  background:linear-gradient(180deg,rgba(30,18,104,.40),rgba(30,18,104,0))}
+.tcard.v-full .tc-photo{height:350px;border-radius:38px}
+.tcard.v-full .tc-photo::after{content:"";position:absolute;inset:0;border-radius:38px;
+  background:
+    linear-gradient(180deg,rgba(24,14,86,.46),rgba(24,14,86,0) 26%),
+    linear-gradient(180deg,rgba(70,48,224,0) 30%,rgba(70,48,224,.5) 52%,rgba(64,42,214,.88) 72%,rgba(56,36,196,.97) 90%)}
+/* 有图的卡：右上胶囊加一层深色玻璃，压在浅色照片上也读得清 */
+.tcard.v-top .tc-cap,.tcard.v-full .tc-cap{background:rgba(22,13,80,.36);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+
+.tc-cap.is-done{background:#fff;color:#0B7B5C;padding:0 16px}
+.tc-cap.is-done b{font-weight:800}
+.tc-title{position:absolute;left:24px;top:186px;width:292px;font-size:24px;line-height:1.26;font-weight:700;letter-spacing:-.01em;color:#fff}
+/* 后卡比前卡窄（316 / 300）：标题和滑条跟着卡片宽度算，免得顶到右边、和右下按钮叠上 */
+.tcard.is-behind .tc-title{width:calc(100% - 48px)}
+.tc-sub{position:absolute;left:24px;top:234px;font-size:15px;font-weight:600;color:rgba(255,255,255,.84)}
+.slide{position:absolute;left:24px;top:278px;width:232px;height:48px;border-radius:24px;background:rgba(255,255,255,.32);overflow:hidden}
+.tcard.is-behind .slide{width:calc(100% - 108px)}
+.slide-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(255,255,255,.38);transition:width .18s ease-out}
+.slide-label{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+  font-size:15.5px;font-weight:400;color:rgba(255,255,255,.8);letter-spacing:.02em;transition:opacity .15s}
+.chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.chev i{width:6px;height:6px;border-right:2px solid rgba(255,255,255,.9);border-top:2px solid rgba(255,255,255,.9);transform:rotate(45deg);border-radius:1px}
+.slide.is-done .chev{display:none}
+.slide.is-done{background:rgba(255,255,255,.42)}
+.slide-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;
+  box-shadow:0 3px 9px rgba(16,10,72,.30);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;
+  transition:transform .24s cubic-bezier(.22,1,.36,1)}
+.slide-knob svg{width:19px;height:19px}
+.slide.grabbing .slide-knob{cursor:grabbing}
+.slide.grabbing .slide-knob,.slide.grabbing .slide-fill,.slide.grabbing .slide-label{transition:none}
+.next{position:absolute;right:24px;top:278px;width:48px;height:48px;border:0;border-radius:50%;background:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.next:active{transform:scale(.94)}
+
+/* ---------- 收工卡：全部做完后进牌堆的第五张（浅底纸质感，和其它卡明显区分） ----------
+   定稿 A 一行式：标题 + 白框（能力名 / 计数 / 进度格 / 下一句）+ 脚注 + 滑条 */
+.tcard.is-fin{color:#17171A;background:linear-gradient(168deg,#FFFEFB 0%,#F6F1E7 100%);
+  box-shadow:0 14px 30px rgba(38,22,120,.16)}
+.tcard.is-fin.is-behind{background:#EDE6D8}
+.tcard.is-fin.is-behind.lv2{background:#F2EDE3}
+.fin-h{position:absolute;left:24px;right:24px;top:26px;font-size:19px;font-weight:800;letter-spacing:-.01em}
+.fin-h .cheer{color:#4C35E8;font-weight:900}
+.fin-panel{position:absolute;left:20px;right:20px;top:70px;height:104px;border-radius:24px;background:#fff;
+  box-shadow:0 4px 14px rgba(38,22,120,.05)}
+.fin-row{position:absolute;left:22px;right:22px;top:15px;display:flex;align-items:baseline;justify-content:space-between}
+.fin-name{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.fin-badge{font-size:13px;font-weight:800;color:#B9B5C6;letter-spacing:.02em;transition:color .3s}
+.fin-badge.on{color:#4C35E8}
+.fin-bars{position:absolute;left:22px;right:22px;top:48px;display:flex;gap:8px}
+.fin-bars i{flex:1;height:8px;border-radius:4px;background:#EAE7F1;transition:background .3s,box-shadow .3s}
+.fin-bars i.on{background:linear-gradient(90deg,#7B68FF,#4C35E8);box-shadow:0 4px 10px rgba(101,82,255,.28)}
+.fin-bars i.pop{animation:barpop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes barpop{45%{transform:scale(1.1)}}
+.fin-next{position:absolute;left:22px;top:64px;font-size:13px;font-weight:600;color:#8B8B95}
+.fin-items{position:absolute;left:24px;right:24px;top:184px;display:grid;gap:3px}
+.fin-item{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:#6E6E7A;line-height:1.2}
+.fin-itag{flex:none;width:30px;color:#6552FF;font-weight:800}
+.fin-itext{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fin-meta{position:absolute;left:24px;right:24px;top:250px;display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#A6A3B0}
+.fin-slide{position:absolute;left:24px;right:24px;top:278px;height:48px;border-radius:24px;background:rgba(23,23,42,.055);overflow:hidden}
+.fin-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(101,82,255,.14);transition:width .18s ease-out}
+.fin-slide-label{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+  font-size:15.5px;font-weight:800;color:#6552FF;letter-spacing:.02em;transition:opacity .15s,color .3s}
+.fin-chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.fin-chev i{width:6px;height:6px;border-right:2px solid rgba(101,82,255,.85);border-top:2px solid rgba(101,82,255,.85);transform:rotate(45deg);border-radius:1px}
+.fin-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;box-shadow:0 5px 12px rgba(101,82,255,.35);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;transition:transform .24s cubic-bezier(.22,1,.36,1)}
+.fin-knob svg{width:19px;height:19px}
+.fin-slide.grabbing{background:rgba(101,82,255,.12)}
+.fin-slide.grabbing .fin-knob,.fin-slide.grabbing .fin-fill,.fin-slide.grabbing .fin-slide-label{transition:none}
+/* 收工态：滑条转绿、文案换「已收工 · 明天见」、chevron 收起 */
+.fin-slide.done{background:rgba(29,143,110,.12)}
+.fin-slide.done .fin-slide-label{color:#0B7B5C}
+.fin-slide.done .fin-chev{display:none}
+
+/* ---------- 进入学习的模拟遮罩 / 轻提示 ---------- */
+.overlay{position:absolute;inset:0;z-index:300;display:grid;place-items:center;background:rgba(23,20,45,.46);
+  opacity:0;pointer-events:none;transition:opacity .25s;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.overlay.show{opacity:1;pointer-events:auto}
+.ov{width:min(86%,320px);padding:24px 22px;border-radius:28px;background:#fff;text-align:center;box-shadow:0 18px 40px rgba(20,30,60,.28)}
+.ov-kicker{font-size:12px;font-weight:800;color:#8B8B95;letter-spacing:.06em}
+.ov h2{margin:10px 0 0;font-size:20px;font-weight:900}
+.ov-bar{position:relative;height:5px;margin-top:16px;border-radius:999px;background:rgba(35,32,58,.08);overflow:hidden}
+.ov-bar i{position:absolute;left:-40%;top:0;bottom:0;width:40%;border-radius:999px;background:linear-gradient(90deg,#7B68FF,#4A3AE0);animation:sweep 1s linear infinite}
+@keyframes sweep{to{left:100%}}
+.ov-note{margin:14px 0 0;font-size:11.5px;font-weight:600;color:#8B8B95}
+.toast{position:absolute;left:50%;bottom:118px;transform:translate(-50%,8px);padding:8px 16px;border-radius:999px;
+  background:rgba(35,32,58,.86);color:#fff;font-size:12.5px;font-weight:800;opacity:0;pointer-events:none;transition:.25s;z-index:400}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+<link rel="stylesheet" href="../shell.css">
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen bg-today">
+  <div class="shell-edge"></div>
+
+  <div class="hd-label">学习计划 · 第 20 / 83 天</div>
+  <div class="hd-days"><span class="num">63</span><span class="unit">天后出发</span></div>
+  <div class="hd-rgroup">
+    <div class="hd-rlab">已准备好 <b id="readyNum">3 / 10</b> 项能力</div>
+    <span class="hd-ring" aria-hidden="true">
+      <svg viewBox="0 0 38 38">
+        <defs>
+          <linearGradient id="rgGrad" x1="6" y1="4" x2="33" y2="35" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#7B68FF"/>
+            <stop offset="1" stop-color="#4C35E8"/>
+          </linearGradient>
+        </defs>
+        <circle class="rg-track" cx="19" cy="19" r="15.5" fill="none" stroke-width="6"/>
+        <circle class="rg-fill" id="ringFill" cx="19" cy="19" r="15.5" fill="none" stroke="url(#rgGrad)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 19 19)"/>
+      </svg>
+    </span>
+  </div>
+
+  <div class="greet">下午好，Dewi</div>
+  <div class="greet-sub" id="greetSub">今天 4 件事 · 约 20 分钟 ／ 做完就拿下：机场入境</div>
+
+  <section class="deck" id="deck" aria-label="任务牌堆">
+    <div class="stack" id="stack"></div>
+  </section>
+
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="ov">
+      <span class="ov-kicker">正在进入</span>
+      <h2 id="ovTitle">复习 · 把清单整理一下</h2>
+      <div class="ov-bar"><i></i></div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+</div>
+
+<script src="../shell.js"></script>
+<script>
+(function(){
+  /* ============ 演示数据（只改这里即可切换版本） ============
+     当前能力：名字 / 第几天 / 共几天 / 完成后接哪个能力。
+     默认满格日「机场入境 5 / 5」：收工时前 4 颗点先亮、第 5 颗延迟 0.4 秒亮，
+     再过 0.5 秒能力环前进一格、数字 2/10 → 3/10；
+     切普通日（例如 day: 2）：收工时能力环不动。 */
+  var TODAY = { ability: "机场入境", day: 5, days: 5, next: "前往学校" };
+  var READY = { done: 3, total: 10 };   /* 能力环：已准备好 / 共几项 */
+  var READY0 = READY.done;
+
+  var TASKS = [
+    {tag:"复习", title:"姓名、生日、电话，再说一遍", name:"姓名生日电话", sub:"昨天学的填表说法 · 快问快答 3 题", time:"约 2 分钟", stage:"复习 · 姓名、生日、电话"},
+    {tag:"新学", title:"机场入境", name:"机场入境", sub:"入境卡 · 边检 · 行李", time:"约 8 分钟", stage:"新学 · 机场入境",
+      variant:"top", photo:"../assets/study-airport.png"},
+    {tag:"练习", title:"听懂“登机口、行李转盘”", name:"登机口、行李转盘", sub:"听音选词 · 5 题", time:"约 4 分钟", stage:"练习 · 登机口、行李转盘"},
+    {tag:"实战", title:"跟入境官演一遍", name:"入境官问答", sub:"虚拟边检窗口，你来答", time:"约 5 分钟", stage:"实战 · 跟入境官演一遍",
+      variant:"full", photo:"../assets/study-officer.png", action:"scenario"}
+  ];
+  var stack = document.getElementById("stack");
+  var deckEl = document.getElementById("deck");
+  var overlay = document.getElementById("overlay");
+  var ovTitle = document.getElementById("ovTitle");
+  var toastEl = document.getElementById("toast");
+  var greetSub = document.getElementById("greetSub");
+  var readyNum = document.getElementById("readyNum");
+  var ringFill = document.getElementById("ringFill");
+  var toastT = null;
+  var queue = [];
+  var front = 0;
+  var lock = false;
+  var FIN = null;       /* 收工卡：四张都做完后进牌堆的第五张 */
+  var backEl = null;    /* 上推时被带到前台下面的上一张 */
+  var ringLit = false;
+  var finTimers = [];
+
+  /* 三层几何（照 today-blue.html）：中卡 316×346 转 -3°，后卡 300×350 浅紫，尺寸走 CSS，位移走 transform */
+  var LV = [
+    {tx:0,  ty:0,   rot:0},
+    {tx:12, ty:-18, rot:-3},
+    {tx:20, ty:-36, rot:0}
+  ];
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ toastEl.classList.remove("show"); }, 1300);
+  }
+
+  /* ---------- 能力环：填充角 = 已完成 / 总数，默认 2 / 10 ---------- */
+  function renderReady(animate){
+    readyNum.textContent = READY.done + " / " + READY.total;
+    var C = 2 * Math.PI * 15.5;
+    ringFill.style.strokeDasharray = C.toFixed(2);
+    ringFill.classList.toggle("anim", !!animate);
+    ringFill.style.strokeDashoffset = (C * (1 - READY.done / READY.total)).toFixed(2);
+  }
+
+  /* ---------- 收工卡：不参与任务；白框每天只亮一格，滑条滑到底 = 当天收工 ---------- */
+  function makeFinCard(){
+    var el = document.createElement("article");
+    el.className = "tcard is-fin";
+    /* 入场只亮 (day - 1) 格：第 5 天进来就是 4 格亮、计数 4 / 5 */
+    var pre = Math.max(0, Math.min(TODAY.day - 1, TODAY.days));
+    var bars = "";
+    for (var i = 0; i < TODAY.days; i++) bars += (i < pre ? '<i class="on"></i>' : "<i></i>");
+    var items = TASKS.map(function(t){
+      return '<div class="fin-item"><span class="fin-itag">' + t.tag + '</span><span class="fin-itext">' + t.name + '</span></div>';
+    }).join("");
+    el.innerHTML =
+      '<h2 class="fin-h"><span class="cheer">真棒！</span>今天 ' + TASKS.length + ' 件事 · 全部完成</h2>' +
+      '<div class="fin-panel">' +
+        '<div class="fin-row">' +
+          '<span class="fin-name">' + TODAY.ability + '</span>' +
+          '<span class="fin-badge">' + pre + ' / ' + TODAY.days + '</span>' +
+        '</div>' +
+        '<div class="fin-bars">' + bars + '</div>' +
+        '<p class="fin-next">' + (TODAY.day >= TODAY.days
+          ? '明天开始：' + TODAY.next
+          : '明天继续：' + TODAY.ability) + '</p>' +
+      '</div>' +
+      '<div class="fin-items">' + items + '</div>' +
+      '<p class="fin-meta"><span>今天这几题，都过了</span><span>连续 20 天 · 明天见</span></p>' +
+      '<div class="fin-slide">' +
+        '<span class="fin-fill"></span>' +
+        '<span class="fin-slide-label">滑动完成</span>' +
+        '<span class="fin-chev"><i></i><i></i><i></i></span>' +
+        '<button class="fin-knob" type="button" aria-label="滑动完成">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg>' +
+        '</button>' +
+      '</div>';
+    var item = {
+      el: el, isFin: true, finDone: false,
+      slide: el.querySelector(".fin-slide"),
+      bars: el.querySelectorAll(".fin-bars i"),
+      badge: el.querySelector(".fin-badge"),
+      label: el.querySelector(".fin-slide-label")
+    };
+    bindCard(el, null);
+    bindFinSlide(item);
+    return item;
+  }
+
+  function lvTransform(k, dy){
+    var lv = LV[Math.min(k, 2)];
+    var ty = lv.ty - dy * 0.05 * Math.min(k, 2);
+    return "translate(" + lv.tx + "px," + ty.toFixed(1) + "px) rotate(" + lv.rot + "deg)";
+  }
+
+  function applyDrag(el, dy){
+    if (dy > 160) dy = 160;
+    if (dy < -160) dy = -160;
+    el.style.transform = "translate(0px," + dy.toFixed(1) + "px) rotate(" + (dy * 0.02).toFixed(2) + "deg)";
+    var n = queue.length;
+    var up = dy < -20;
+    deckEl.classList.toggle("is-revealing", dy > 20);
+    deckEl.classList.toggle("is-back", up);
+    for (var k = 1; k < n; k++){
+      var it = queue[(front + k) % n].el;
+      it.style.transform = lvTransform(k, dy);
+      it.style.opacity = (up || k >= 3) ? "0" : "1";
+    }
+    /* 上推：把上一张摆到前台正下方，推走这一张它就接上来 */
+    if (up && n > 1){
+      var prev = queue[(front - 1 + n) % n].el;
+      if (backEl && backEl !== prev) backEl.classList.remove("is-coming");
+      backEl = prev;
+      prev.classList.add("is-coming");
+      prev.style.transform = "translate(0px,0px) rotate(0deg)";
+      prev.style.opacity = "1";
+    } else if (backEl){
+      backEl.classList.remove("is-coming");
+      backEl = null;
+    }
+  }
+
+  function makeCard(t){
+    var el = document.createElement("article");
+    el.className = "tcard" + (t.variant ? " v-" + t.variant : "");
+    el.innerHTML =
+      (t.photo ? '<div class="tc-photo"><img src="' + t.photo + '" alt="" onerror="this.style.display=\'none\'"></div>' : '') +
+      '<span class="tc-tag">' + t.tag + '</span>' +
+      '<span class="tc-cap"><span class="ring"></span><b>' + t.time + '</b></span>' +
+      '<h3 class="tc-title">' + t.title + '</h3>' +
+      '<p class="tc-sub">' + t.sub + '</p>' +
+      '<div class="slide">' +
+        '<span class="slide-fill"></span>' +
+        '<span class="slide-label">滑动开始</span>' +
+        '<span class="chev"><i></i><i></i><i></i></span>' +
+        '<button class="slide-knob" type="button" aria-label="滑动开始">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg>' +
+        '</button>' +
+      '</div>' +
+      '<button class="next" type="button" aria-label="下一个">' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg>' +
+      '</button>';
+    t.el = el;
+    bindCard(el, t);
+    bindSlide(el, t);
+    el.querySelector(".next").addEventListener("click", function(e){
+      e.stopPropagation();
+      if (lock) return;
+      if (t.action === "scenario"){ trigger(el, t); return; }
+      flip(1);
+    });
+    return el;
+  }
+
+  /* 长标题自动缩一点：副标题 / 滑条的位置是写死的，标题必须一行放得下 */
+  function fitTitle(el){
+    var title = el.querySelector(".tc-title");
+    if (!title) return;
+    title.style.fontSize = "";
+    var size = 24;
+    while (size > 18 && title.offsetHeight > 33){
+      size -= 1;
+      title.style.fontSize = size + "px";
+    }
+  }
+
+  function layout(){
+    var n = queue.length;
+    for (var k = 0; k < n; k++){
+      var el = queue[(front + k) % n].el;
+      el.classList.toggle("is-front", k === 0);
+      el.classList.toggle("is-behind", k > 0);
+      el.classList.toggle("lv1", k === 1);
+      el.classList.toggle("lv2", k === 2);
+      /* 压在悬浮导航（z-index 60）之下：往下一拽会从导航底下穿过去 */
+      el.style.zIndex = String(40 - k);
+      el.style.pointerEvents = k === 0 ? "auto" : "none";
+      el.style.opacity = k >= 3 ? "0" : "1";
+      el.style.transform = lvTransform(Math.min(k, 2), 0);
+    }
+  }
+
+  function flip(dir){
+    var n = queue.length;
+    if (n < 2) return;
+    front = (front + dir + n) % n;
+    layout();
+  }
+
+  function bindCard(el, t){
+    var y0 = 0, dy = 0, dragging = false;
+    el.addEventListener("pointerdown", function(e){
+      if (lock || !el.classList.contains("is-front")) return;
+      if (e.target.closest(".slide") || e.target.closest(".fin-slide") || e.target.closest(".next")) return;
+      dragging = true; y0 = e.clientY; dy = 0;
+      el.classList.add("dragging");
+      try { el.setPointerCapture(e.pointerId); } catch(err){}
+    });
+    el.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      dy = e.clientY - y0;
+      applyDrag(el, dy);
+    });
+    function up(){
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove("dragging");
+      deckEl.classList.remove("is-revealing");
+      deckEl.classList.remove("is-back");
+      if (backEl){ backEl.classList.remove("is-coming"); backEl = null; }
+      /* 下拽翻下一张（露出来的那张接手）；上推翻回上一张（被带出来的那张接上） */
+      if (dy >= 56) flip(1);
+      else if (dy <= -56) flip(-1);
+      else layout();
+    }
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointercancel", up);
+    el.addEventListener("dblclick", function(){ if (t && !lock) trigger(el, t); });
+  }
+
+  function bindSlide(el, t){
+    var slide = el.querySelector(".slide");
+    var knob = slide.querySelector(".slide-knob");
+    var fill = slide.querySelector(".slide-fill");
+    var label = slide.querySelector(".slide-label");
+    var x0 = 0, x = 0, maxX = 1, dragging = false;
+
+    function apply(px){
+      x = px;
+      knob.style.transform = "translateX(" + px + "px)";
+      fill.style.width = (px + 48) + "px";
+      label.style.opacity = String(Math.max(0, 1 - px / Math.max(1, maxX * 0.55)));
+    }
+    knob.addEventListener("pointerdown", function(e){
+      if (lock) return;
+      e.stopPropagation();
+      e.preventDefault();
+      dragging = true;
+      maxX = slide.clientWidth - 48;
+      x0 = e.clientX;
+      slide.classList.add("grabbing");
+      try { knob.setPointerCapture(e.pointerId); } catch(err){}
+    });
+    knob.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      var px = e.clientX - x0;
+      if (px < 0) px = 0;
+      if (px > maxX) px = maxX;
+      apply(px);
+    });
+    function up(){
+      if (!dragging) return;
+      dragging = false;
+      slide.classList.remove("grabbing");
+      if (x >= maxX * 0.9){
+        apply(maxX);
+        setTimeout(function(){ trigger(el, t); }, 120);
+      } else {
+        apply(0);
+      }
+    }
+    knob.addEventListener("pointerup", up);
+    knob.addEventListener("pointercancel", up);
+  }
+
+  function trigger(el, t){
+    if (lock) return;
+    /* 实战卡：不出遮罩，直接去实战页；其余三张：滑动即记完成，不跳页 */
+    if (t.action === "scenario"){
+      lock = true;
+      var kept = [];
+      TASKS.forEach(function(x, i){ if (x.done) kept.push(i); });
+      window.location.href = "study-scenario.html" + window.location.search +
+        (kept.length ? (window.location.search ? "&" : "?") + "kept=" + kept.join(",") : "");
+      return;
+    }
+    enterTask(t);
+  }
+
+  function enterTask(t, hold){
+    lock = true;
+    ovTitle.textContent = t.stage;
+    overlay.classList.add("show");
+    if (hold) return;
+    setTimeout(function(){
+      overlay.classList.remove("show");
+      t.done = true;
+      markDone(t);
+      /* 回来稍停一下：四张都做完 → 收工卡进场；否则自动翻到下一张 */
+      setTimeout(function(){
+        if (!FIN && TASKS.every(function(x){ return x.done; })) arriveFinish();
+        else flip(1);
+        lock = false;
+      }, 450);
+    }, 1600);
+  }
+
+  function markDone(t){
+    var el = t.el;
+    el.classList.add("is-done");
+    var cap = el.querySelector(".tc-cap");
+    cap.classList.add("is-done");
+    cap.innerHTML = '<b>✓ 已完成</b>';
+    var slide = el.querySelector(".slide");
+    slide.classList.add("is-done");
+    slide.querySelector(".slide-label").textContent = "滑动重做";
+    slide.querySelector(".slide-label").style.opacity = "1";
+    slide.querySelector(".slide-fill").style.width = "0px";
+    var knob = slide.querySelector(".slide-knob");
+    knob.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.3 4.3L19 7"/></svg>';
+    knob.style.transform = "translateX(0)";
+  }
+
+  /* 收工卡进场：插到刚做完那张的后面成为前台，点 + 环的仪式照旧 */
+  function arriveFinish(){
+    if (FIN) return;
+    FIN = makeFinCard();
+    var at = front + 1;
+    queue.splice(at, 0, FIN);
+    front = at;
+    stack.appendChild(FIN.el);
+    FIN.el.style.transform = "translate(20px,-40px) rotate(-2deg) scale(.97)";
+    void FIN.el.offsetWidth;
+    layout();
+    greetSub.textContent = "今天 " + TASKS.length + " 件事 · 全部完成";
+    if (TODAY.day >= TODAY.days && !ringLit){
+      ringLit = true;
+      finTimers.push(setTimeout(function(){
+        READY.done = Math.min(READY.done + 1, READY.total);
+        renderReady(true);
+      }, 920));
+    }
+  }
+
+  /* 收工卡的「滑动完成」：滑到底（≥90%）→ 点亮当天那格、计数转紫、滑条转绿；
+     已经收过工再滑，只把当天那格再 pop 一下，不重播整段 */
+  function bindFinSlide(item){
+    var slide = item.slide;
+    var knob = slide.querySelector(".fin-knob");
+    var fill = slide.querySelector(".fin-fill");
+    var label = item.label;
+    var x0 = 0, x = 0, maxX = 1, dragging = false;
+    function apply(px){
+      x = px;
+      knob.style.transform = "translateX(" + px + "px)";
+      fill.style.width = (px + 48) + "px";
+      label.style.opacity = String(Math.max(0, 1 - px / Math.max(1, maxX * 0.55)));
+    }
+    function popBar(bar){
+      bar.classList.remove("pop");
+      void bar.offsetWidth;
+      bar.classList.add("pop");
+    }
+    /* 滑到底 = 收工：亮第 day 格 → 计数 (day / days) 转紫 → 滑条切「已收工 · 明天见」 */
+    function finishDay(){
+      var bar = item.bars[TODAY.day - 1];
+      if (bar){
+        bar.classList.add("on");
+        popBar(bar);
+      }
+      if (!item.finDone){
+        item.finDone = true;
+        item.badge.textContent = TODAY.day + " / " + TODAY.days;
+        item.badge.classList.add("on");
+        slide.classList.add("done");
+        label.textContent = "已收工 · 明天见";
+      }
+      label.style.opacity = "1";
+    }
+    knob.addEventListener("pointerdown", function(e){
+      if (lock) return;
+      e.stopPropagation();
+      e.preventDefault();
+      dragging = true;
+      maxX = slide.clientWidth - 48;
+      x0 = e.clientX;
+      slide.classList.add("grabbing");
+      try { knob.setPointerCapture(e.pointerId); } catch(err){}
+    });
+    knob.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      var px = e.clientX - x0;
+      if (px < 0) px = 0;
+      if (px > maxX) px = maxX;
+      apply(px);
+    });
+    function up(){
+      if (!dragging) return;
+      dragging = false;
+      slide.classList.remove("grabbing");
+      if (x >= maxX * 0.9) finishDay();
+      apply(0);
+    }
+    knob.addEventListener("pointerup", up);
+    knob.addEventListener("pointercancel", up);
+  }
+
+  function reset(){
+    lock = false;
+    FIN = null;
+    backEl = null;
+    ringLit = false;
+    READY.done = READY0;
+    renderReady(false);
+    finTimers.forEach(function(id){ clearTimeout(id); });
+    finTimers = [];
+    greetSub.textContent = "今天 " + TASKS.length + " 件事 · 约 20 分钟 ／ 做完就拿下：机场入境";
+    queue = TASKS.slice();
+    front = 0;
+    stack.innerHTML = "";
+    overlay.classList.remove("show");
+    queue.forEach(function(t){
+      t.done = false;
+      t.el = null;
+      var el = makeCard(t);
+      stack.appendChild(el);
+      fitTitle(el);
+    });
+    layout();
+  }
+
+  window.addEventListener("keydown", function(e){ if (e.key === "r" || e.key === "R") reset(); });
+  window.__deckReset = reset;
+  reset();
+
+  /* 从实战页回来（?done=scenario）：实战卡自动记完成 —— 还有没做完的翻过去，四张都完了就出收工卡 */
+  (function(){
+    var qs = new URLSearchParams(location.search);
+    if (qs.get("done") !== "scenario") return;
+    /* 去实战页之前已经记完成的几张，照 URL 上的 kept 补回来 */
+    var kept = (qs.get("kept") || "").split(",");
+    kept.forEach(function(s){
+      if (s === "") return;
+      var item = TASKS[Number(s)];
+      if (item && !item.done){ item.done = true; markDone(item); }
+    });
+    var t = null;
+    TASKS.forEach(function(x){ if (x.action === "scenario") t = x; });
+    if (t && !t.done){ t.done = true; markDone(t); }
+    setTimeout(function(){
+      if (TASKS.every(function(x){ return x.done; })){ arriveFinish(); return; }
+      var n = queue.length;
+      for (var k = 0; k < n; k++){
+        var idx = (front + k) % n;
+        if (queue[idx] && !queue[idx].isFin && !queue[idx].done){ front = idx; layout(); return; }
+      }
+      layout();
+    }, 420);
+  })();
+  /* 截图辅助（不影响正常交互）：?demo=flip&dy=-120 / enter&hold=1 / done / finished */
+  (function(){
+    var qs = new URLSearchParams(location.search);
+    var demo = qs.get("demo");
+    if (!demo) return;
+    if (demo === "flip"){
+      var dy = Number(qs.get("dy") || -120);
+      if (!isFinite(dy)) dy = -120;
+      applyDrag(queue[front].el, dy);
+    } else if (demo === "enter"){
+      enterTask(queue[front], qs.get("hold") === "1");
+    } else if (demo === "done"){
+      markDone(queue[front]);
+    } else if (demo === "finished"){
+      TASKS.forEach(function(t){ if (!t.done){ t.done = true; markDone(t); } });
+      arriveFinish();
+    }
+  })();
+})();
+</script>
+</body>
+</html>

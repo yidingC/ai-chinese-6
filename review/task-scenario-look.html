@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>实战页换皮 · 情景优先</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#E9E8F5}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;color:#17171A}
+.lab{display:flex;gap:44px;padding:40px 44px 56px;justify-content:center;align-items:flex-start}
+.head{width:100%;max-width:900px;margin:0 auto;padding:36px 44px 0}
+.head h1{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.head p{font-size:12.5px;color:#8B8B95;font-weight:600;margin-top:5px;line-height:1.7}
+.cell{width:390px}
+.cell-h{font-size:14px;font-weight:800;color:#3A3A44;margin-bottom:10px}
+.cell-note{font-size:12px;font-weight:600;color:#8B8B95;margin-top:10px;line-height:1.6}
+
+.phone{position:relative;width:390px;height:844px;border-radius:32px;overflow:hidden;background:#1b1733;box-shadow:0 22px 50px rgba(30,20,90,.28)}
+.scene{position:absolute;inset:0}
+.scene img{width:100%;height:100%;object-fit:cover;object-position:27% 50%;display:block}
+.scene::after{content:"";position:absolute;inset:0;background:
+  linear-gradient(180deg,rgba(10,8,32,.46),rgba(10,8,32,.06) 20%,rgba(10,8,32,0) 42%,rgba(16,11,48,.38) 62%,rgba(16,11,48,.58) 100%)}
+.phone.b .scene::after{background:
+  linear-gradient(180deg,rgba(10,8,32,.50),rgba(10,8,32,.10) 22%,rgba(12,8,38,.45) 46%,rgba(14,10,44,.66) 100%)}
+
+.top{position:absolute;left:18px;right:18px;top:18px;display:flex;align-items:center;gap:10px;z-index:5}
+.rbtn{width:40px;height:40px;border-radius:50%;background:rgba(13,9,36,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;display:grid;place-items:center;flex:none}
+.rbtn svg{width:19px;height:19px}
+.chip{background:rgba(13,9,36,.46);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;font-size:12.5px;font-weight:800;padding:9px 14px;border-radius:999px;white-space:nowrap}
+.top .sound{margin-left:auto}
+
+/* 主管语音条 */
+.boss-bubble{position:absolute;left:18px;right:64px;top:388px;z-index:5;
+  background:rgba(13,9,36,.56);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-radius:20px;padding:12px 14px 13px;color:#fff;box-shadow:0 12px 30px rgba(10,6,36,.35)}
+.bb-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bb-play{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.92);color:#4C35E8;display:grid;place-items:center;flex:none}
+.bb-play svg{width:12px;height:12px}
+.bars{display:flex;align-items:center;gap:2.5px;height:16px}
+.bars i{width:2.5px;border-radius:2px;background:rgba(255,255,255,.75)}
+.bb-name{font-size:11.5px;font-weight:800;color:rgba(255,255,255,.72)}
+.bb-text{font-size:14px;font-weight:700;line-height:1.5;color:rgba(255,255,255,.96)}
+
+/* 台词卡 */
+.say-card{position:absolute;left:18px;right:18px;top:482px;z-index:5;background:#fff;border-radius:26px;
+  padding:20px 20px 10px;box-shadow:0 20px 46px rgba(14,9,44,.38)}
+.pinyin{font-size:13px;font-weight:700;color:#9894AE;letter-spacing:.01em}
+.hanzi{font-size:23px;font-weight:800;letter-spacing:-.01em;line-height:1.34;margin-top:7px}
+.indo{font-size:13px;font-weight:600;color:#6E6A85;margin-top:9px;line-height:1.5}
+.dash{margin-top:16px;border-top:2px dashed #E9E6F4}
+.ico-row{display:flex;gap:10px;padding:12px 0 8px}
+.ico-chip{height:32px;border-radius:16px;background:#F1EFFF;color:#6552FF;font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;padding:0 13px}
+.ico-chip svg{width:14px;height:14px}
+
+/* 按住说话 */
+.talk{position:absolute;left:18px;right:18px;top:724px;height:58px;border-radius:29px;background:#fff;
+  display:flex;align-items:center;justify-content:center;gap:9px;font-size:17px;font-weight:800;color:#17171A;
+  box-shadow:0 12px 30px rgba(14,9,44,.35);z-index:5}
+.talk svg{width:20px;height:20px}
+.talk-hint{position:absolute;left:0;right:0;top:794px;text-align:center;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.85);z-index:5}
+
+/* 检查卡态 */
+.recap{position:absolute;left:18px;right:18px;top:398px;z-index:5;background:#fff;border-radius:26px;
+  padding:18px 18px 16px;box-shadow:0 20px 46px rgba(14,9,44,.40)}
+.recap .cap{font-size:13px;font-weight:800;color:#9894AE;margin-bottom:11px}
+.row{display:flex;justify-content:space-between;align-items:center;background:#F6F5FB;border-radius:15px;padding:11px 13px;margin-bottom:8px;font-size:14.5px;font-weight:700}
+.row .mark{width:22px;height:22px;border-radius:50%;background:#DFF3EA;color:#0B7B5C;display:grid;place-items:center;font-size:12.5px;font-weight:900}
+.note{font-size:14.5px;font-weight:800;margin-top:8px}
+.fin-line{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid #EFEDF7}
+.fin-line .gi{width:34px;height:34px;border-radius:50%;background:#FFF3D6;display:grid;place-items:center;font-size:16px;flex:none}
+.fin-line b{font-size:14px;font-weight:800;display:block}
+.fin-line small{font-size:12px;font-weight:600;color:#8B8B95}
+.gobtn{position:absolute;left:18px;right:18px;top:706px;height:56px;border-radius:28px;background:#6552FF;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:16.5px;font-weight:800;
+  box-shadow:0 14px 32px rgba(80,60,230,.5);z-index:5}
+.done-hint{position:absolute;left:0;right:0;top:776px;text-align:center;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.8);z-index:5}
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>实战页换皮 · 情景优先（学原版，去多余）</h1>
+  <p>逻辑不动，只换皮：全屏情景底 + 主管语音条 + 一句台词卡 + 按住说话。金币、齿轮、多余小按钮全部不要。底图先用现成横图裁，正式版要一张纵版场景图。</p>
+</div>
+<div class="lab">
+
+  <div class="cell">
+    <div class="cell-h">A · 复述态（准备说）</div>
+    <div class="phone">
+      <div class="scene"><img src="../assets/scene-warehouse-arrange.png" alt=""></div>
+      <div class="top">
+        <span class="rbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span class="chip">实战 · 主管派活</span>
+        <span class="rbtn sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span>
+      </div>
+      <div class="boss-bubble">
+        <div class="bb-top">
+          <span class="bb-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+          <span class="bars"><i style="height:45%"></i><i style="height:85%"></i><i style="height:50%"></i><i style="height:95%"></i><i style="height:60%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:55%"></i></span>
+          <span class="bb-name">陈主管 · 00:09</span>
+        </div>
+        <div class="bb-text">这批货的清单你整理一下，下班前发给仓库的老陈。</div>
+      </div>
+      <div class="say-card">
+        <div class="pinyin">wǒ zhěnglǐ yíxià qīngdān</div>
+        <div class="hanzi">我整理一下清单，<br>下班前发给老陈。</div>
+        <div class="indo">Saya rapikan daftarnya, sore nanti kirim ke Lao Chen.</div>
+        <div class="dash"></div>
+        <div class="ico-row">
+          <span class="ico-chip"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>播放</span>
+          <span class="ico-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 4c-2.8 0-4.5 2-4.5 4.5"/><path d="M12 4v2.6"/><path d="M12 4c2.8 0 4.5 2 4.5 4.5"/><path d="M4.5 12h15"/></svg>慢速</span>
+          <span class="ico-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h10"/><path d="m15 15 4 4m0-4-4 4"/></svg>印尼语</span>
+        </div>
+      </div>
+      <div class="talk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+        按住说话
+      </div>
+      <div class="talk-hint">按住不放，说完松手</div>
+    </div>
+    <div class="cell-note">主管在场景里说话，台词卡给你「你要说的那句」（拼音 + 中文 + 印尼语），底下一颗大按钮。</div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-h">B · 检查完成态</div>
+    <div class="phone b">
+      <div class="scene"><img src="../assets/scene-warehouse-arrange.png" alt=""></div>
+      <div class="top">
+        <span class="rbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+        <span class="chip">实战 · 主管派活</span>
+        <span class="rbtn sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span>
+      </div>
+      <div class="recap">
+        <div class="cap">你听到了什么</div>
+        <div class="row"><span>整理清单</span><span class="mark">✓</span></div>
+        <div class="row"><span>下班前</span><span class="mark">✓</span></div>
+        <div class="row"><span>仓库老陈</span><span class="mark">✓</span></div>
+        <p class="note">三个点全跟上了！</p>
+        <div class="fin-line">
+          <span class="gi">✨</span>
+          <div><b>听懂工作安排 · 完成</b><small>明天为你安排了 3 分钟复习</small></div>
+        </div>
+      </div>
+      <div class="gobtn">回到今天</div>
+      <div class="done-hint">点「回到今天」收工</div>
+    </div>
+    <div class="cell-note">验收卡原样保留，只把底换成场景。完成和回到今天收在这一屏里。</div>
+  </div>
+
+</div>
+</body>
+</html>

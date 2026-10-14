@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>无配图任务卡 · 第二轮（去控件感）</title>
+<style>
+  :root{--purple:#6552ff;--purple-deep:#4c35e8}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#E9E8F5}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    color:#17171A;-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;gap:36px}
+  svg{display:block}
+  .phone{position:relative;width:390px;height:844px;border-radius:47.33px;overflow:hidden;background:#F5F3FA;
+    box-shadow:0 24px 60px rgba(18,24,45,.16);flex:none}
+  .deck{position:absolute;left:25px;top:300px;width:340px;height:350px}
+  .peek1{position:absolute;left:12px;top:-16px;width:316px;height:70px;border-radius:38px 38px 0 0;background:#7E6BFF;
+    box-shadow:0 14px 30px rgba(38,22,120,.20)}
+  .peek2{position:absolute;left:20px;top:-28px;width:300px;height:70px;border-radius:38px 38px 0 0;background:#C9C0FB}
+  .tcard{position:absolute;left:0;top:0;width:340px;height:350px;border-radius:38px;color:#fff;overflow:hidden;
+    background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);
+    box-shadow:0 14px 30px rgba(38,22,120,.20)}
+  .tcard > *{position:relative;z-index:2}
+
+  .tc-tag{position:absolute;left:24px;top:24px;height:36px;padding:0 17px;border-radius:18px;background:#fff;color:#6552FF;
+    font-size:14.5px;font-weight:800;display:flex;align-items:center}
+  .tc-cap{position:absolute;right:24px;top:24px;height:36px;padding:0 16px 0 12px;border-radius:18px;background:rgba(255,255,255,.28);
+    display:flex;align-items:center;gap:8px;color:#fff;white-space:nowrap}
+  .tc-cap .ring{width:21px;height:21px;border-radius:50%;border:2px solid rgba(255,255,255,.92);position:relative;flex:none}
+  .tc-cap .ring::after{content:"";position:absolute;left:8.4px;top:3.6px;width:2px;height:7.6px;background:rgba(255,255,255,.92);border-radius:1px}
+  .tc-cap .ring::before{content:"";position:absolute;left:8.4px;top:9.6px;width:5.6px;height:2px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center}
+  .tc-cap b{font-size:13.5px;font-weight:700}
+  .tc-title{position:absolute;left:24px;top:186px;width:292px;font-size:24px;line-height:1.26;font-weight:700;letter-spacing:-.01em}
+  .tc-sub{position:absolute;left:24px;top:234px;font-size:15px;font-weight:600;color:rgba(255,255,255,.84)}
+  .slide{position:absolute;left:24px;top:278px;width:232px;height:48px;border-radius:24px;background:rgba(255,255,255,.32)}
+  .slide-label{position:absolute;left:0;right:0;top:15.5px;text-align:center;font-size:15.5px;font-weight:700;letter-spacing:.02em}
+  .chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+  .chev i{width:6px;height:6px;border-right:2px solid rgba(255,255,255,.9);border-top:2px solid rgba(255,255,255,.9);transform:rotate(45deg);border-radius:1px}
+  .slide-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;
+    box-shadow:0 0 0 2px rgba(255,255,255,.95);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0}
+  .slide-knob svg{width:19px;height:19px}
+  .next{position:absolute;right:24px;top:278px;width:48px;height:48px;border:0;border-radius:50%;background:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+
+  /* 所有版本共用的底：（右上）柔光，让版面不"平" */
+  .tcard::before{content:"";position:absolute;left:0;top:0;width:100%;height:100%;
+    background:radial-gradient(280px 230px at 296px 6px, rgba(255,255,255,.26), rgba(255,255,255,0) 72%);
+    z-index:1}
+
+  /* ---------- D 标签字水印 ---------- */
+  .v-d .wm{position:absolute;z-index:1;right:-16px;top:-34px;font-size:200px;line-height:1;font-weight:900;
+    letter-spacing:-.05em;color:rgba(255,255,255,.11)}
+
+  /* ---------- E 同心光弧（右上发散，像声音扩散，不是控件） ---------- */
+  .v-e .arcs{position:absolute;z-index:1;right:-120px;top:-150px;width:420px;height:420px;border-radius:50%}
+  .v-e .arcs i{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.20)}
+  .v-e .arcs i:nth-child(2){inset:46px;border-color:rgba(255,255,255,.16)}
+  .v-e .arcs i:nth-child(3){inset:92px;border-color:rgba(255,255,255,.12)}
+  .v-e .arcs i:nth-child(4){inset:138px;border-color:rgba(255,255,255,.09)}
+
+  /* ---------- F 纯渐变：双色斜向 + 柔光，零形状 ---------- */
+  .v-f{background:
+    radial-gradient(300px 240px at 300px -10px, rgba(255,255,255,.30), rgba(255,255,255,0) 72%),
+    radial-gradient(320px 260px at -10px 350px, rgba(120,96,255,.60), rgba(120,96,255,0) 70%),
+    linear-gradient(162deg,#7A66FF 0%,#6552FF 46%,#5642EE 100%)}
+  .v-f::before{display:none}
+</style>
+</head>
+<body>
+<div class="phone"><div class="deck"><span class="peek2"></span><span class="peek1"></span><article class="tcard" id="c1"></article></div></div>
+<div class="phone"><div class="deck"><span class="peek2"></span><span class="peek1"></span><article class="tcard" id="c2"></article></div></div>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  var v = q.get("v") || "d";
+  var KNOB = '<button class="slide-knob" type="button" aria-label="滑动开始"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>';
+  function build(card, d){
+    var extra = "";
+    if (v === "d") extra = '<span class="wm">' + d.glyph + '</span>';
+    if (v === "e") extra = '<span class="arcs"><i></i><i></i><i></i><i></i></span>';
+    card.className = "tcard v-" + v;
+    card.innerHTML = extra +
+      '<span class="tc-tag">' + d.tag + '</span>' +
+      '<span class="tc-cap"><span class="ring"></span><b>' + d.time + '</b></span>' +
+      '<h3 class="tc-title">' + d.title + '</h3>' +
+      '<p class="tc-sub">' + d.sub + '</p>' +
+      '<div class="slide"><span class="slide-label">滑动开始</span><span class="chev"><i></i><i></i><i></i></span>' + KNOB + '</div>' +
+      '<button class="next" type="button" aria-label="下一个"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>';
+  }
+  build(document.getElementById("c1"), {glyph:"复", tag:"复习", time:"约 2 分钟", title:"请求说明（第 2 次）", sub:"快问快答 · 3 题"});
+  build(document.getElementById("c2"), {glyph:"练", tag:"练习", time:"约 4 分钟", title:"听音选词 + 排序", sub:"2 道题"});
+})();
+</script>
+</body>
+</html>

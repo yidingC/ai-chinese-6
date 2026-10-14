@@ -1,0 +1,1960 @@
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "ai-chinese-cloud-classroom-demo-v1";
+  const platformStore = window.AICloudPlatformStore;
+  const activityTypes = window.AICloudActivityTypes;
+  const adminBase = "admin/";
+
+  /* ---- 老师预览（teacher.html 那条线）-----------------------------------------
+     只多一条"老师视角"的入口，学生侧行为一个字不变：
+     - 老师流程的页面 URL 带 ?preview=teacher&lesson=N，进入时顺手记进 sessionStorage，
+       这样题型页里那些写死的「返回课堂」链接不用改，也能回来看得见的课堂页；
+     - 预览的进度全部存在预览专用 key 上：学生的 completedSlots / results / speedTimes /
+       rank memo 一个字节都不碰；
+     - teacher.html 每次加载会清空预览进度 —— 「每进一次 = 全新一局」。 */
+  const PREVIEW_STATE_KEY = "ai-chinese-cloud-preview-state-v1";
+  const PREVIEW_ROUND_KEY = "ai-chinese-cloud-round-start-preview-v1";
+  const PREVIEW_SESSION_KEY = "ai-chinese-cloud-preview-session-v1";
+  const PREVIEW_TAG = "teacher";
+  const LESSON_CN = ["一", "二", "三", "四", "五"];
+  const LESSON_TITLE_FALLBACK = ["嗨！你好！", "第二课", "第三课"];
+
+  const previewApi = (() => {
+    const readSession = () => {
+      try {
+        const raw = window.sessionStorage.getItem(PREVIEW_SESSION_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        return parsed && typeof parsed === "object" && parsed.active ? parsed : null;
+      } catch (error) {
+        return null;
+      }
+    };
+    const writeSession = (lesson) => {
+      try {
+        window.sessionStorage.setItem(PREVIEW_SESSION_KEY, JSON.stringify({ active: true, lesson: Number(lesson) || 0 }));
+      } catch (error) {
+        /* 存不了只影响「返回课堂」的续接，页面照常 */
+      }
+    };
+    const search = () => {
+      try {
+        return new URLSearchParams(window.location.search);
+      } catch (error) {
+        return new URLSearchParams("");
+      }
+    };
+    const urlActive = () => search().get("preview") === PREVIEW_TAG;
+    const lessonParam = () => Number(search().get("lesson")) || 0;
+    const lesson = () => {
+      if (lessonParam() > 0) return lessonParam();
+      const session = readSession();
+      if (session && Number(session.lesson) > 0) return Number(session.lesson);
+      return 1;
+    };
+    const isActive = () => urlActive() || !!readSession();
+    const seedLessons = () => {
+      try {
+        const seed = window.AICloudSeedData;
+        const data = seed && typeof seed.createSeedData === "function" ? seed.createSeedData() : null;
+        return data && Array.isArray(data.lessons) ? data.lessons : [];
+      } catch (error) {
+        return [];
+      }
+    };
+    const lessonInfoFor = (no) => {
+      const index = Math.max(1, Number(no) || 1) - 1;
+      const item = seedLessons()[index] || null;
+      const title = item && item.title ? item.title : (LESSON_TITLE_FALLBACK[index] || `第 ${index + 1} 课`);
+      return {
+        no: index + 1,
+        title: title,
+        subtitle: item && item.subtitle ? item.subtitle : "",
+        label: `第${LESSON_CN[index] || index + 1}课 · ${title}`
+      };
+    };
+    const queryFor = (no) => `preview=${PREVIEW_TAG}&lesson=${Number(no) > 0 ? Number(no) : lesson()}`;
+    const classroomHref = () => (isActive() ? `classroom.html?${queryFor(lesson())}` : "classroom.html");
+    const withParams = (href) => {
+      const joiner = href.indexOf("?") >= 0 ? "&" : "?";
+      return href + joiner + queryFor(lesson());
+    };
+    const startSession = (no) => writeSession(Number(no) > 0 ? Number(no) : lesson());
+    const endSession = () => {
+      try {
+        window.sessionStorage.removeItem(PREVIEW_SESSION_KEY);
+      } catch (error) {
+        /* 忽略 */
+      }
+    };
+    const clearProgress = () => {
+      try {
+        window.localStorage.removeItem(PREVIEW_STATE_KEY);
+        window.localStorage.removeItem(PREVIEW_ROUND_KEY);
+      } catch (error) {
+        /* 忽略 */
+      }
+    };
+    const isTeacherSide = () => isActive() || /teacher(-empty)?\.html$/.test(window.location.pathname);
+    return {
+      isActive,
+      isTeacherSide,
+      urlActive,
+      lesson,
+      lessonInfo: () => lessonInfoFor(lesson()),
+      lessonInfoFor,
+      queryFor,
+      query: () => queryFor(lesson()),
+      classroomHref,
+      withParams,
+      stateKey: () => (isActive() ? PREVIEW_STATE_KEY : STORAGE_KEY),
+      roundStartKey: () => PREVIEW_ROUND_KEY,
+      startSession,
+      endSession,
+      clearProgress
+    };
+  })();
+  window.AICloudPreview = previewApi;
+  /* 旧的三个完成标记：继续写（老进度存在它们身上），但课堂页现在认任意关卡号 */
+  const TASK_STATE_KEYS = ["task1Done", "task2Done", "task3Done"];
+  /* 关卡卡片的配色只有这三种；数据里没写明或写错时按顺序循环分配 */
+  const COURSE_TONES = ["violet", "mint", "orange"];
+
+  /* 兜底课程数据：数据文件 classroom-course.js 没加载或格式不对时用这一份（= 线上现在的 3 关）。
+     ⚠️ 改课程请改数据文件 classroom-course.js，别改这里 —— 这份只负责"数据坏了也不白屏"。 */
+  const DEFAULT_COURSE = Object.freeze({
+    lesson: { title: "嗨！你好！", subtitle: "Interaksi Kelas" },
+    classSize: 40,
+    pointsPerLevel: 5,
+    levels: [
+      { type: "choice", tone: "violet", title: "快速选择", subtitle: "Pilihan cepat" },
+      { type: "picture", tone: "mint", title: "看图单选", subtitle: "Pilih gambar" },
+      { type: "match", tone: "orange", title: "问候时间连线", subtitle: "Hubungkan waktu" }
+    ]
+  });
+
+  /* 关卡卡片表：题型 → 页面文件名（拼"进这一轮"的链接用）。
+     页面文件名跟 shared/activity-types.js 保持一致；以后加题型只改这一处。
+     卡面不再画图形（原来的 art 字段已删）。 */
+  const LEVEL_CARDS = {
+    choice: { page: "interaction-choice.html" },
+    picture: { page: "interaction-picture.html" },
+    match: { page: "match.html" },
+    listening: { page: "interaction-listening.html" },
+    fill: { page: "interaction-fill.html" },
+    order: { page: "interaction-order.html" },
+    poll: { page: "interaction-poll.html" },
+    memory: { page: "memory.html" },
+    "picture-match": { page: "interaction-picture-match.html" },
+    situation: { page: "interaction-situation.html" },
+    dialogue: { page: "interaction-dialogue.html" },
+    "pinyin-match": { page: "interaction-pinyin-match.html" },
+    category: { page: "interaction-category.html" },
+    "word-build": { page: "interaction-word-build.html" },
+    correction: { page: "interaction-correction.html" },
+    "read-aloud": { page: "interaction-read-aloud.html" },
+    "picture-talk": { page: "interaction-picture-talk.html" },
+    "open-qa": { page: "interaction-open-qa.html" }
+  };
+
+  const cardPage = (type) => {
+    const card = LEVEL_CARDS[type];
+    if (card && card.page) return card.page;
+    const meta = activityTypes && typeof activityTypes.get === "function" ? activityTypes.get(type) : null;
+    return (meta && meta.page) || `interaction-${type}.html`;
+  };
+
+  /* 关卡链接：自动拼上题型、课堂模式和第几关（1、2、3…），这样做完才记得上账。
+     跨页混题型一轮（数据里写了 questionCount）：再带上 q=1&total=N，
+     由 shared/round-flow.js 拿着这两个参数把四道题串成一整轮 */
+  const levelHref = (type, slot, questionCount) => {
+    const base = `${cardPage(type)}?type=${encodeURIComponent(type)}&mode=class&slot=${slot}`;
+    const count = Number(questionCount) || 0;
+    const suffix = previewApi.isActive() ? `&${previewApi.query()}` : "";
+    return (count > 0 ? `${base}&q=1&total=${count}` : base) + suffix;
+  };
+
+  /* 课程数据校验：缺字段、没有关卡、格式不对 → 整份退回兜底数据 */
+  function normalizeCourse(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
+    const lesson = source.lesson && typeof source.lesson === "object" ? source.lesson : {};
+    const levels = (Array.isArray(source.levels) ? source.levels : [])
+      .filter((level) => level && typeof level === "object" && typeof level.type === "string" && level.type.trim())
+      .map((level, index) => {
+        const type = level.type.trim();
+        return {
+          type: type,
+          tone: COURSE_TONES.indexOf(level.tone) >= 0 ? level.tone : COURSE_TONES[index % COURSE_TONES.length],
+          /* 这两行是"这一轮练什么"（轮次主题，老师/教研填）：空着就空着，绝不退回题型名 */
+          title: typeof level.title === "string" ? level.title.trim() : "",
+          subtitle: typeof level.subtitle === "string" ? level.subtitle.trim() : "",
+          /* questionCount：这一轮一共几道题（跨页混题型一轮 >1；不写＝这一页就是这道题） */
+          questionCount: Number(level.questionCount) > 0 ? Math.round(Number(level.questionCount)) : 0
+        };
+      });
+    if (!levels.length) return DEFAULT_COURSE;
+    const classSize = Math.round(Number(source.classSize));
+    const pointsPerLevel = Number(source.pointsPerLevel);
+    return {
+      lesson: {
+        no: Number(lesson.no) > 0 ? Math.round(Number(lesson.no)) : 0,
+        title: typeof lesson.title === "string" && lesson.title.trim() ? lesson.title.trim() : DEFAULT_COURSE.lesson.title,
+        subtitle: typeof lesson.subtitle === "string" ? lesson.subtitle.trim() : DEFAULT_COURSE.lesson.subtitle
+      },
+      classSize: classSize > 0 ? classSize : DEFAULT_COURSE.classSize,
+      pointsPerLevel: pointsPerLevel > 0 ? pointsPerLevel : DEFAULT_COURSE.pointsPerLevel,
+      levels: levels
+    };
+  }
+
+  const DEFAULT_STATE = Object.freeze({
+    phase: "live",
+    task1Done: false,
+    task2Done: false,
+    task3Done: false,
+    celebrated: false,
+    /* completedSlots：任意关卡的完成记录；results：题型页写下的每关结果（课堂页保存时不能丢） */
+    completedSlots: [],
+    results: [],
+    /* speedTimes：速度榜里"我的用时"（关号 → 整秒）。第一次完成那一刻定死，重做不变 */
+    speedTimes: {}
+  });
+
+  const PHASES = {
+    before: {
+      label: "课前",
+      shortLabel: "未开始",
+      status: "课堂还未开始",
+      detail: "今天 10:00 开课",
+      description: "互动将在老师上课后开放，请先看看今天的课堂任务。",
+      open: false,
+      cardClass: "locked"
+    },
+    live: {
+      label: "课中",
+      shortLabel: "课中",
+      status: "课堂互动进行中",
+      detail: "今天 10:00 - 10:40",
+      description: "互动 1、2、3 已开放，完成一个后再进入下一个。",
+      open: true,
+      cardClass: ""
+    },
+    after: {
+      label: "课后",
+      shortLabel: "可回看",
+      status: "今天的互动可回看",
+      detail: "今天 23:59 前可进入",
+      description: "课上没做完也没关系，今天结束前可以继续完成或重新练习。",
+      open: true,
+      cardClass: "replay"
+    },
+    expired: {
+      label: "次日",
+      shortLabel: "已结束",
+      status: "今天的课堂互动已结束",
+      detail: "本期入口已关闭",
+      description: "新的互动内容会在下次大班课时开放。",
+      open: false,
+      cardClass: "expired"
+    }
+  };
+
+  let appState = loadState();
+  let redirectTimer = null;
+
+  function loadState() {
+    try {
+      const raw = window.localStorage.getItem(previewApi.stateKey());
+      if (!raw) return { ...DEFAULT_STATE, completedSlots: [], results: [], speedTimes: {} };
+      const parsed = JSON.parse(raw);
+      return {
+        phase: PHASES[parsed.phase] ? parsed.phase : DEFAULT_STATE.phase,
+        task1Done: Boolean(parsed.task1Done),
+        task2Done: Boolean(parsed.task2Done),
+        task3Done: Boolean(parsed.task3Done),
+        celebrated: Boolean(parsed.celebrated),
+        completedSlots: Array.isArray(parsed.completedSlots)
+          ? parsed.completedSlots.map(Number).filter((slot) => Number(slot) > 0)
+          : [],
+        results: Array.isArray(parsed.results) ? parsed.results : [],
+        speedTimes: parsed.speedTimes && typeof parsed.speedTimes === "object" ? parsed.speedTimes : {}
+      };
+    } catch (error) {
+      return { ...DEFAULT_STATE, completedSlots: [], results: [], speedTimes: {} };
+    }
+  }
+
+  function persistState() {
+    try {
+      window.localStorage.setItem(previewApi.stateKey(), JSON.stringify(appState));
+    } catch (error) {
+      // The prototype still works for the current page if storage is unavailable.
+    }
+  }
+
+  function updateState(patch) {
+    appState = { ...appState, ...patch };
+    persistState();
+    window.dispatchEvent(new CustomEvent("classroom-state-change", { detail: { ...appState } }));
+  }
+
+  function phase() {
+    return PHASES[appState.phase] || PHASES.live;
+  }
+
+  /* 已完成的关卡号（1 起）。三个来源合起来看：
+     旧的 task1Done / task2Done / task3Done ＋ 新的 completedSlots ＋ 题型页写下的 results[].slot */
+  function completedSlotsOf(state) {
+    const slots = new Set();
+    TASK_STATE_KEYS.forEach((key, index) => {
+      if (state[key]) slots.add(index + 1);
+    });
+    (Array.isArray(state.completedSlots) ? state.completedSlots : []).forEach((slot) => {
+      const value = Number(slot);
+      if (value > 0) slots.add(value);
+    });
+    (Array.isArray(state.results) ? state.results : []).forEach((item) => {
+      const value = item ? Number(item.slot) : 0;
+      if (value > 0) slots.add(value);
+    });
+    return [...slots].sort((a, b) => a - b);
+  }
+
+  /* 记一关完成（关卡号随意）；第 1-3 关继续写旧字段，老进度不丢 */
+  function markSlotDone(slot) {
+    const index = Number(slot) || 0;
+    if (index <= 0) return;
+    const slots = new Set(completedSlotsOf(appState).concat(index));
+    const patch = { completedSlots: [...slots].sort((a, b) => a - b) };
+    if (index <= TASK_STATE_KEYS.length) patch[TASK_STATE_KEYS[index - 1]] = true;
+    updateState(patch);
+  }
+
+  /* 链接里带的关卡号（课堂页给每关都拼了 slot）；没有就退回默认值 */
+  function slotFromUrl(fallback) {
+    try {
+      const slot = Number(new URLSearchParams(window.location.search).get("slot")) || 0;
+      return slot > 0 ? slot : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  /* 连线这类页面就在本文件里（不是题型页），完成时就地补一条 results：
+     形状和题型页桥接件写下的那条一样；速度榜的"我的用时"要读它 */
+  function recordOwnTime(slot, type, startedAt) {
+    const seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+    const kept = (Array.isArray(appState.results) ? appState.results : [])
+      .filter((item) => !item || Number(item.slot) !== slot);
+    updateState({
+      results: kept.concat({
+        slot: slot,
+        type: type,
+        correct: true,
+        seconds: seconds,
+        completedAt: new Date().toISOString()
+      })
+    });
+  }
+
+  /* 数据里来的文字进 innerHTML 前先转义 */
+  const escapeText = (text) => String(text === null || text === undefined ? "" : text).replace(
+    /[&<>"]/g,
+    (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch])
+  );
+
+  function showToast(message, duration = 2200) {
+    let toast = document.querySelector(".toast");
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.className = "toast";
+      toast.setAttribute("role", "status");
+      toast.setAttribute("aria-live", "polite");
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.classList.add("show");
+    window.clearTimeout(showToast.timer);
+    showToast.timer = window.setTimeout(() => toast.classList.remove("show"), duration);
+  }
+
+  function installDemoControls() {
+    if (document.querySelector(".demo-fab")) return;
+
+    const fab = document.createElement("button");
+    fab.type = "button";
+    fab.className = "demo-fab";
+    fab.setAttribute("aria-label", "打开原型演示状态切换");
+    fab.innerHTML = '<span class="demo-dot"></span><span data-demo-label>演示 · 课中</span>';
+    document.body.appendChild(fab);
+
+    const overlay = document.createElement("div");
+    overlay.className = "demo-sheet-overlay";
+    /* 身份开关：左「老师端」＝带老师会话；右「学生端」＝无会话。点哪边切哪边，也支持拖动 */
+    const teacherSide = previewApi.isTeacherSide();
+    const roleSwitch = `
+        <div class="demo-role-switch" data-role-switch data-role="${teacherSide ? "teacher" : "student"}">
+          <span class="demo-role-knob" aria-hidden="true"></span>
+          <button type="button" class="demo-role-option" data-role-option="teacher" aria-pressed="${teacherSide ? "true" : "false"}">老师端</button>
+          <button type="button" class="demo-role-option" data-role-option="student" aria-pressed="${teacherSide ? "false" : "true"}">学生端</button>
+        </div>`;
+    overlay.innerHTML = `
+      <section class="demo-sheet" role="dialog" aria-modal="true" aria-labelledby="demo-title">
+        <div class="demo-handle"></div>
+        <div class="demo-sheet-head">
+          <h3 id="demo-title">原型演示状态</h3>
+          <p>仅用于评审课堂入口的开放规则与完成流程，不会影响真实课程数据。</p>
+        </div>
+        <div class="demo-states">
+          ${Object.entries(PHASES).map(([key, item]) => `
+            <button type="button" class="demo-state-button" data-demo-phase="${key}">
+              <strong>${item.label} · ${item.shortLabel}</strong>
+              <span>${item.detail}</span>
+            </button>
+          `).join("")}
+        </div>
+        ${roleSwitch}
+        <a class="demo-admin-link" href="admin/">打开三角色管理后台 →</a>
+        <button type="button" class="demo-reset" data-demo-reset>重置三关互动进度</button>
+      </section>
+    `;
+    document.body.appendChild(overlay);
+
+    /* ---- 身份开关：切到老师端 = 记上老师会话并落老师视角首页；切到学生端 = 清会话回学生首页。
+       两边都收在 index.html；已经在目标身份时只收面板、不换页 ---- */
+    const roleTrack = overlay.querySelector("[data-role-switch]");
+    const roleKnob = roleTrack.querySelector(".demo-role-knob");
+    const roleOptions = [...roleTrack.querySelectorAll("[data-role-option]")];
+    let suppressRoleClickUntil = 0;
+    let roleDrag = null;
+
+    const switchRole = (role) => {
+      if (role === "teacher") {
+        const already = previewApi.isTeacherSide();
+        previewApi.startSession();
+        if (already) { close(); return; }
+        window.location.href = "index.html";
+        return;
+      }
+      const wasTeacher = previewApi.isTeacherSide();
+      previewApi.endSession();
+      if (wasTeacher) { window.location.href = "index.html"; return; }
+      close();
+    };
+
+    const renderRole = () => {
+      const side = previewApi.isTeacherSide();
+      roleTrack.dataset.role = side ? "teacher" : "student";
+      roleOptions.forEach((option) => {
+        const active = (option.dataset.roleOption === "teacher") === side;
+        option.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    };
+
+    roleOptions.forEach((option) => {
+      option.addEventListener("click", () => {
+        if (Date.now() < suppressRoleClickUntil) return;
+        switchRole(option.dataset.roleOption);
+      });
+    });
+
+    roleTrack.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      roleDrag = { id: event.pointerId, startX: event.clientX, moved: false };
+    });
+    roleTrack.addEventListener("pointermove", (event) => {
+      if (!roleDrag || event.pointerId !== roleDrag.id) return;
+      const rect = roleTrack.getBoundingClientRect();
+      const knobWidth = rect.width / 2 - 4;
+      const dx = event.clientX - roleDrag.startX;
+      if (!roleDrag.moved && Math.abs(dx) > 4) {
+        roleDrag.moved = true;
+        roleTrack.classList.add("is-dragging");
+        try { roleTrack.setPointerCapture(roleDrag.id); } catch (error) { /* 忽略 */ }
+      }
+      if (!roleDrag.moved) return;
+      const base = roleTrack.dataset.role === "teacher" ? 0 : knobWidth;
+      const x = Math.max(0, Math.min(knobWidth, base + dx));
+      roleKnob.style.transform = `translateX(${x}px)`;
+    });
+    const endRoleDrag = (event) => {
+      if (!roleDrag || event.pointerId !== roleDrag.id) return;
+      const moved = roleDrag.moved;
+      roleDrag = null;
+      if (!moved) return;
+      suppressRoleClickUntil = Date.now() + 400;
+      const rect = roleTrack.getBoundingClientRect();
+      const knobWidth = rect.width / 2 - 4;
+      const knobLeft = event.clientX - rect.left - 4 - knobWidth / 2;
+      roleTrack.classList.remove("is-dragging");
+      roleKnob.style.transform = "";
+      switchRole(knobLeft < knobWidth / 2 ? "teacher" : "student");
+    };
+    roleTrack.addEventListener("pointerup", endRoleDrag);
+    roleTrack.addEventListener("pointercancel", () => {
+      if (!roleDrag) return;
+      roleDrag = null;
+      roleTrack.classList.remove("is-dragging");
+      roleKnob.style.transform = "";
+    });
+
+    const close = () => overlay.classList.remove("open");
+    const renderActive = () => {
+      const current = phase();
+      const label = document.querySelector("[data-demo-label]");
+      if (label) label.textContent = `演示 · ${current.label}`;
+      overlay.querySelectorAll("[data-demo-phase]").forEach((button) => {
+        const active = button.dataset.demoPhase === appState.phase;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      renderRole();
+    };
+
+    fab.addEventListener("click", () => {
+      renderActive();
+      overlay.classList.add("open");
+    });
+
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) close();
+    });
+
+    overlay.querySelectorAll("[data-demo-phase]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const next = button.dataset.demoPhase;
+        updateState({ phase: next });
+        renderActive();
+        showToast(`演示状态：${PHASES[next].label} · ${PHASES[next].status}`);
+        close();
+
+        if (!previewApi.isActive() && document.body.dataset.requiresOpen === "true" && !PHASES[next].open) {
+          window.clearTimeout(redirectTimer);
+          redirectTimer = window.setTimeout(() => {
+            window.location.href = "classroom.html?locked=1";
+          }, 700);
+        }
+      });
+    });
+
+    overlay.querySelector("[data-demo-reset]").addEventListener("click", () => {
+      updateState({
+        task1Done: false,
+        task2Done: false,
+        task3Done: false,
+        celebrated: false,
+        completedSlots: [],
+        results: [],
+        speedTimes: {}
+      });
+      showToast("三关互动进度已重置");
+      renderActive();
+      close();
+    });
+
+    window.addEventListener("classroom-state-change", renderActive);
+    renderActive();
+  }
+
+  function currentPlatformSnapshot() {
+    if (!platformStore) return null;
+    try {
+      const platformState = platformStore.getState();
+      const student = platformState.users.find((user) => user.id === platformState.currentUserId && user.role === "student")
+        || platformState.users.find((user) => user.role === "student");
+      if (!student) return null;
+      const bookings = platformState.bookings
+        .filter((booking) => booking.studentId === student.id && booking.status === "booked")
+        .map((booking) => platformState.sessions.find((session) => session.id === booking.sessionId))
+        .filter(Boolean)
+        .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+      const nextSession = bookings.find((session) => new Date(session.endAt).getTime() > Date.now()) || bookings.at(-1);
+      if (!nextSession) return null;
+      const lesson = platformState.lessons.find((item) => item.id === nextSession.lessonId);
+      const teacher = platformState.users.find((item) => item.id === nextSession.teacherId);
+      return { platformState, student, nextSession, lesson, teacher };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function openPlatformLesson() {
+    const snapshot = currentPlatformSnapshot();
+    if (!snapshot) {
+      showToast("当前没有已预约的课节");
+      return;
+    }
+    const now = Date.now();
+    const start = new Date(snapshot.nextSession.startAt).getTime();
+    const end = new Date(snapshot.nextSession.endAt).getTime();
+    const phase = now > end ? "review" : now >= start - 10 * 60 * 1000 ? "live" : "preview";
+    window.location.href = `${adminBase}#/student/lesson/${snapshot.nextSession.lessonId}?sessionId=${snapshot.nextSession.id}&phase=${phase}`;
+  }
+
+  function recordPlatformCompletion(taskIndex) {
+    const snapshot = currentPlatformSnapshot();
+    if (!snapshot) return;
+    platformStore.recordAttempt({
+      setId: "set-greetings-live",
+      studentId: snapshot.student.id,
+      sessionId: snapshot.nextSession.id,
+      phase: "live",
+      answers: {},
+      score: 100,
+      timeSpentSeconds: taskIndex === 1 ? 62 : 84,
+      wrongItemIds: [],
+      pollAnswers: {}
+    });
+  }
+
+  function goToClassroom() {
+    if (phase().open) {
+      window.location.href = "classroom.html";
+      return;
+    }
+
+    if (appState.phase === "before") {
+      showToast("课堂互动将在今天 10:00 开课后开放");
+    } else {
+      showToast("今天的课堂互动已经结束");
+    }
+  }
+
+  function initHome() {
+    /* 老师端首页：身份由演示面板的开关决定（学生端 = 无会话，老师端 = 带老师会话）。
+       老师视角下「课堂互动」磁贴不受阶段限制、点击去课节列表 */
+    const TEACHER_VIEW = previewApi.isActive();
+    const status = document.querySelector("[data-home-status]");
+    const classroomLabel = document.querySelector("[data-home-classroom-label]");
+
+    const render = () => {
+      if (TEACHER_VIEW) {
+        if (status) status.hidden = true;
+        if (classroomLabel) classroomLabel.textContent = "进入互动";
+        return;
+      }
+      const current = phase();
+      if (status) {
+        status.textContent = current.shortLabel;
+        status.className = `quick-status ${current.cardClass}`.trim();
+      }
+      if (classroomLabel) {
+        classroomLabel.textContent = current.open ? "进入互动" : "等待开课";
+      }
+    };
+
+    const goTeacherList = () => { window.location.href = "teacher.html"; };
+
+    document.querySelectorAll("[data-classroom-entry]").forEach((button) => {
+      button.addEventListener("click", TEACHER_VIEW ? goTeacherList : goToClassroom);
+    });
+
+    document.querySelectorAll("[data-platform-lesson]").forEach((button) => {
+      button.addEventListener("click", TEACHER_VIEW ? goTeacherList : openPlatformLesson);
+    });
+
+    const snapshot = currentPlatformSnapshot();
+    if (snapshot) {
+      const card = document.querySelector(".lesson-card");
+      const badge = card && card.querySelector(".lesson-badge");
+      const title = card && card.querySelector("h3");
+      const subtitle = card && card.querySelector(".lesson-sub");
+      const phrases = card && card.querySelector(".lesson-phrases");
+      const action = card && card.querySelector("[data-platform-lesson]");
+      if (badge) badge.textContent = `LESSON · ${snapshot.lesson?.title || "今日大班课"}`;
+      if (title) title.textContent = snapshot.lesson?.title || snapshot.nextSession.title;
+      if (subtitle) subtitle.textContent = `${snapshot.lesson?.subtitle || "Mandarin class"} · ${snapshot.teacher?.name || "老师"}`;
+      if (phrases) {
+        phrases.innerHTML = (snapshot.lesson?.tags || ["中文", "大班课", "互动"]).map((tag) => `<span>${tag}</span>`).join("");
+      }
+      if (action && !TEACHER_VIEW) action.textContent = "打开后台课节内容 →";
+    }
+
+    document.querySelectorAll("[data-demo-feature]").forEach((button) => {
+      button.addEventListener("click", () => showToast("这个入口在原型中暂未展开"));
+    });
+
+    document.querySelectorAll(".nav-item:not(.active)").forEach((button) => {
+      button.addEventListener("click", () => showToast("当前原型聚焦课堂互动流程"));
+    });
+
+    window.addEventListener("classroom-state-change", render);
+    render();
+  }
+
+  function initClassroom() {
+    /* 老师预览：单人数据 + 只读写预览进度；学生侧照旧 */
+    const PREVIEW = previewApi.isActive();
+    /* 这一节课的课程数据：读 classroom-course.js（同一页的另一个脚本）；读不到就走兜底。
+       在这里读、不在文件顶上读 —— 脚本之间谁先谁后跟打包方式有关，进场时读最稳。 */
+    const COURSE = normalizeCourse(window.AICloudClassroomCourse);
+    const LEVEL_COUNT = COURSE.levels.length;
+    /* 班级人数：卡片人数和名次行共用这一个数（数据里配，一页不许出现两个数字）；
+       老师预览按 1 个人算 */
+    const CLASSROOM_TOTAL = PREVIEW ? 1 : COURSE.classSize;
+    /* 每完成一关得多少分（做错不扣分，同一关重做不重复加） */
+    const LEVEL_POINTS = COURSE.pointsPerLevel;
+    /* 满分：按关卡数算，不写死 */
+    const MAX_SCORE = LEVEL_COUNT * LEVEL_POINTS;
+
+    const strip = document.querySelector(".cls-strip");
+    /* 星星节点由 renderCourseShell() 按数据重建，取节点要放在重建之后（见下方 stars 赋值） */
+    let stars = [];
+    const resetButton = document.querySelector("[data-classroom-reset]");
+    const celebrateOverlay = document.querySelector("[data-celebrate-overlay]");
+    const celebrateCard = document.querySelector("[data-celebrate-card]");
+    const celebrateButton = document.querySelector("[data-celebrate-ok]");
+    const rankLine = document.querySelector("[data-rank-line]");
+    const rankNum = document.querySelector("[data-rank-num]");
+    const rankSep = document.querySelector("[data-rank-sep]");
+    const rankScore = document.querySelector("[data-rank-score]");
+
+    /* 上一次看到的名次 + 分数：做完一关回课堂时才分得清"分数真的涨了"还是"名次被追/回落"。
+       没有备忘 = 第一次进场；分数没变 = 重做旧关卡，都直接显示不播翻牌。 */
+    const RANK_MEMO_KEY = "ai-chinese-cloud-classroom-rank-memo-v2";
+    const readRankMemo = () => {
+      try {
+        const raw = window.localStorage.getItem(RANK_MEMO_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return null;
+        return { rank: Number(parsed.rank) || 0, score: Number(parsed.score) || 0 };
+      } catch (error) {
+        return null;
+      }
+    };
+    const writeRankMemo = (rank, score) => {
+      if (PREVIEW) return;
+      try {
+        window.localStorage.setItem(RANK_MEMO_KEY, JSON.stringify({ rank, score }));
+      } catch (error) {
+        /* 存不了就按"第一次进场"处理，不影响本轮显示 */
+      }
+    };
+
+    /* 人数口径只留一处：卡片上的 /40 与名次行的 / 40 用同一个数（数据里的 classSize） */
+    if (rankSep) rankSep.textContent = `/ ${CLASSROOM_TOTAL} ·`;
+
+    const PLAY_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M8 4.6v14.8l12.2-7.4z"/></svg>`;
+    const AGAIN_ICON = `<svg viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`;
+    const LOCK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.8" y="10.6" width="14.4" height="9.2" rx="2.9" fill="currentColor" stroke="none"/><path d="M8.4 10.6V8.3a3.6 3.6 0 0 1 7.2 0v2.3"/></svg>`;
+    const CHECK_ICON = `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1fbf8f" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.4 12.9l4.4 4.4L18.7 7.9"/></svg>`;
+
+    /* ---- 按课程数据搭外壳：课节名、星星数量、关卡卡片（数量 / 顺序 / 标题 / 配色全部来自数据） ---- */
+    const STAR_MARKUP = `<svg class="cls-star" viewBox="0 0 24 24"><use href="#clsStarShape"/><g clip-path="url(#clsStarClip)"><rect class="cls-shine" x="0" y="-6" width="7" height="36"/></g></svg>`;
+    const PEOPLE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M3.6 19a5.4 5.4 0 0 1 10.8 0"></path><circle cx="16.8" cy="8.6" r="2.6" opacity=".6"></circle><path d="M13.8 19a5 5 0 0 1 10 0" opacity=".6"></path></svg>`;
+    const CONNECTOR_RIGHT = `<span class="cls-link" aria-hidden="true"><svg viewBox="0 0 78 58" fill="none" stroke="#d5d1e6" stroke-width="3.5" stroke-dasharray="6 8" stroke-linecap="round"><line x1="10" y1="5" x2="68" y2="53"/></svg></span>`;
+    const CONNECTOR_LEFT = `<span class="cls-link" aria-hidden="true"><svg viewBox="0 0 78 58" fill="none" stroke="#d5d1e6" stroke-width="3.5" stroke-dasharray="6 8" stroke-linecap="round"><line x1="68" y1="5" x2="10" y2="53"/></svg></span>`;
+
+    const renderCourseShell = () => {
+      const lessonNode = document.querySelector(".cls-strip-lesson");
+      if (lessonNode) lessonNode.textContent = COURSE.lesson.title;
+      /* 「第几课」小胶囊：数字来自数据 lesson.no（以后上第二课只改数据，页面里不写死） */
+      const chipNode = document.querySelector("[data-lesson-chip]");
+      if (chipNode) {
+        const lessonNo = Number(COURSE.lesson && COURSE.lesson.no);
+        if (Number.isFinite(lessonNo) && lessonNo > 0) {
+          chipNode.textContent = `LESSON ${lessonNo}`;
+          chipNode.hidden = false;
+        } else {
+          chipNode.hidden = true;
+        }
+      }
+      /* 印尼语副标题先挂在属性上留档（状态条按口径只有中文），以后要上屏从这里取 */
+      if (strip) strip.dataset.lessonId = COURSE.lesson.subtitle;
+
+      const starsBox = document.querySelector("[data-stars]");
+      if (starsBox) starsBox.innerHTML = COURSE.levels.map(() => STAR_MARKUP).join("");
+
+      const board = document.querySelector(".cls-levels");
+      if (!board) return;
+      board.innerHTML = COURSE.levels.map((level, index) => {
+        const slot = index + 1;
+        /* 卡片上这两行是"这一轮练什么"（轮次主题，不是题型名）；哪一行空着就整行不渲染 */
+        const themeLine = level.title ? `<span class="cls-level-title">${escapeText(level.title)}</span>` : "";
+        const themeSubLine = level.subtitle ? `<span class="cls-level-id">${escapeText(level.subtitle)}</span>` : "";
+        const card = `
+      <div class="cls-level-row" data-level-row="${slot}">
+      <button type="button" class="cls-level" data-tone="${level.tone}" data-level="${slot}" data-state="todo">
+        <span class="cls-level-badge" data-badge>${slot}</span>
+        <span class="cls-level-copy">
+          ${themeLine}
+          ${themeSubLine}
+          <span class="cls-class-count" data-level-count hidden>
+            ${PEOPLE_ICON}
+            <b data-count-num>0</b><span class="cls-count-total">/${CLASSROOM_TOTAL}</span>
+          </span>
+        </span>
+        <span class="cls-level-action is-play" data-action aria-hidden="true">${PLAY_ICON}</span>
+      </button>
+      <button type="button" class="cls-level-board" data-board-open="${slot}" aria-label="看第 ${slot} 轮的速度榜">
+        <span class="cls-level-board-icon" data-board-icon aria-hidden="true">⚡</span>
+      </button>
+      </div>`;
+        if (slot === COURSE.levels.length) return card;
+        return card + (slot % 2 === 1 ? CONNECTOR_RIGHT : CONNECTOR_LEFT);
+      }).join("");
+    };
+    renderCourseShell();
+    stars = [...document.querySelectorAll("[data-stars] .cls-star")];
+
+    /* 预览：头部课节名跟着点进来的那一课走（第 1/2 课共用同一套演示内容） */
+    if (PREVIEW) {
+      /* 返回键回「课节列表」（真实链路：课堂模块 → 课节列表 → 课堂互动）；学生侧照旧去首页 */
+      const backLink = document.querySelector(".page-header a.icon-button");
+      if (backLink) {
+        backLink.setAttribute("href", "teacher.html");
+        backLink.setAttribute("aria-label", "返回课堂列表");
+      }
+      const info = previewApi.lessonInfo();
+      const lessonNode = document.querySelector(".cls-strip-lesson");
+      if (lessonNode) lessonNode.textContent = info.title;
+      const chipNode = document.querySelector("[data-lesson-chip]");
+      if (chipNode) {
+        chipNode.textContent = `LESSON ${info.no}`;
+        chipNode.hidden = false;
+      }
+      if (strip && info.subtitle) strip.dataset.lessonId = info.subtitle;
+    }
+
+    const levels = [...document.querySelectorAll(".cls-level")].map((node) => {
+      const index = Number(node.dataset.level) || 0;
+      const level = COURSE.levels[index - 1] || {};
+      return {
+        node,
+        index,
+        type: level.type || "",
+        href: level.type ? levelHref(level.type, index, level.questionCount) : "",
+        row: node.closest(".cls-level-row"),
+        board: node.closest(".cls-level-row") ? node.closest(".cls-level-row").querySelector(".cls-level-board") : null,
+        badge: node.querySelector("[data-badge]"),
+        action: node.querySelector("[data-action]"),
+        count: node.querySelector("[data-level-count]")
+      };
+    });
+
+    /* ⚡ 那粒钮贴着卡片的右上角（卡片会左右错位，所以按实际位置算，3 关 5 关都不会跑偏） */
+    const BOARD_INSET = 25;
+    const layoutBoardButtons = () => {
+      levels.forEach((level) => {
+        if (!level.row || !level.board) return;
+        const card = level.node;
+        const gapRight = level.row.clientWidth - (card.offsetLeft + card.offsetWidth);
+        level.board.style.right = gapRight + BOARD_INSET + "px";
+      });
+    };
+    layoutBoardButtons();
+    window.addEventListener("resize", layoutBoardButtons);
+
+    /* 已完成的关卡号（只算这份课程里的，关掉课程外的旧记录不影响计分） */
+    const doneSlots = () => completedSlotsOf(appState).filter((slot) => slot <= LEVEL_COUNT);
+
+    /* ---- 演示用：虚构的班级。只用来算名次和卡片人数，界面上不出现"模拟"字样。
+       正式接后台后只改 myScore / myRank 这两个函数 ---- */
+    const PEER_NAMES = [
+      "Ayu", "Budi", "Citra", "Dewi", "Eka", "Fajar", "Gita", "Hadi", "Indah", "Joko",
+      "Kartika", "Lina", "Made", "Nia", "Oscar", "Putri", "Rani", "Sari", "Tono", "Umi",
+      "Vina", "Wawan", "Yani", "Zaki", "Adi", "Bella", "Chika", "Dimas", "Elsa", "Farid",
+      "Hana", "Iwan", "Jihan", "Kevin", "Lala", "Mira", "Nanda", "Oki", "Rizky"
+    ];
+    const PEER_AVATARS = ["🐼", "🐨", "🦊", "🐯", "🐸", "🐵", "🐙", "🦄", "🐧", "🐰", "🐻", "🐹"];
+
+    /* 进场时的局面：4 人已满分、7 人 10 分、10 人 5 分，其余慢慢往上涨 */
+    const buildPeers = () => PEER_NAMES.map((name, index) => ({
+      name,
+      avatar: PEER_AVATARS[index % PEER_AVATARS.length],
+      score: index < 4 ? MAX_SCORE : index < 11 ? LEVEL_POINTS * 2 : index < 21 ? LEVEL_POINTS : 0
+    }));
+
+    let peers = PREVIEW ? [] : buildPeers();
+    const rankMemo = PREVIEW ? null : readRankMemo();
+    let lastRank = rankMemo ? rankMemo.rank : 0;
+    /* 首帧标记：区分"刚打开页面"和"页面开着时的实时更新" */
+    let booted = false;
+    let dipUsed = false;
+    let stageOneStarted = false;
+    const scriptTimers = [];
+    const rollTimers = new WeakMap();
+
+    /* 我的分数：已完成关卡数 × 每关分值；只认完成状态，所以做错不扣分、重做不重复加
+       —— 正式接后台后只改这里 —— */
+    const myScore = () => doneSlots().length * LEVEL_POINTS;
+
+    /* 名次 = 分数比我高的人数 + 1（同分并列，不比时间）
+       —— 正式接后台后只改这里 —— */
+    const myRank = () => (myScore() <= 0 ? 0 : peers.filter((peer) => peer.score > myScore()).length + 1);
+
+    /* 卡片上的人数 = 完成这一关的同学（含我自己） */
+    const countFor = (index) => {
+      const threshold = index * LEVEL_POINTS;
+      const classmates = peers.filter((peer) => peer.score >= threshold).length;
+      return classmates + (myScore() >= threshold ? 1 : 0);
+    };
+
+    /* ---- 名次数字的翻牌：新数字从上落下，旧数字向下滚出 ---- */
+    const ROLL_MS = 340;
+    const slotItems = (slot) => (slot ? [...slot.querySelectorAll(".cls-roll")] : []);
+    const slotText = (slot) => {
+      const items = slotItems(slot);
+      return items.length ? items[items.length - 1].textContent : "";
+    };
+
+    /* 立刻落定：停掉在飞的动画、清掉多余数字，只留当前这一个 */
+    const settleSlot = (slot, keepShine = false) => {
+      if (!slot) return;
+      const pending = rollTimers.get(slot);
+      if (pending) window.clearTimeout(pending);
+      rollTimers.delete(slot);
+      if (typeof slot.getAnimations === "function") {
+        slot.getAnimations({ subtree: true }).forEach((animation) => {
+          if (keepShine && animation.id === "rankShine") return;
+          animation.cancel();
+        });
+      }
+      const items = slotItems(slot);
+      items.slice(0, -1).forEach((item) => item.remove());
+      slot.style.transition = "none";
+      slot.style.width = "";
+      void slot.offsetWidth;
+      slot.style.transition = "";
+    };
+
+    /* 不播翻牌，直接显示某个值（初次进场 / 重来一遍） */
+    const setSlotText = (slot, text) => {
+      if (!slot) return;
+      settleSlot(slot);
+      slotItems(slot).forEach((item) => item.remove());
+      const item = document.createElement("span");
+      item.className = "cls-roll";
+      item.textContent = text;
+      slot.appendChild(item);
+    };
+
+    /* 名次前进时的一道轻金光：挂在槽上（不跟着数字被裁掉） */
+    const shineSlot = (slot) => {
+      if (!slot || typeof slot.animate !== "function") return;
+      const animation = slot.animate([
+        { filter: "drop-shadow(0 0 0 rgba(255, 214, 130, 0))" },
+        { filter: "drop-shadow(0 0 7px rgba(255, 214, 130, 0.95))", offset: 0.3 },
+        { filter: "drop-shadow(0 0 0 rgba(255, 214, 130, 0))" }
+      ], { duration: 880, easing: "ease-out" });
+      animation.id = "rankShine";
+    };
+
+    /* 两个数字上下排着，整条向下滚一格；新数字落地时轻轻弹一下 */
+    const rollSlot = (slot, text, instant = false) => {
+      if (!slot) return;
+      const current = slotText(slot);
+      if (instant || current === text) {
+        if (current !== text) setSlotText(slot, text);
+        return;
+      }
+
+      const fromWidth = slot.getBoundingClientRect().width;
+      const minWidth = parseFloat(window.getComputedStyle(slot).minWidth) || 0;
+
+      const pending = rollTimers.get(slot);
+      if (pending) window.clearTimeout(pending);
+      if (typeof slot.getAnimations === "function") {
+        slot.getAnimations({ subtree: true }).forEach((animation) => {
+          if (animation.id === "rankShine") return;
+          animation.cancel();
+        });
+      }
+      const items = slotItems(slot);
+      const outgoing = items[items.length - 1];
+      items.slice(0, -1).forEach((item) => item.remove());
+
+      const incoming = document.createElement("span");
+      incoming.className = "cls-roll";
+      incoming.textContent = text;
+      slot.appendChild(incoming);
+
+      /* 槽位先定宽再量新数字，保证整行不抖动 */
+      slot.style.transition = "none";
+      slot.style.width = fromWidth + "px";
+      void slot.offsetWidth;
+
+      const range = document.createRange();
+      range.selectNodeContents(incoming);
+      const targetWidth = Math.max(minWidth, range.getBoundingClientRect().width);
+      /* 收窄排在"旧数字已出窗、新数字还没进窗"的当口，避免把旧字横向切掉 */
+      slot.style.transition = "width " + Math.round(ROLL_MS * 0.21) + "ms cubic-bezier(.3, .85, .4, 1) " + Math.round(ROLL_MS * 0.1) + "ms";
+      slot.style.width = targetWidth + "px";
+
+      if (outgoing && typeof outgoing.animate === "function") {
+        outgoing.animate([
+          { transform: "translateY(0)", opacity: 1, easing: "cubic-bezier(.25, .6, .45, 1)" },
+          { transform: "translateY(100%)", opacity: 0, offset: 0.45, easing: "linear" },
+          { transform: "translateY(100%)", opacity: 0 }
+        ], { duration: ROLL_MS, fill: "forwards" });
+      }
+      if (typeof incoming.animate === "function") {
+        incoming.animate([
+          { transform: "translateY(-200%)", opacity: 0, easing: "cubic-bezier(.3, .25, .5, .85)" },
+          { transform: "translateY(-100%)", opacity: 1, offset: 0.74, easing: "ease-out" },
+          { transform: "translateY(-95%)", opacity: 1, offset: 0.87, easing: "ease-in" },
+          { transform: "translateY(-100%)", opacity: 1 }
+        ], { duration: ROLL_MS, fill: "forwards" });
+      }
+
+      rollTimers.set(slot, window.setTimeout(() => settleSlot(slot, true), ROLL_MS + 60));
+    };
+
+    /* 名次行：0 分显示「等你上榜」，有分显示「12 / 40 · 5分」 */
+    const renderRank = (force = false) => {
+      if (!rankLine || !rankNum || !rankScore) return;
+      const score = myScore();
+      const rank = myRank();
+
+      /* 首帧（刚打开页面）：第一次来、或分数和上次一样（重做旧关卡）→ 直接显示，不翻牌不闪光。
+         首帧之后（同学们在涨分、偶尔追过我一位）：名次一变就翻牌，前进才闪光。 */
+      const direct = booted ? force : force || !rankMemo || rankMemo.score === score;
+      booted = true;
+
+      if (rank === 0) {
+        rankLine.classList.add("is-waiting");
+        setSlotText(rankNum, "等你上榜");
+        if (rankSep) rankSep.hidden = true;
+        rankScore.hidden = true;
+        setSlotText(rankScore, "0分");
+        lastRank = 0;
+        writeRankMemo(0, 0);
+        return;
+      }
+
+      rankLine.classList.remove("is-waiting");
+      if (rankSep) rankSep.hidden = false;
+      rankScore.hidden = false;
+      rollSlot(rankNum, String(rank), direct);
+      rollSlot(rankScore, score + "分", direct);
+
+      /* 名次前进了（数字变小）才给金光；被同学追过时不加奖励 */
+      if (!direct && lastRank > 0 && rank < lastRank) shineSlot(rankNum);
+
+      lastRank = rank;
+      writeRankMemo(rank, score);
+    };
+
+    /* ---- 同学们缓慢得分：制造"实时"感，也带动卡片上的人数（演示模拟数据） ---- */
+    const canAdvance = (peer) => {
+      if (peer.score >= MAX_SCORE) return false;
+      if (peer.score === 0) return true;
+      if (peer.score === LEVEL_POINTS) return myScore() >= LEVEL_POINTS * 2;
+      if (peer.score === LEVEL_POINTS * 2) return myScore() >= MAX_SCORE;
+      return false;
+    };
+
+    const promoteBy = (score) => {
+      const pool = peers.filter((peer) => peer.score === score && peer.score < MAX_SCORE);
+      if (!pool.length) return false;
+      pool[Math.floor(Math.random() * pool.length)].score += LEVEL_POINTS;
+      return true;
+    };
+
+    const tick = () => {
+      const pool = peers.filter(canAdvance);
+      if (pool.length) {
+        pool[Math.floor(Math.random() * pool.length)].score += LEVEL_POINTS;
+        render();
+        if (boardLevel) renderBoard();
+      }
+      window.setTimeout(tick, 2600 + Math.random() * 1400);
+    };
+
+    /* ---- 我的剧本：做完第一关之后两秒左右，名次会自己动一下（演示"实时"） ---- */
+    const scheduleStageOne = () => {
+      scriptTimers.push(window.setTimeout(() => {
+        promoteBy(LEVEL_POINTS * 2);   /* 有人先满分 */
+        render();
+      }, 2200));
+      scriptTimers.push(window.setTimeout(() => {
+        if (dipUsed) return;
+        if (promoteBy(LEVEL_POINTS)) {  /* 有人追平我又超过去：名次轻轻往后一位 */
+          dipUsed = true;
+          render();
+        }
+      }, 5600));
+    };
+
+    const clearScriptTimers = () => {
+      scriptTimers.forEach((timer) => window.clearTimeout(timer));
+      scriptTimers.length = 0;
+    };
+
+    const render = (force = false) => {
+      const current = phase();
+      const done = doneSlots();
+      const completed = done.length;
+      /* 预览跳过阶段限制：演示面板切哪种阶段都能玩 */
+      const open = PREVIEW ? true : current.open;
+
+      if (strip) strip.dataset.phase = appState.phase;
+      stars.forEach((star, index) => star.classList.toggle("is-on", index < completed));
+
+      levels.forEach((level) => {
+        const finished = done.includes(level.index);
+        const canPlay = open;
+        const state = finished ? "done" : canPlay ? "todo" : "locked";
+        level.node.dataset.state = state;
+        if (level.badge) level.badge.innerHTML = finished ? CHECK_ICON : String(level.index);
+        if (level.action) {
+          level.action.classList.toggle("is-play", !finished && canPlay);
+          level.action.classList.toggle("is-lock", !finished && !canPlay);
+          level.action.innerHTML = finished ? AGAIN_ICON : canPlay ? PLAY_ICON : LOCK_ICON;
+        }
+        if (level.count) {
+          const visible = finished || canPlay;
+          level.count.hidden = !visible;
+          const value = countFor(level.index);
+          const num = level.count.querySelector("[data-count-num]");
+          if (num && num.textContent !== String(value)) {
+            num.textContent = String(value);
+            num.classList.remove("is-bump");
+            void num.offsetWidth;
+            num.classList.add("is-bump");
+          }
+          level.count.classList.toggle("is-full", value >= CLASSROOM_TOTAL);
+          if (value >= CLASSROOM_TOTAL && !level.count.querySelector(".cls-count-flag")) {
+            const flag = document.createElement("span");
+            flag.className = "cls-count-flag";
+            flag.textContent = "🎉";
+            level.count.appendChild(flag);
+          }
+        }
+      });
+
+      /* 进场第一帧直接显示，不播翻牌 */
+      renderRank(force);
+
+      /* 做完第一关：两秒后名次自己动一下（演示"实时"）；重来一遍后再做还能重播 */
+      if (completed === 0) {
+        clearScriptTimers();
+        stageOneStarted = false;
+        dipUsed = false;
+      } else if (!stageOneStarted) {
+        stageOneStarted = true;
+        scheduleStageOne();
+      }
+    };
+
+    levels.forEach((level) => {
+      level.node.addEventListener("click", () => {
+        if (!PREVIEW && !phase().open) {
+          showToast(appState.phase === "before" ? "请在开课后进入互动" : "互动入口已关闭");
+          return;
+        }
+        window.location.href = level.href;
+      });
+    });
+
+    /* ---- 速度榜：卡面上那粒 ⚡ 弹出来的名单（同学用时是虚构的，只比快慢、不看分数） ---- */
+    const boardOverlay = document.querySelector("[data-board-overlay]");
+    const boardCard = document.querySelector("[data-board-card]");
+    const boardList = document.querySelector("[data-board-list]");
+    const boardMe = document.querySelector("[data-board-me]");
+    let boardLevel = 0;
+
+    const hashSeed = (text) => {
+      let hash = 2166136261;
+      for (let i = 0; i < text.length; i += 1) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619) >>> 0;
+      }
+      return hash / 4294967296;
+    };
+
+    /* 同一位同学、同一关，用时永远一样（整秒）；靠前的几位先做完，普遍更快 */
+    const peerTime = (level, index, name) => {
+      const jitter = hashSeed("t" + level + "|" + name);
+      const raw = 4 + index * 0.34 + jitter * 3.6 + (level - 1) * 1.6;
+      return Math.max(4, Math.round(raw));
+    };
+
+    /* 这一关做完的同学，按用时从快到慢排队；同秒的按"谁先到"排（不写并列） */
+    const boardEntries = (level) => peers
+      .map((peer, index) => ({ name: peer.name, score: peer.score, time: peerTime(level, index, peer.name), order: index }))
+      .filter((entry) => entry.score >= level * LEVEL_POINTS)
+      .sort((a, b) => (a.time - b.time) || (a.order - b.order));
+
+    const boardTimes = () => (appState.speedTimes && typeof appState.speedTimes === "object" ? appState.speedTimes : {});
+
+    /* 题型页记下的我的用时（老进度没记过，就退回一条固定的演示值） */
+    const recordedSeconds = (slot) => {
+      const item = (Array.isArray(appState.results) ? appState.results : [])
+        .find((result) => result && Number(result.slot) === slot);
+      const seconds = item ? Number(item.seconds) : 0;
+      return Number.isFinite(seconds) && seconds > 0 ? Math.max(1, Math.round(seconds)) : 0;
+    };
+
+    /* 我的用时：第一次完成那一刻记下，之后重做不变（重来一遍才清空） */
+    const rememberBoardTimes = () => {
+      const times = boardTimes();
+      const patch = {};
+      doneSlots().forEach((slot) => {
+        if (Number(times[slot]) > 0) return;
+        patch[slot] = recordedSeconds(slot) || peerTime(slot, 12, "aku");
+      });
+      if (Object.keys(patch).length) updateState({ speedTimes: { ...times, ...patch } });
+    };
+
+    const boardRowHtml = (place, name, time, isMe) =>
+      `<li class="speed-row${isMe ? " is-me" : ""}">`
+      + `<span class="speed-place">${place}.</span>`
+      + `<span class="speed-name">${escapeText(name)}</span>`
+      + `<span class="speed-time">${time} 秒</span>`
+      + "</li>";
+
+    const renderBoard = () => {
+      if (!boardLevel || !boardList || !boardMe) return;
+      const myTime = Number(boardTimes()[boardLevel]) || 0;
+      const all = boardEntries(boardLevel);
+      if (myTime > 0) all.push({ name: "你", time: myTime, isMe: true, order: -1 });
+      /* 同秒时"我"排在同学前面（先做完的那几位同学本来就排在前头） */
+      all.sort((a, b) => (a.time - b.time) || (a.order - b.order));
+
+      const top = all.slice(0, 5);
+      const meInTop = top.some((entry) => entry.isMe);
+      const rows = top.map((entry, index) => boardRowHtml(index + 1, entry.name, entry.time, !!entry.isMe));
+
+      if (!myTime) {
+        /* 这关还没做：名单照给，底下单独一行灰色的"你"（预览模式没有同学，就不放省略行） */
+        if (all.length) rows.push('<li class="speed-row is-dots" aria-hidden="true">…</li>');
+        boardList.innerHTML = rows.join("");
+        boardMe.className = "speed-me is-waiting";
+        boardMe.innerHTML = '<span class="speed-name">你</span><span class="speed-time">还没上榜</span>';
+        boardMe.hidden = false;
+        return;
+      }
+
+      if (meInTop) {
+        /* 我在前五：只列五行，我那行的底子点亮一点（不重复列一遍） */
+        boardList.innerHTML = rows.join("");
+        boardMe.innerHTML = "";
+        boardMe.hidden = true;
+        return;
+      }
+
+      rows.push('<li class="speed-row is-dots" aria-hidden="true">…</li>');
+      boardList.innerHTML = rows.join("");
+      const faster = all.filter((entry) => entry.time < myTime).length;
+      boardMe.className = "speed-me";
+      boardMe.innerHTML = `<span class="speed-place">${faster + 1}.</span>`
+        + '<span class="speed-name">你</span>'
+        + `<span class="speed-time">${myTime} 秒</span>`;
+      boardMe.hidden = false;
+    };
+
+    const openBoard = (level) => {
+      if (!boardOverlay || !boardCard || !level) return;
+      boardLevel = level;
+      renderBoard();
+      boardOverlay.classList.remove("hidden");
+      if (typeof boardCard.focus === "function") boardCard.focus();
+    };
+
+    const closeBoard = () => {
+      boardLevel = 0;
+      if (boardOverlay) boardOverlay.classList.add("hidden");
+    };
+
+    levels.forEach((level) => {
+      if (!level.board) return;
+      level.board.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (boardLevel === level.index) {
+          closeBoard();
+          return;
+        }
+        openBoard(level.index);
+      });
+    });
+
+    const boardCloseButton = document.querySelector("[data-board-close]");
+    if (boardCloseButton) boardCloseButton.addEventListener("click", closeBoard);
+    if (boardOverlay) {
+      boardOverlay.addEventListener("click", (event) => {
+        if (event.target === boardOverlay) closeBoard();
+      });
+    }
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && boardLevel) closeBoard();
+    });
+
+    /* 图标先出 ⚡ 这一版；地址后面加 ?icon=word 可以对比"榜"字版 */
+    if (new URLSearchParams(window.location.search).get("icon") === "word") {
+      document.querySelectorAll("[data-board-icon]").forEach((node) => { node.textContent = "榜"; });
+      document.querySelectorAll(".cls-level-board").forEach((node) => node.classList.add("is-word"));
+      const badge = document.querySelector(".speed-badge");
+      if (badge) badge.classList.add("is-word");
+    }
+
+    let celebrateTimer = null;
+    /* 这份课程里的关卡全做完了才算全部完成 */
+    const allTasksDone = () => LEVEL_COUNT > 0 && doneSlots().length === LEVEL_COUNT;
+    const maybeCelebrate = () => {
+      if (!celebrateOverlay || appState.celebrated || !allTasksDone()) return;
+      if (celebrateTimer !== null || !celebrateOverlay.classList.contains("hidden")) return;
+      /* 三星齐庆祝：亮齐后三颗一起跳一下、各扫一遍白光，然后才盖海报（走 WAAPI，保证能重播） */
+      celebrateTimer = window.setTimeout(() => {
+        stars.forEach((star) => {
+          if (!star.classList.contains("is-on")) return;
+          if (typeof star.animate === "function") {
+            star.animate([
+              { transform: "translateY(0) scale(1.16)" },
+              { transform: "translateY(-8px) scale(1.22)", offset: 0.38 },
+              { transform: "translateY(0) scale(1.16)", offset: 0.72 },
+              { transform: "translateY(-3px) scale(1.17)", offset: 0.86 },
+              { transform: "translateY(0) scale(1.16)" }
+            ], { duration: 550, easing: "cubic-bezier(.3, 1.4, .5, 1)" });
+          }
+          const shine = star.querySelector(".cls-shine");
+          if (shine && typeof shine.animate === "function") {
+            shine.animate([
+              { transform: "translateX(-8px) skewX(-18deg)", opacity: 0 },
+              { opacity: 0.95, offset: 0.25 },
+              { opacity: 0.9, offset: 0.7 },
+              { transform: "translateX(26px) skewX(-18deg)", opacity: 0 }
+            ], { duration: 500, easing: "ease-in-out" });
+          }
+        });
+        /* 名次行的奖杯跟着跳一下、扫一遍白光 */
+        const trophy = document.querySelector(".cls-trophy");
+        if (trophy) {
+          if (typeof trophy.animate === "function") {
+            trophy.animate([
+              { transform: "translateY(0) scale(1)" },
+              { transform: "translateY(-2.5px) scale(1.2)", offset: 0.34 },
+              { transform: "translateY(0) scale(1.02)", offset: 0.66 },
+              { transform: "translateY(-1px) scale(1.09)", offset: 0.83 },
+              { transform: "translateY(0) scale(1)" }
+            ], { duration: 640, easing: "cubic-bezier(.3, 1.35, .45, 1)" });
+          }
+          const trophyShine = trophy.querySelector(".cls-shine");
+          if (trophyShine && typeof trophyShine.animate === "function") {
+            trophyShine.animate([
+              { transform: "translateX(-8px) skewX(-18deg)", opacity: 0 },
+              { opacity: 0.95, offset: 0.25 },
+              { opacity: 0.9, offset: 0.7 },
+              { transform: "translateX(26px) skewX(-18deg)", opacity: 0 }
+            ], { duration: 500, easing: "ease-in-out" });
+          }
+        }
+        celebrateTimer = window.setTimeout(() => {
+          celebrateTimer = null;
+          celebrateOverlay.classList.remove("hidden");
+          if (celebrateCard && typeof celebrateCard.focus === "function") celebrateCard.focus();
+        }, 880);
+      }, 1250);
+    };
+
+    /* 重来一遍：清掉在跑的剧本与庆祝倒计时，同学们重新洗牌，名次直接回到「等你上榜」 */
+    const replayRank = () => {
+      clearScriptTimers();
+      stageOneStarted = false;
+      dipUsed = false;
+      lastRank = 0;
+      peers = PREVIEW ? [] : buildPeers();
+      closeBoard();
+      if (celebrateTimer !== null) {
+        window.clearTimeout(celebrateTimer);
+        celebrateTimer = null;
+      }
+      if (celebrateOverlay) celebrateOverlay.classList.add("hidden");
+      render(true);
+    };
+
+    if (celebrateButton) {
+      celebrateButton.addEventListener("click", () => {
+        if (celebrateOverlay) celebrateOverlay.classList.add("hidden");
+        updateState({ celebrated: true });
+      });
+    }
+
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        updateState({
+          task1Done: false,
+          task2Done: false,
+          task3Done: false,
+          celebrated: false,
+          completedSlots: [],
+          results: [],
+          speedTimes: {}
+        });
+        replayRank();
+        showToast("互动进度已重置");
+      });
+    }
+
+    window.addEventListener("classroom-state-change", () => {
+      rememberBoardTimes();
+      render();
+      maybeCelebrate();
+    });
+    /* 进场：第一次来、或重做旧关卡（分数没变）直接显示；分数真的涨了才翻一次牌（前进才给金光） */
+    rememberBoardTimes();
+    render();
+    maybeCelebrate();
+    /* 演示的同学得分：第一拍晚一点，让开场人数落在既定局面上（4 人满分 / 7 人 10 分 / 10 人 5 分） */
+    window.setTimeout(tick, 2600 + Math.random() * 1400);
+
+    const lockedReason = new URLSearchParams(window.location.search).get("locked");
+    if (lockedReason) {
+      window.setTimeout(() => showToast("当前演示状态不可进入课堂互动"), 250);
+    }
+  }
+
+  function guardOpenPage() {
+    if (document.body.dataset.requiresOpen !== "true") return true;
+    if (previewApi.isActive()) return true;
+    if (phase().open) return true;
+    window.location.replace("classroom.html?locked=1");
+    return false;
+  }
+
+  /* 老师预览：把页面里写死的「返回课堂」链接（多为 classroom.html）顺手补上预览参数，
+     往返不丢 —— 18 个题型页里那些链接不用一个个改 */
+  function installPreviewLinkRelay() {
+    document.addEventListener("click", (event) => {
+      if (!previewApi.isActive()) return;
+      const target = event.target;
+      const link = target && typeof target.closest === "function" ? target.closest("a[href]") : null;
+      if (!link) return;
+      const href = link.getAttribute("href") || "";
+      if (href.indexOf("preview=") >= 0) return;
+      if (!/^classroom\.html([?#]|$)/.test(href)) return;
+      link.setAttribute("href", previewApi.withParams(href));
+    }, true);
+  }
+
+  /* ---- 老师端课节列表（teacher.html）：每次打开都清空预览进度 = 全新一局 ---- */
+  function initTeacher() {
+    previewApi.clearProgress();
+    const list = document.querySelector("[data-teacher-list]");
+    if (!list) return;
+
+    const PLAY_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M8 4.6v14.8l12.2-7.4z"/></svg>`;
+    /* 演示表（都在演示层）：班级 / 排期（今天、明天、后天）/ 时间 / 有没有配内容。
+       time 为空 = 跟课堂页演示的 live 场一致（进入时刻往前 10 分钟） */
+    const LESSONS = [
+      { className: "印尼八班", dayOffset: 0, time: "", hasContent: true },
+      { className: "印尼八班", dayOffset: 1, time: "20:00", hasContent: true },
+      { className: "印尼七班", dayOffset: 2, time: "19:30", hasContent: false }
+    ];
+    /* 「已配置 N 轮互动」的 N 从课堂数据取，不写死 */
+    const course = window.AICloudClassroomCourse;
+    const roundCount = course && Array.isArray(course.levels) && course.levels.length ? course.levels.length : 0;
+    const WEEK_CN = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const pad2 = (value) => String(value).padStart(2, "0");
+    /* 日期块按打开当天的真实日期实时算：月 + 日 + 周几 */
+    const dateFor = (dayOffset) => {
+      const date = new Date();
+      date.setDate(date.getDate() + dayOffset);
+      return { month: `${date.getMonth() + 1}月`, day: String(date.getDate()), week: WEEK_CN[date.getDay()] };
+    };
+    const clockFor = (time) => {
+      if (time) return time;
+      const start = new Date(Date.now() - 10 * 60 * 1000);
+      return `${pad2(start.getHours())}:${pad2(start.getMinutes())}`;
+    };
+
+    const cards = LESSONS.map((lesson, index) => {
+      const no = index + 1;
+      const info = previewApi.lessonInfoFor(no);
+      const date = dateFor(lesson.dayOffset);
+      const status = lesson.hasContent ? `已配置 ${roundCount} 轮互动` : "未配置课堂互动";
+      const body = `
+        <span class="teacher-date"><small>${date.month}</small><b>${date.day}</b><i>${date.week}</i></span>
+        <span class="teacher-copy">
+          <span class="teacher-class">${escapeText(lesson.className)}</span>
+          <span class="teacher-title">${escapeText(info.label)}</span>
+          <span class="teacher-meta">${clockFor(lesson.time)} · ${status}</span>
+        </span>
+        <span class="teacher-go" aria-hidden="true">${PLAY_ICON}</span>`;
+      /* 没配内容的课节：不渲染成链接、按不进去（灰卡只展示；teacher-empty.html 仍可直开） */
+      if (!lesson.hasContent) {
+        return `<div class="teacher-card is-empty" data-teacher-card="${no}" aria-disabled="true">${body}</div>`;
+      }
+      return `<a class="teacher-card" href="classroom.html?${previewApi.queryFor(no)}" data-teacher-card="${no}">${body}</a>`;
+    });
+    list.innerHTML = cards.join("");
+    list.querySelectorAll("a[data-teacher-card]").forEach((card) => {
+      card.addEventListener("click", () => {
+        const no = Number(card.dataset.teacherCard) || 0;
+        if (no === 1 || no === 2) previewApi.startSession(no);
+      });
+    });
+  }
+
+  /* ---- 没配内容的课节（teacher-empty.html）：顶栏带课节名，中间一句话 ---- */
+  function initTeacherEmpty() {
+    const title = document.querySelector("[data-empty-title]");
+    if (!title) return;
+    title.textContent = previewApi.lessonInfo().label;
+  }
+
+  function makeSvgPath(board, svg, from, to, className = "") {
+    const boardRect = board.getBoundingClientRect();
+    const fromRect = from.getBoundingClientRect();
+    const toRect = to.getBoundingClientRect();
+    const x1 = fromRect.right - boardRect.left;
+    const y1 = fromRect.top - boardRect.top + fromRect.height / 2;
+    const x2 = toRect.left - boardRect.left;
+    const y2 = toRect.top - boardRect.top + toRect.height / 2;
+    const bend = Math.max(24, (x2 - x1) * 0.48);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`);
+    if (className) path.setAttribute("class", className);
+    svg.appendChild(path);
+    return path;
+  }
+
+  function initMatch() {
+    const board = document.querySelector("[data-match-board]");
+    const svg = document.querySelector("[data-match-lines]");
+    const progress = document.querySelector("[data-match-progress]");
+    if (!board || !svg) return;
+
+    /* 轮内（跨页混题型一轮的连线那一道）：进度行由 round-flow 画；
+       连完 4 对不记账、不弹窗，只解禁板子下面那颗常驻的【下一题 / Lanjut】 */
+    const roundFlow = window.AICloudRoundFlow || null;
+    const roundState = roundFlow && typeof roundFlow.init === "function" ? roundFlow.init("match") : { active: false };
+    const nextBox = document.querySelector("[data-match-next]");
+    const nextButton = document.querySelector("[data-match-next-btn]");
+    const nextLabel = document.querySelector("[data-match-next-label]");
+    const nextLabelId = document.querySelector("[data-match-next-label-id]");
+    /* 轮内：进场就把这颗按钮摆出来（灰、点不动），连完 4 对才解禁 */
+    if (roundFlow && roundState.active && nextBox) nextBox.classList.remove("hidden");
+    if (roundFlow && roundState.active && nextButton) {
+      nextButton.addEventListener("click", () => roundFlow.goNext());
+    }
+
+    /* 这一关我用了多久：速度榜的"我的用时"要用 */
+    const startedAt = Date.now();
+    const matched = new Set();
+    let selected = null;
+    let resolving = false;
+    let madeMistake = false;
+
+    const leftItems = [...board.querySelectorAll('[data-side="left"]')];
+    const rightItems = [...board.querySelectorAll('[data-side="right"]')];
+
+    const redraw = () => {
+      svg.innerHTML = "";
+      const rect = board.getBoundingClientRect();
+      svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+      matched.forEach((key) => {
+        const left = board.querySelector(`[data-side="left"][data-key="${key}"]`);
+        const right = board.querySelector(`[data-side="right"][data-key="${key}"]`);
+        if (left && right) makeSvgPath(board, svg, left, right);
+      });
+    };
+
+    const updateProgress = () => {
+      if (progress) progress.textContent = `已找到 ${matched.size} / 4 对`;
+    };
+
+    /* 呼吸引导：一直指着"第一张还没连上的左列卡"，连对一张自动移到下一张（整页唯一的循环动效） */
+    const updateGuide = () => {
+      board.querySelectorAll(".is-guide").forEach((item) => item.classList.remove("is-guide"));
+      const next = leftItems.filter((item) => !item.classList.contains("correct"))[0];
+      if (next) next.classList.add("is-guide");
+    };
+
+    const markCorrect = (key) => {
+      board.querySelectorAll(`[data-key="${key}"]`).forEach((item) => {
+        item.classList.remove("selected", "wrong");
+        item.classList.add("correct");
+        item.disabled = true;
+      });
+    };
+
+    const clearSelection = () => {
+      board.querySelectorAll(".selected, .wrong").forEach((item) => {
+        item.classList.remove("selected", "wrong");
+      });
+      selected = null;
+    };
+
+    board.querySelectorAll(".match-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        if (resolving || item.disabled || item.classList.contains("correct")) return;
+
+        if (!selected) {
+          selected = item;
+          item.classList.add("selected");
+          return;
+        }
+
+        if (selected === item) {
+          item.classList.remove("selected");
+          selected = null;
+          return;
+        }
+
+        if (selected.dataset.side === item.dataset.side) {
+          selected.classList.remove("selected");
+          selected = item;
+          item.classList.add("selected");
+          return;
+        }
+
+        const left = selected.dataset.side === "left" ? selected : item;
+        const right = selected.dataset.side === "right" ? selected : item;
+        const key = left.dataset.key;
+
+        if (key === right.dataset.key) {
+          matched.add(key);
+          left.classList.remove("selected");
+          right.classList.remove("selected");
+          selected = null;
+          markCorrect(key);
+          updateProgress();
+          updateGuide();
+          redraw();
+
+          if (matched.size === leftItems.length) {
+            /* 轮内：不记账、不弹窗，只处理这颗按钮（点它跳下一题那一页） */
+            if (roundFlow && roundState.active) {
+              const step = roundFlow.afterAnswer(!madeMistake);
+              if (step === "next") {
+                if (nextButton) nextButton.disabled = false;
+              } else if (step === "finish") {
+                /* 本页就是这一轮最后一题：按钮留灰，文案换【已提交 / Terkirim】 */
+                if (nextLabel) nextLabel.textContent = "已提交";
+                if (nextLabelId) nextLabelId.textContent = "Terkirim";
+              }
+              return;
+            }
+            /* 记在第几关：课堂页的链接带 ?slot=N；单独打开这页时仍按第 3 关算 */
+            const slot = slotFromUrl(3);
+            recordOwnTime(slot, "match", startedAt);
+            markSlotDone(slot);
+            if (!previewApi.isActive()) recordPlatformCompletion(slot);
+            window.setTimeout(openCompleteModal, 520);
+          }
+          return;
+        }
+
+        resolving = true;
+        left.classList.remove("selected");
+        right.classList.remove("selected");
+        left.classList.add("wrong");
+        right.classList.add("wrong");
+        madeMistake = true;
+        const wrongPath = makeSvgPath(board, svg, left, right, "wrong");
+        selected = null;
+
+        window.setTimeout(() => {
+          left.classList.remove("wrong");
+          right.classList.remove("wrong");
+          wrongPath.remove();
+          resolving = false;
+        }, 720);
+      });
+    });
+
+    const restartRound = () => {
+      matched.clear();
+      selected = null;
+      resolving = false;
+      madeMistake = false;
+      board.querySelectorAll(".match-item").forEach((item) => {
+        item.disabled = false;
+        item.classList.remove("correct", "selected", "wrong");
+      });
+      updateProgress();
+      updateGuide();
+      redraw();
+    };
+
+    /* 完成弹窗走公共模具：从句池抽；一局没连错过走升级档 */
+    const openCompleteModal = () => {
+      const feedbackModal = window.AICloudFeedbackModal;
+      const feedbackCopy = window.AICloudFeedbackCopy || {};
+      if (!feedbackModal || typeof feedbackModal.open !== "function") return;
+      const perfect = !madeMistake;
+      const praise = (typeof feedbackCopy.draw === "function" ? feedbackCopy.draw("pair", { perfect }) : null)
+        || { zh: "全部连对啦！", id: "Semua pasangan benar!", emoji: "🎉" };
+      feedbackModal.open({
+        tier: perfect ? "correctFirstTry" : "correct",
+        badge: praise.emoji,
+        titleZh: praise.zh,
+        titleId: praise.id,
+        actions: [
+          {
+            label: "返回课堂",
+            onSelect: () => {
+              window.location.href = previewApi.classroomHref();
+            }
+          },
+          {
+            label: "再练一次",
+            icon: "↻",
+            onSelect: () => {
+              feedbackModal.close();
+              restartRound();
+            }
+          }
+        ]
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(redraw);
+    resizeObserver.observe(board);
+    window.addEventListener("resize", redraw);
+    redraw();
+    updateProgress();
+    updateGuide();
+  }
+
+  function shuffle(items) {
+    const result = [...items];
+    for (let i = result.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  function initMemory() {
+    const grid = document.querySelector("[data-memory-grid]");
+    const progress = document.querySelector("[data-memory-progress]");
+    if (!grid) return;
+
+    /* 轮内多题：进度行 / 下一题 / 记账都交给 shared/round-flow.js；不是轮内就照旧 */
+    const roundFlow = window.AICloudRoundFlow || null;
+    const roundState = roundFlow && typeof roundFlow.init === "function" ? roundFlow.init("memory") : { active: false };
+    const nextBox = document.querySelector("[data-memory-next]");
+    const nextButton = document.querySelector("[data-memory-next-btn]");
+    const nextLabel = document.querySelector("[data-memory-next-label]");
+    const nextLabelId = document.querySelector("[data-memory-next-label-id]");
+    if (roundFlow && roundState.active && nextBox) nextBox.classList.remove("hidden");
+    if (roundFlow && roundState.active && nextButton) {
+      nextButton.addEventListener("click", () => roundFlow.goNext());
+    }
+
+    /* 这一关我用了多久：速度榜的"我的用时"要用（跟连线配对同一套记账） */
+    const startedAt = Date.now();
+
+    const pairs = [
+      { key: "hello", zh: "你好", pinyin: "nǐ hǎo", id: "Halo", emoji: "👋" },
+      { key: "polite", zh: "您好", pinyin: "nín hǎo", id: "Halo sopan", emoji: "🙇" },
+      { key: "everyone", zh: "大家好", pinyin: "dàjiā hǎo", id: "Halo semuanya", emoji: "👥" },
+      { key: "teacher", zh: "老师好", pinyin: "lǎoshī hǎo", id: "Halo, Guru", emoji: "👩‍🏫" }
+    ];
+
+    const cards = shuffle(pairs.flatMap((pair) => [
+      { key: pair.key, type: "zh", label: pair.zh, sub: pair.pinyin, emoji: "" },
+      { key: pair.key, type: "id", label: pair.id, sub: "", emoji: pair.emoji }
+    ]));
+
+    let firstCard = null;
+    let secondCard = null;
+    let resolving = false;
+    let matchedPairs = 0;
+    let madeMistake = false;
+
+    const buildCard = (card) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "memory-card";
+      button.dataset.key = card.key;
+      button.dataset.type = card.type;
+      button.setAttribute("aria-label", "尚未翻开的卡片");
+      button.innerHTML = `
+        <span class="memory-card-inner">
+          <span class="memory-face front" aria-hidden="true"></span>
+          <span class="memory-face back">
+            ${card.emoji ? `<span class="card-emoji">${card.emoji}</span>` : ""}
+            <strong>${card.label}</strong>
+            ${card.sub ? `<small>${card.sub}</small>` : ""}
+          </span>
+        </span>
+      `;
+      return button;
+    };
+
+    const renderGrid = () => {
+      grid.textContent = "";
+      cards.forEach((card) => grid.appendChild(buildCard(card)));
+    };
+
+    renderGrid();
+
+    /* 进度只报给读屏：元素视觉隐藏，页面观感不变（同连线配对） */
+    const announce = (message) => {
+      if (progress) progress.textContent = message;
+    };
+
+    const updateProgress = () => {
+      announce(`已找到 ${matchedPairs} / 4 对`);
+    };
+
+    /* 翻开的牌要把内容念出来：直接取卡面里的字（汉字 + 拼音 / 印尼语），装饰用的 emoji 不念 */
+    const faceLabel = (card) => {
+      const face = card.querySelector(".memory-face.back");
+      if (!face) return "已翻开的卡片";
+      return [face.querySelector("strong"), face.querySelector("small")]
+        .filter(Boolean)
+        .map((node) => node.textContent.trim())
+        .filter(Boolean)
+        .join(" ");
+    };
+
+    const clearTurn = () => {
+      if (firstCard) {
+        firstCard.classList.remove("flipped");
+        firstCard.classList.remove("mismatch");
+        firstCard.setAttribute("aria-label", "尚未翻开的卡片");
+      }
+      if (secondCard) {
+        secondCard.classList.remove("flipped");
+        secondCard.classList.remove("mismatch");
+        secondCard.setAttribute("aria-label", "尚未翻开的卡片");
+      }
+      firstCard = null;
+      secondCard = null;
+      resolving = false;
+    };
+
+    grid.addEventListener("click", (event) => {
+      const card = event.target.closest(".memory-card");
+      if (!card || resolving || card.classList.contains("matched") || card.classList.contains("flipped")) return;
+
+      card.classList.add("flipped");
+      card.setAttribute("aria-label", faceLabel(card));
+
+      if (!firstCard) {
+        firstCard = card;
+        return;
+      }
+
+      secondCard = card;
+
+      if (firstCard.dataset.key === secondCard.dataset.key && firstCard.dataset.type !== secondCard.dataset.type) {
+        firstCard.classList.add("matched");
+        secondCard.classList.add("matched");
+        firstCard.disabled = true;
+        secondCard.disabled = true;
+        firstCard.setAttribute("aria-label", `${faceLabel(firstCard)}，已配对`);
+        secondCard.setAttribute("aria-label", `${faceLabel(secondCard)}，已配对`);
+        firstCard = null;
+        secondCard = null;
+        matchedPairs += 1;
+        updateProgress();
+
+        if (matchedPairs === pairs.length) {
+          /* 轮内：不记账、不弹窗（结算由最后一题那页的 round-flow 做），只处理这颗按钮 */
+          if (roundFlow && roundState.active) {
+            const step = roundFlow.afterAnswer(!madeMistake);
+            if (step === "next") {
+              if (nextButton) nextButton.disabled = false;
+            } else if (step === "finish") {
+              /* 本页就是这一轮最后一题：按钮留灰，文案换【已提交 / Terkirim】 */
+              if (nextLabel) nextLabel.textContent = "已提交";
+              if (nextLabelId) nextLabelId.textContent = "Terkirim";
+            }
+            return;
+          }
+          /* 老行为（题型体验 / 单独打开）：照旧记账 + 弹窗。
+             记在第几关：课堂页的链接带 ?slot=N；翻牌还没排进课表，
+             没带 slot 时一律不记账、不标关卡，免得课堂页假显示"这关做完了" */
+          const slot = slotFromUrl(0);
+          if (slot > 0) {
+            recordOwnTime(slot, "memory", startedAt);
+            markSlotDone(slot);
+            if (!previewApi.isActive()) recordPlatformCompletion(slot);
+          }
+          window.setTimeout(openCompleteModal, 520);
+        }
+        return;
+      }
+
+      resolving = true;
+      firstCard.classList.add("mismatch");
+      secondCard.classList.add("mismatch");
+      madeMistake = true;
+      announce("不配对，再试一次");
+      window.setTimeout(() => {
+        clearTurn();
+        /* 播报区回到进度：进度不过期，下次同样的错配提示也还能再念一遍 */
+        updateProgress();
+      }, 850);
+    });
+
+    const restartRound = () => {
+      const reshuffled = shuffle(cards.slice());
+      cards.splice(0, cards.length, ...reshuffled);
+      clearTurn();
+      matchedPairs = 0;
+      madeMistake = false;
+      updateProgress();
+      renderGrid();
+    };
+
+    /* 完成弹窗走公共模具：从句池抽；一局没连错过走升级档 */
+    const openCompleteModal = () => {
+      const feedbackModal = window.AICloudFeedbackModal;
+      const feedbackCopy = window.AICloudFeedbackCopy || {};
+      if (!feedbackModal || typeof feedbackModal.open !== "function") return;
+      const perfect = !madeMistake;
+      const praise = (typeof feedbackCopy.draw === "function" ? feedbackCopy.draw("pair", { perfect }) : null)
+        || { zh: "全部连对啦！", id: "Semua pasangan benar!", emoji: "🎉" };
+      feedbackModal.open({
+        tier: perfect ? "correctFirstTry" : "correct",
+        badge: praise.emoji,
+        titleZh: praise.zh,
+        titleId: praise.id,
+        actions: [
+          {
+            label: "返回课堂",
+            onSelect: () => {
+              window.location.href = previewApi.classroomHref();
+            }
+          },
+          {
+            label: "再练一次",
+            icon: "↻",
+            onSelect: () => {
+              feedbackModal.close();
+              restartRound();
+            }
+          }
+        ]
+      });
+    };
+
+    updateProgress();
+  }
+
+  function init() {
+    /* 带 ?preview=teacher 进来时顺手把标记记进 sessionStorage（往返不丢） */
+    if (previewApi.urlActive()) previewApi.startSession();
+
+    installDemoControls();
+    installPreviewLinkRelay();
+
+    if (!guardOpenPage()) return;
+
+    const page = document.body.dataset.page;
+    if (page === "home") initHome();
+    if (page === "classroom") initClassroom();
+    if (page === "match") initMatch();
+    if (page === "memory") initMemory();
+    if (page === "teacher") initTeacher();
+    if (page === "teacher-empty") initTeacherEmpty();
+  }
+
+  /* 等 DOMContentLoaded 再进场：那一刻本页所有脚本都已执行完。
+     打包后脚本的先后顺序会变，课程数据这种"由另一个脚本提供"的东西必须等到这时才拿得到。 */
+  if (document.readyState === "complete") {
+    init();
+  } else {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  }
+})();

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7fc">
+  <title>开放问答 · AI Chinese Cloud</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="interaction-open-qa.css">
+</head>
+<body data-page="activity" data-activity-type="open-qa">
+  <div class="app-shell">
+    <div class="status-bar" aria-hidden="true">
+      <span>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <header class="page-header">
+      <a class="icon-button" href="index.html" data-activity-back aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1><span data-activity-title>开放问答</span></h1>
+      <span class="header-spacer"></span>
+    </header>
+
+    <main class="page page-content">
+      <!-- 轮内多题（跨页那一轮）：进度行。不是轮内时整块不出现（由 shared/round-flow.js 管） -->
+      <div class="round-progress hidden" data-round-progress>
+        <span class="round-progress-dots" data-round-dots aria-hidden="true"></span>
+        <p class="round-progress-text" data-round-text></p>
+      </div>
+
+      <!-- 卡片 + 学习卡：学习卡是卡片的下一层兄弟，平时整块压进卡片下沿后面，出结果才往下滑出来 -->
+      <div class="openqa-stage">
+        <!-- 卡片只装题干（中文 + 印尼语）＋插画带；按钮那一组已经搬到贴底动作区 -->
+        <section class="openqa-card" aria-labelledby="openqa-question">
+          <div class="openqa-stem">
+            <h3 class="openqa-question" id="openqa-question" data-openqa-question>你周末喜欢做什么？</h3>
+            <p class="openqa-question-id" lang="id" data-openqa-question-id>Akhir pekan kamu suka melakukan apa?</p>
+          </div>
+
+          <!-- 插画带：三个词的意思直接画出来（和课堂投票页同一款）。图下三列小词只留汉字 + 拼音，
+               三列跟图上三个图形一一对齐（列宽各 1/3，图形中心在 1/6、1/2、5/6 处） -->
+          <figure class="openqa-figure">
+            <svg viewBox="0 0 322 128" role="img" aria-label="可以说：听音乐、打篮球、和朋友玩">
+              <defs>
+                <linearGradient id="openqa-sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#eee9ff"/>
+                  <stop offset="1" stop-color="#f9f6ff"/>
+                </linearGradient>
+              </defs>
+              <rect width="322" height="128" rx="20" fill="url(#openqa-sky)"/>
+              <circle cx="292" cy="26" r="13" fill="#ffd86d"/>
+              <path d="M0 96c56-12 116-8 176-2s104 6 146-2v36H0z" fill="#e3f4eb"/>
+              <!-- 听音乐 -->
+              <path d="M49 78V56l20-4v22" fill="none" stroke="#8d79ff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="44" cy="78" r="5.6" fill="#8d79ff"/>
+              <circle cx="64" cy="74" r="5.6" fill="#8d79ff"/>
+              <!-- 打篮球 -->
+              <circle cx="145" cy="86" r="11" fill="#ffad67" stroke="#ffffff" stroke-width="2"/>
+              <path d="M138 79c5 5 5 9 0 14M152 79c-5 5-5 9 0 14" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+              <rect x="183" y="50" width="4" height="50" rx="2" fill="#c9c4e0"/>
+              <rect x="159" y="44" width="28" height="20" rx="4" fill="#ffffff" stroke="#ded9f3" stroke-width="2"/>
+              <path d="M165 64h16" stroke="#ff9d5c" stroke-width="3.4" stroke-linecap="round"/>
+              <path d="M166 66l3.5 8h6l3.5-8" fill="none" stroke="#ffc79a" stroke-width="2" stroke-linejoin="round"/>
+              <!-- 和朋友玩（两个对话气泡） -->
+              <rect x="236" y="48" width="34" height="22" rx="11" fill="#ffffff" stroke="#ded9f3" stroke-width="2"/>
+              <circle cx="246" cy="59" r="2.2" fill="#b9b3d8"/>
+              <circle cx="253" cy="59" r="2.2" fill="#b9b3d8"/>
+              <circle cx="260" cy="59" r="2.2" fill="#b9b3d8"/>
+              <rect x="264" y="76" width="26" height="18" rx="9" fill="#eeeaff"/>
+              <circle cx="272" cy="85" r="1.9" fill="#a79ee0"/>
+              <circle cx="278" cy="85" r="1.9" fill="#a79ee0"/>
+              <circle cx="284" cy="85" r="1.9" fill="#a79ee0"/>
+            </svg>
+            <ul class="openqa-words" data-openqa-words></ul>
+          </figure>
+        </section>
+
+        <!-- 学习卡：假识别 1 秒之后从卡片下沿滑出来。只放两样——一句鼓励（只夸「你开口了」，
+             不评结果）和能带走的内容（句型框）。这一页不打分，也没有【完成】：录音本身就是交卷，
+             卡片一出现就记账；课堂模式自动回课堂，演示模式约 2 秒后自动弹窗
+             （见 interaction-open-qa.js） -->
+        <div class="openqa-result hidden" role="status" aria-live="polite" tabindex="-1" data-openqa-result>
+          <p class="openqa-praise">
+            <span data-openqa-praise>说得不错！</span>
+            <i class="openqa-praise-dot" aria-hidden="true">·</i>
+            <span class="openqa-praise-id" lang="id" data-openqa-praise-id>Bagus!</span>
+          </p>
+
+          <!-- 句型框：横线是填空位（纯装饰，读屏由上面那句播报负责），前缀 + 横线 + 句号一行走完 -->
+          <p class="openqa-pattern-text" lang="zh-CN" data-openqa-pattern>
+            <span data-openqa-pattern-prefix>我周末喜欢</span><span class="openqa-blank" aria-hidden="true"></span><span data-openqa-pattern-suffix>。</span>
+          </p>
+          <p class="openqa-pattern-id" lang="id" data-openqa-pattern-id>
+            <span data-openqa-pattern-id-prefix>Pada akhir pekan saya suka</span><span class="openqa-blank-id" aria-hidden="true"></span><span data-openqa-pattern-id-suffix>.</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- 贴底动作区：一行小字（状态都靠它说）→ 通栏麦克风 -->
+      <div class="openqa-actions">
+        <p class="openqa-record-hint" data-openqa-hint>按住说完松开 · Tahan, lepas setelah selesai</p>
+        <!-- 视觉上只有麦克风；名字靠 aria-label 给读屏（见 js），不留可见文字 -->
+        <button type="button" class="openqa-mic" data-openqa-mic aria-label="按住说话" aria-pressed="false" aria-busy="false">
+          <span class="openqa-mic-icon" aria-hidden="true" data-openqa-mic-icon>🎤</span>
+        </button>
+      </div>
+
+      <p class="openqa-announcer" data-openqa-announcer role="status" aria-live="polite"></p>
+
+      <!-- 轮内多题：【下一题 / Lanjut】。轮内进场就摆着（灰、点不动），出结果才变紫可点；题型体验时整块不出现 -->
+      <div class="oq-next hidden" data-oq-next>
+        <button type="button" class="primary-button btn-stacked" data-oq-next-btn disabled>
+          <span data-oq-next-label>下一题</span>
+          <span class="btn-id" lang="id" data-oq-next-label-id>Lanjut</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="shared/activity-types.js"></script>
+  <script type="module" src="shared/activity-fab.js"></script>
+  <script type="module" src="shared/activity-bridge.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="shared/activity-page.js"></script>
+  <script type="module" src="shared/feedback-copy.js"></script>
+  <script type="module" src="shared/feedback-modal.js"></script>
+  <script type="module" src="round-content.js"></script>
+  <script type="module" src="shared/round-flow.js"></script>
+  <script type="module" src="interaction-open-qa.js"></script>
+</body>
+</html>

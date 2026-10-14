@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7fc">
+  <title>图片—词语连线 · AI Chinese Cloud</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="interaction-picture-match.css">
+</head>
+<body data-page="activity" data-activity-type="picture-match">
+  <div class="app-shell">
+    <div class="status-bar" aria-hidden="true">
+      <span>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <header class="page-header">
+      <a class="icon-button" href="index.html" data-activity-back aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1><span data-activity-title>图片—词语连线</span></h1>
+      <span class="header-spacer"></span>
+    </header>
+
+    <main class="page page-content">
+      <!-- 轮内多题：进度行。不是轮内时整块不出现（由 shared/round-flow.js 管） -->
+      <div class="round-progress hidden" data-round-progress>
+        <span class="round-progress-dots" data-round-dots aria-hidden="true"></span>
+        <p class="round-progress-text" data-round-text></p>
+      </div>
+
+      <section class="pm-card" aria-label="图片与词语配对作答区">
+        <div class="match-board" data-pm-board role="group" aria-label="图片与词语配对（左列图片，右列词语）"></div>
+      </section>
+
+      <p class="pm-announcer" data-pm-announcer role="status" aria-live="polite"></p>
+
+      <!-- 轮内多题：【下一题 / Lanjut】。轮内进场就摆着（灰、点不动），连完 4 组才变紫可点；题型体验时整块不出现 -->
+      <div class="pm-next hidden" data-pm-next>
+        <button type="button" class="primary-button btn-stacked" data-pm-next-btn disabled>
+          <span data-pm-next-label>下一题</span>
+          <span class="btn-id" lang="id" data-pm-next-label-id>Lanjut</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="shared/activity-types.js"></script>
+  <script type="module" src="shared/activity-fab.js"></script>
+  <script type="module" src="shared/activity-bridge.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="shared/activity-page.js"></script>
+  <script type="module" src="shared/feedback-copy.js"></script>
+  <script type="module" src="shared/feedback-modal.js"></script>
+  <script type="module" src="round-content.js"></script>
+  <script type="module" src="shared/round-flow.js"></script>
+  <script type="module" src="interaction-picture-match.js"></script>
+</body>
+</html>

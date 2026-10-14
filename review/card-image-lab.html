@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>任务卡放图 · 实验</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#E9E8F5}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;color:#17171A}
+.lab{display:grid;grid-template-columns:repeat(3,340px);gap:44px 36px;padding:44px;justify-content:center}
+.head{grid-column:1/-1;margin-bottom:-14px}
+.head h1{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.head p{font-size:12.5px;color:#8B8B95;font-weight:600;margin-top:5px}
+.cell-h{font-size:14px;font-weight:800;color:#3A3A44;margin-bottom:5px}
+.cell-note{font-size:12px;font-weight:600;color:#8B8B95;margin-top:7px;line-height:1.5}
+
+/* ---------- 卡片本体：照抄 goal-work.html ---------- */
+.tcard{position:relative;width:340px;height:350px;border-radius:38px;color:#fff;
+  background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);
+  box-shadow:0 14px 30px rgba(38,22,120,.20);overflow:hidden}
+.tcard > *{position:absolute}
+.tc-tag{left:24px;top:24px;height:36px;padding:0 17px;border-radius:18px;background:#fff;color:#6552FF;
+  font-size:14.5px;font-weight:800;display:flex;align-items:center;z-index:6}
+.tc-cap{right:24px;top:24px;height:36px;padding:0 16px 0 12px;border-radius:18px;background:rgba(255,255,255,.28);
+  display:flex;align-items:center;gap:8px;color:#fff;white-space:nowrap;z-index:6}
+/* 有图的卡右上胶囊加一层深色玻璃，压在浅色照片上也读得清 */
+.tcard.v-top .tc-cap,.tcard.v-fade .tc-cap,.tcard.v-full .tc-cap{background:rgba(22,13,80,.36);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.tc-cap .ring{width:21px;height:21px;border-radius:50%;border:2px solid rgba(255,255,255,.92);position:relative;flex:none}
+.tc-cap .ring::after{content:"";position:absolute;left:8.4px;top:3.6px;width:2px;height:7.6px;background:rgba(255,255,255,.92);border-radius:1px}
+.tc-cap .ring::before{content:"";position:absolute;left:8.4px;top:9.6px;width:5.6px;height:2px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center}
+.tc-cap b{font-size:13.5px;font-weight:700}
+.tc-title{left:24px;top:186px;width:292px;font-size:24px;line-height:1.26;font-weight:700;letter-spacing:-.01em;color:#fff;z-index:5}
+.tc-sub{left:24px;top:234px;font-size:15px;font-weight:600;color:rgba(255,255,255,.84);z-index:5}
+.slide{left:24px;top:278px;width:232px;height:48px;border-radius:24px;background:rgba(255,255,255,.32);overflow:hidden;z-index:5}
+.slide-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(255,255,255,.38)}
+.slide-label{position:absolute;left:0;right:0;top:15.5px;text-align:center;font-size:15.5px;font-weight:700;color:#fff;letter-spacing:.02em}
+.chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.chev i{width:6px;height:6px;border-right:2px solid rgba(255,255,255,.9);border-top:2px solid rgba(255,255,255,.9);transform:rotate(45deg);border-radius:1px}
+.slide-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;
+  box-shadow:0 0 0 2px rgba(255,255,255,.95);display:grid;place-items:center;padding:0}
+.slide-knob svg{width:19px;height:19px}
+.next{right:24px;top:278px;width:48px;height:48px;border:0;border-radius:50%;background:#fff;display:grid;place-items:center;padding:0;z-index:5}
+
+/* ---------- 放图：三种做法 ---------- */
+.tc-photo{left:0;top:0;width:340px;overflow:hidden}
+.tc-photo img{width:100%;height:100%;object-fit:cover;display:block}
+/* A 顶带图：图上、紫色下，硬边 */
+.v-top .tc-photo{height:156px;border-radius:38px 38px 0 0}
+.v-top .tc-photo::after{content:"";position:absolute;left:0;top:0;width:100%;height:96px;
+  background:linear-gradient(180deg,rgba(30,18,104,.40),rgba(30,18,104,0))}
+/* B 全图铺底：整卡是图，底部紫色渐变压文字 */
+.v-full .tc-photo{height:350px;border-radius:38px}
+.v-full .tc-photo::after{content:"";position:absolute;inset:0;border-radius:38px;
+  background:
+    linear-gradient(180deg,rgba(24,14,86,.46),rgba(24,14,86,0) 26%),
+    linear-gradient(180deg,rgba(70,48,224,0) 30%,rgba(70,48,224,.5) 52%,rgba(64,42,214,.88) 72%,rgba(56,36,196,.97) 90%)}
+/* C 融图过渡：图上、用渐隐过渡进紫色 */
+.v-fade .tc-photo{height:212px;border-radius:38px 38px 0 0;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 40%,rgba(0,0,0,0) 92%);
+          mask-image:linear-gradient(180deg,#000 0%,#000 40%,rgba(0,0,0,0) 92%)}
+.v-fade .tc-photo::after{content:"";position:absolute;left:0;top:0;width:100%;height:96px;
+  background:linear-gradient(180deg,rgba(30,18,104,.40),rgba(30,18,104,0))}
+</style>
+</head>
+<body>
+<div class="lab">
+  <div class="head">
+    <h1>任务卡放图 · 实验版</h1>
+    <p>三种放法各出一张：A 顶带图 ／ B 全图铺底 ／ C 融图过渡。图片已裁掉水印，暂存 assets/。</p>
+  </div>
+
+  <div class="cell">
+    <div class="cell-h">新学卡 · A 顶带图</div>
+    <article class="tcard v-top">
+      <div class="tc-photo"><img src="../assets/scene-warehouse-arrange.png" alt=""></div>
+      <span class="tc-tag">新学</span>
+      <span class="tc-cap"><span class="ring"></span><b>约 8 分钟</b></span>
+      <h3 class="tc-title">听懂工作安排</h3>
+      <p class="tc-sub">谁派的活 · 要做什么 · 什么时候要 · 交给谁</p>
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+      <button class="next" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>
+    </article>
+    <div class="cell-note">图占顶部 156px，硬边。信息分层最清楚，稳。</div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-h">新学卡 · B 全图铺底</div>
+    <article class="tcard v-full">
+      <div class="tc-photo"><img src="../assets/scene-warehouse-arrange.png" alt=""></div>
+      <span class="tc-tag">新学</span>
+      <span class="tc-cap"><span class="ring"></span><b>约 8 分钟</b></span>
+      <h3 class="tc-title">听懂工作安排</h3>
+      <p class="tc-sub">谁派的活 · 要做什么 · 什么时候要 · 交给谁</p>
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+      <button class="next" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>
+    </article>
+    <div class="cell-note">整卡都是图，紫色压底。最有电影感，图要挑得好。</div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-h">新学卡 · C 融图过渡</div>
+    <article class="tcard v-fade">
+      <div class="tc-photo"><img src="../assets/scene-warehouse-arrange.png" alt=""></div>
+      <span class="tc-tag">新学</span>
+      <span class="tc-cap"><span class="ring"></span><b>约 8 分钟</b></span>
+      <h3 class="tc-title">听懂工作安排</h3>
+      <p class="tc-sub">谁派的活 · 要做什么 · 什么时候要 · 交给谁</p>
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+      <button class="next" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>
+    </article>
+    <div class="cell-note">图渐隐进紫色，没有硬边。柔和，但图的存在感弱。</div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-h">实战卡 · A 顶带图</div>
+    <article class="tcard v-top">
+      <div class="tc-photo"><img src="../assets/supervisor-chen.png" alt=""></div>
+      <span class="tc-tag">实战</span>
+      <span class="tc-cap"><span class="ring"></span><b>约 5 分钟</b></span>
+      <h3 class="tc-title">主管派活，你来接</h3>
+      <p class="tc-sub">跟虚拟主管过一遍</p>
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+      <button class="next" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>
+    </article>
+    <div class="cell-note">主管的脸占顶部，进来就知道等下要跟谁说话。</div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-h">实战卡 · B 全图铺底</div>
+    <article class="tcard v-full">
+      <div class="tc-photo"><img src="../assets/supervisor-chen.png" alt=""></div>
+      <span class="tc-tag">实战</span>
+      <span class="tc-cap"><span class="ring"></span><b>约 5 分钟</b></span>
+      <h3 class="tc-title">主管派活，你来接</h3>
+      <p class="tc-sub">跟虚拟主管过一遍</p>
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+      <button class="next" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>
+    </article>
+    <div class="cell-note">人脸在上、文字压胸口，像一张人物卡。最有存在感。</div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-h">实战卡 · C 融图过渡</div>
+    <article class="tcard v-fade">
+      <div class="tc-photo"><img src="../assets/supervisor-chen.png" alt=""></div>
+      <span class="tc-tag">实战</span>
+      <span class="tc-cap"><span class="ring"></span><b>约 5 分钟</b></span>
+      <h3 class="tc-title">主管派活，你来接</h3>
+      <p class="tc-sub">跟虚拟主管过一遍</p>
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+      <button class="next" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>
+    </article>
+    <div class="cell-note">脸完整，下缘干净地溶进紫色。我目前最倾向这张。</div>
+  </div>
+</div>
+</body>
+</html>

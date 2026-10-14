@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>滑条圆钮 · 去白圈 · 实验</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#E9E8F5}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;color:#17171A}
+.lab{display:grid;grid-template-columns:repeat(2,390px);gap:40px 36px;padding:44px;justify-content:center}
+.head{grid-column:1/-1;margin-bottom:-14px}
+.head h1{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.head p{font-size:12.5px;color:#8B8B95;font-weight:600;margin-top:5px}
+.cell-h{font-size:14px;font-weight:800;color:#3A3A44;margin-bottom:8px}
+.cell-note{font-size:12px;font-weight:600;color:#8B8B95;margin-top:8px;line-height:1.5}
+
+/* 每格 = 卡片紫底裁一块，尺寸/配色照 goal-work.html 的卡面 */
+.stage{position:relative;width:390px;height:150px;border-radius:28px;overflow:hidden;
+  background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%)}
+
+/* ---------- 滑条（照抄 goal-work.html） ---------- */
+.slide{position:absolute;left:24px;top:51px;width:232px;height:48px;border-radius:24px;background:rgba(255,255,255,.32);overflow:hidden}
+.slide-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(255,255,255,.38)}
+.slide-label{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+  font-size:15.5px;font-weight:400;color:rgba(255,255,255,.8);letter-spacing:.02em}
+.chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.chev i{width:6px;height:6px;border-right:2px solid rgba(255,255,255,.9);border-top:2px solid rgba(255,255,255,.9);transform:rotate(45deg);border-radius:1px}
+.slide-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;
+  display:grid;place-items:center;padding:0}
+.slide-knob svg{width:19px;height:19px}
+
+/* ---------- 四种圆钮 ---------- */
+.k0 .slide-knob{box-shadow:0 0 0 2px rgba(255,255,255,.95)}                     /* 1 现状：白圈 2px */
+.k1 .slide-knob{box-shadow:none}                                                 /* 2 去白圈：裸紫圆 */
+.k2 .slide-knob{box-shadow:0 3px 9px rgba(16,10,72,.30)}                         /* 3 去白圈 + 软投影 */
+.k3 .slide-knob{background:#fff;box-shadow:0 3px 9px rgba(16,10,72,.22)}         /* 4 白圆 + 紫箭头 */
+.k3 .slide-knob svg{stroke:#6552FF}
+</style>
+</head>
+<body>
+<div class="lab">
+  <div class="head">
+    <h1>滑条圆钮 · 去白圈 · 实验版</h1>
+    <p>同一个滑条，四种圆钮。底色 / 滑条 / 文字都照 goal-work.html，只改圆钮本身。</p>
+  </div>
+
+  <div class="cell k0">
+    <div class="cell-h">1 · 现状：紫圆 + 白圈 2px</div>
+    <div class="stage">
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+    </div>
+    <div class="cell-note">现在线上这版：白圈把圆钮从浅紫条上"抠"出来，最清楚，但圈本身有点抢。</div>
+  </div>
+
+  <div class="cell k1">
+    <div class="cell-h">2 · 去白圈：裸紫圆</div>
+    <div class="stage">
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+    </div>
+    <div class="cell-note">最干净。代价：圆钮和条都是紫，边界只靠深浅差，小屏 / 亮屏下会有点糊。</div>
+  </div>
+
+  <div class="cell k2">
+    <div class="cell-h">3 · 去白圈 + 软投影</div>
+    <div class="stage">
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+    </div>
+    <div class="cell-note">没圈，但用一层压低投影把圆钮托起来。推荐先看这版。</div>
+  </div>
+
+  <div class="cell k3">
+    <div class="cell-h">4 · 白圆 + 紫箭头（跟右下"下一个"同款）</div>
+    <div class="stage">
+      <div class="slide">
+        <span class="slide-fill"></span>
+        <span class="slide-label">滑动开始</span>
+        <span class="chev"><i></i><i></i><i></i></span>
+        <button class="slide-knob" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>
+      </div>
+    </div>
+    <div class="cell-note">另一种"去白圈"：圆钮本身变白。和右下按钮成一套，但两个白圆会抢注意力。</div>
+  </div>
+</div>
+</body>
+</html>

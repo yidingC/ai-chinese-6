@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实战 · AI Chinese 6.0</title>
+<style>
+
+  :root{
+    --purple:#6552ff; --purple-deep:#4c35e8; --purple-soft:#eeeaff;
+    --mint:#69d5c5; --mint-soft:#e0f8f2; --success:#1d8f6e;
+    --gold:#ffb35c; --ink:#252244; --muted:#77738f; --line:#e8e6f3; --page:#f7f7fc;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--page)}
+  body{font-family:ui-rounded,"SF Pro Rounded","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer}
+  button:focus-visible{outline:2px solid #cfcaff;outline-offset:2px}
+
+  .app{width:100%;max-width:430px;margin:0 auto;height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;background:var(--page)}
+
+  .status-bar{display:flex;align-items:center;justify-content:space-between;height:30px;padding:6px 20px 0;font-size:12px;font-weight:800;background:#fff}
+  .battery{display:inline-block;width:18px;height:9px;border:1.5px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px}
+  .battery::before{content:"";position:absolute;inset:1.5px;background:currentColor;border-radius:1px}
+
+  /* 单页顶栏 */
+  .page-head{display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid #f0eff7;padding:8px 18px 10px}
+  .ph-title{font-size:19px;font-weight:900;color:var(--ink);margin:0}
+  .ph-tag{margin-left:auto;white-space:nowrap;background:var(--purple-soft);color:var(--purple-deep);font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}
+  .ph-back{flex:0 0 auto;width:34px;height:34px;border:0;border-radius:12px;background:var(--purple-soft);color:var(--purple-deep);display:grid;place-items:center;padding:0;transition:transform .12s}
+  .ph-back:active{transform:scale(.94)}
+  .ph-back svg{width:18px;height:18px}
+
+  /* 屏幕切换 */
+  .flow{position:relative;flex:1;overflow:hidden}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;padding:16px 18px 18px;overflow-y:auto;overscroll-behavior:contain;opacity:0;transform:translateX(28px);visibility:hidden;transition:opacity .3s ease,transform .3s ease,visibility .3s}
+  .screen.active{opacity:1;transform:none;visibility:visible}
+  .screen.leave{opacity:0;transform:translateX(-28px);visibility:visible}
+
+  .cta{margin-top:auto;padding-top:14px}
+  .tf-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;border:0;border-radius:16px;background:linear-gradient(135deg,#6552ff,#4c35e8);color:#fff;font-size:16px;font-weight:800;box-shadow:0 10px 22px rgba(101,82,255,.32);transition:transform .12s,box-shadow .12s}
+  .tf-btn:active{transform:translateY(2px);box-shadow:0 6px 14px rgba(101,82,255,.28)}
+
+  /* 快问快答 / 练习 通用 */
+  .q-kicker{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em}
+  .q-phrase{margin:16px 0 0;font-size:22px;font-weight:900;line-height:1.5}
+  .q-ask{color:var(--ink);font-size:14.5px;font-weight:800;margin:14px 0 0}
+  .q-options{display:grid;gap:10px;margin-top:14px}
+  .q-options.chips{grid-template-columns:repeat(3,1fr);gap:8px}
+  .q-opt{background:#fff;border:2px solid #eceaf6;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:700;color:var(--ink);box-shadow:0 6px 14px rgba(71,57,142,.06);transition:border-color .15s,transform .12s,background .2s;user-select:none}
+  .q-opt:active{transform:scale(.985)}
+  .q-opt.chip{text-align:center;padding:14px 8px}
+  .q-opt.correct{border-color:#35c88f;background:#eefbf6;color:#126b51}
+  .q-opt.wrong{border-color:#ff5a67;background:#fff0f1;color:#c02a3a}
+  .q-opt.shake{animation:shake .4s}
+  .q-opt.locked{opacity:.45;pointer-events:none}
+  @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}100%{transform:none}}
+  .q-feedback{margin-top:12px;font-size:13px;font-weight:800;opacity:0;transform:translateY(4px);transition:.22s}
+  .q-feedback.show{opacity:1;transform:none}
+  .q-feedback.ok{color:var(--success)}
+  .q-feedback.bad{color:#c02a3a}
+  .q-feedback small{display:block;margin-top:4px;font-size:11.5px;font-weight:700;color:var(--muted)}
+
+  /* 语音 pill（假播放） */
+  .vp{display:inline-flex;align-items:center;gap:9px;background:#fff;border:2px solid #eceaf6;border-radius:999px;padding:9px 14px;box-shadow:0 6px 14px rgba(71,57,142,.07);cursor:pointer;user-select:none}
+  .vp .p{width:28px;height:28px;border-radius:50%;background:var(--purple-soft);color:var(--purple-deep);display:grid;place-items:center;font-size:11px;flex:0 0 auto;transition:background .15s,color .15s;padding-left:2px}
+  .vp .bars{display:flex;align-items:center;gap:2.5px;height:18px}
+  .vp .bars i{width:3px;border-radius:2px;background:#cfcaff;display:block;transform-origin:center}
+  .vp .t{font-size:11.5px;font-weight:800;color:var(--muted)}
+  .vp.playing .p{background:var(--purple);color:#fff}
+  .vp.playing .bars i{animation:vpPulse .5s ease-in-out infinite alternate}
+  .vp.playing .bars i:nth-child(2n){animation-delay:.12s}
+  .vp.playing .bars i:nth-child(3n){animation-delay:.24s}
+  @keyframes vpPulse{from{transform:scaleY(.45)}to{transform:scaleY(1)}}
+  .vp-mini{padding:7px 11px}
+  .vp-mini .p{width:24px;height:24px}
+
+  /* 结算 */
+  .sum-wrap{flex:1;display:grid;place-items:center}
+  .sum-card{background:#fff;border-radius:22px;padding:26px 24px;box-shadow:0 16px 36px rgba(71,57,142,.12);text-align:center;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both;width:100%}
+  .sum-ico{width:52px;height:52px;border-radius:50%;background:#e2f6ee;color:var(--success);display:grid;place-items:center;font-size:24px;font-weight:900;margin:0 auto 12px}
+  .sum-card h2{font-size:19px;font-weight:900;margin:0}
+  .sum-card p{color:var(--muted);font-size:12.5px;font-weight:700;margin:8px 0 0}
+  @keyframes pop{0%{transform:scale(.86);opacity:0}100%{transform:scale(1);opacity:1}}
+
+  /* 视频课 */
+  .vid{background:#17142a;border-radius:20px;overflow:hidden;box-shadow:0 18px 40px rgba(23,20,42,.35);margin-top:14px;flex-shrink:0}
+  .vid-frame{position:relative;aspect-ratio:16/9;display:grid;place-items:center;background:radial-gradient(120% 90% at 50% 18%,#2d2755 0%,#17142a 72%)}
+  .vid-corner{position:absolute;top:10px;left:12px;font-size:10.5px;font-weight:800;color:rgba(255,255,255,.55);letter-spacing:.06em}
+  .vid-play{width:64px;height:64px;border-radius:50%;border:0;background:linear-gradient(135deg,#8d7bff,#6552ff);color:#fff;font-size:22px;display:grid;place-items:center;box-shadow:0 12px 30px rgba(101,82,255,.5);padding-left:5px;transition:opacity .25s,transform .25s}
+  .vid-ctrl{display:flex;align-items:center;gap:10px;padding:10px 14px 12px}
+  .vid-track{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden}
+  .vid-track i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#8d7bff,#b9a8ff)}
+  .vid-time{font-size:11px;font-weight:800;color:rgba(255,255,255,.75);font-variant-numeric:tabular-nums}
+
+  /* 跟读 */
+  .spk-card{background:#fff;border-radius:20px;padding:18px;box-shadow:0 10px 26px rgba(71,57,142,.09);text-align:center;margin-top:14px}
+  .spk-sentence{font-size:22px;font-weight:900;margin:0 0 12px;line-height:1.5}
+  .talk-zone{margin-top:18px}
+  .talk{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:58px;border-radius:18px;border:2px solid #ddd6ff;background:#fff;color:var(--purple-deep);font-size:16px;font-weight:800;user-select:none;transition:transform .1s,background .1s,color .1s,border-color .1s}
+  .talk.pressing{background:var(--purple);border-color:var(--purple);color:#fff;transform:scale(.985);box-shadow:0 10px 22px rgba(101,82,255,.35)}
+  .talk-hint{text-align:center;color:#a9a6bf;font-size:11.5px;font-weight:700;margin:10px 0 0;transition:color .2s}
+  .talk-hint.warn{color:#d9822b}
+  .score{margin-top:16px;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 10px 24px rgba(71,57,142,.09);opacity:0;transform:translateY(8px);transition:.3s}
+  .score.show{opacity:1;transform:none}
+  .score-line{display:flex;align-items:baseline;gap:6px}
+  .score-line b{font-size:27px;font-weight:900;color:var(--purple-deep)}
+  .score-line span{font-size:13px;font-weight:800;color:var(--muted)}
+  .score-track{margin-top:10px;height:6px;border-radius:999px;background:#efeafa;overflow:hidden}
+  .score-track i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#6552ff,#8d7bff);transition:width .9s ease .15s}
+  .score.show .score-track i{width:92%}
+
+  /* 拼句子 / 排序 */
+  .answer-zone{min-height:60px;border:2px dashed #cfc7f5;border-radius:16px;background:#fbfaff;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
+  .ans-ph{color:#b3adc8;font-size:12.5px;font-weight:700}
+  .bank{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .answer-zone .chip,.bank .chip{width:auto}
+
+  /* 实战 · 场景卡 */
+  .scene-screen{padding:14px}
+  .scene{flex:1;display:grid;place-items:center;background:#0e0c18;border-radius:22px;color:#fff;text-align:center;padding:24px}
+  .scene .t1{font-size:13px;font-weight:800;color:rgba(255,255,255,.55);letter-spacing:.1em;margin:0;animation:fadeUp .5s .1s both}
+  .scene .t2{font-size:27px;font-weight:900;margin:10px 0 0;animation:fadeUp .5s .45s both}
+  @keyframes fadeUp{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+
+  /* 实战 · 主管 */
+  .boss-stage{position:relative;border-radius:22px;overflow:hidden;background:linear-gradient(160deg,#2b2550,#1b1733);padding:18px 16px 16px;display:grid;justify-items:center;box-shadow:0 16px 36px rgba(27,23,51,.35);margin-top:14px}
+  .boss-stage::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 52% at 50% 36%,rgba(141,123,255,.42),transparent 70%)}
+  .boss-figure{position:relative;width:150px;height:138px}
+  .boss-figure svg{width:100%;height:100%;display:block}
+  .boss-name{position:relative;margin-top:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12.5px;font-weight:800;padding:5px 12px;border-radius:999px}
+  .boss-voice{display:flex;justify-content:center;margin-top:14px}
+  .demo-line{margin-top:12px}
+  .demo-toggle{width:100%;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:800;text-align:left;padding:4px 2px}
+  .demo-text{max-height:0;overflow:hidden;transition:max-height .28s ease;background:#fff;border-radius:14px;box-shadow:0 6px 16px rgba(71,57,142,.07)}
+  .demo-line.open .demo-text{max-height:170px}
+  .demo-text p{margin:0;padding:12px 14px 4px;font-size:13.5px;font-weight:700;line-height:1.7}
+  .demo-text small{display:block;padding:0 14px 12px;color:#a9a6bf;font-size:11px;font-weight:700}
+
+  /* 实战 · 复盘 */
+  .recap-list{display:grid;gap:10px;margin-top:16px}
+  .recap-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 6px 16px rgba(71,57,142,.07);font-size:15px;font-weight:800;opacity:0;transform:translateY(8px);transition:.3s}
+  .recap-row.show{opacity:1;transform:none}
+  .recap-row.miss{color:#a29cba}
+  .recap-row .mark{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:900}
+  .recap-row.ok .mark{background:#e2f6ee;color:var(--success)}
+  .recap-row.miss .mark{background:#f1f0f7;color:#a29cba}
+  .recap-note{margin:14px 2px 0;color:var(--ink);font-size:13px;font-weight:700;line-height:1.7;opacity:0;transform:translateY(6px);transition:.3s}
+  .recap-note.show{opacity:1;transform:none}
+
+  /* 实战 · 补习 */
+  .study-card{display:flex;align-items:center;gap:12px;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 8px 20px rgba(71,57,142,.08);margin-top:14px}
+  .study-card .txt{flex:1;min-width:0}
+  .study-card .txt b{font-size:16.5px;font-weight:900}
+  .study-card .txt small{display:block;color:var(--muted);margin-top:4px;font-size:12.5px;font-weight:700}
+
+  /* 结束态 */
+  .end-wrap{flex:1;display:grid;place-items:center}
+  .end-card{background:#fff;border-radius:22px;padding:26px 26px 24px;box-shadow:0 16px 36px rgba(71,57,142,.12);text-align:center;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+  .end-ico{width:54px;height:54px;border-radius:50%;background:#e2f6ee;color:var(--success);display:grid;place-items:center;font-size:25px;font-weight:900;margin:0 auto 12px}
+  .end-card h2{font-size:20px;font-weight:900;margin:0}
+  .end-card p{color:var(--muted);font-size:13px;font-weight:700;margin:8px 0 0}
+
+  /* v2 实战：数字人聊天框 */
+  .screen.chat-screen{padding:14px 12px 12px;overflow:hidden}
+  .chat-head{display:flex;align-items:center;gap:10px;background:#fff;border-radius:18px;padding:10px 12px;box-shadow:0 8px 20px rgba(71,57,142,.08)}
+  .chat-ava{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:linear-gradient(160deg,#2b2550,#1b1733);display:grid;place-items:center;overflow:hidden}
+  .chat-ava svg{width:30px;height:27px;display:block;margin-top:7px}
+  .chat-head .nm{flex:1;min-width:0}
+  .chat-head .nm b{display:block;font-size:14.5px;font-weight:900}
+  .chat-head .nm small{display:block;margin-top:2px;font-size:11px;font-weight:700;color:var(--muted)}
+  .online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#35c88f;margin-right:4px;vertical-align:1px}
+  .chat-screen .demo-line{margin-top:8px}
+  .chat-screen .demo-line.open .demo-text{max-height:300px}
+  .chat-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:12px 2px 6px}
+  .chat-note{text-align:center;color:#a9a6bf;font-size:11.5px;font-weight:800;opacity:0;transform:translateY(8px);transition:.3s}
+  .chat-note.show{opacity:1;transform:none}
+  .msg{display:flex;gap:8px;opacity:0;transform:translateY(10px);transition:.3s}
+  .msg.show{opacity:1;transform:none}
+  .msg.right{flex-direction:row-reverse}
+  .msg .mava{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:linear-gradient(160deg,#2b2550,#1b1733);display:grid;place-items:center;overflow:hidden;margin-top:2px}
+  .msg .mava svg{width:24px;height:22px;display:block;margin-top:6px}
+  .msg .mava.me{background:var(--purple-soft);color:var(--purple-deep);font-size:12.5px;font-weight:900}
+  .msg .bubble{max-width:78%;background:#fff;border-radius:16px 16px 16px 4px;padding:11px 13px;box-shadow:0 6px 16px rgba(71,57,142,.07);font-size:13.5px;font-weight:700;line-height:1.7}
+  .msg.right .bubble{background:var(--purple);color:#fff;border-radius:16px 16px 4px 16px}
+  .msg .vp{margin:0}
+  .chat-card{max-width:84%;background:#fff;border-radius:16px;padding:12px 13px;box-shadow:0 6px 16px rgba(71,57,142,.07);display:grid;gap:9px}
+  .chat-card .cap{font-size:11.5px;font-weight:800;color:var(--muted)}
+  .chat-row{display:flex;align-items:center;justify-content:space-between;background:#faf9ff;border-radius:12px;padding:9px 11px;font-size:13.5px;font-weight:800;opacity:0;transform:translateY(6px);transition:.3s}
+  .chat-row.show{opacity:1;transform:none}
+  .chat-row.miss{color:#a29cba}
+  .chat-row .mark{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:900}
+  .chat-row.ok .mark{background:#e2f6ee;color:var(--success)}
+  .chat-row.miss .mark{background:#f1f0f7;color:#a29cba}
+  .chat-note-in{margin:2px 2px 0;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.65}
+  .chat-stack{display:grid;gap:10px;max-width:84%}
+  .msg .study-card{margin:0}
+  .chat-glow{max-width:84%;background:linear-gradient(160deg,#fff,#f6f2ff);border:2px solid #e8e2ff;border-radius:16px;padding:14px;box-shadow:0 10px 24px rgba(101,82,255,.16)}
+  .chat-glow .gi{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ffd9a3,#ffb35c);display:grid;place-items:center;font-size:16px;margin-bottom:8px}
+  .chat-glow b{display:block;font-size:14.5px;font-weight:900}
+  .chat-glow small{display:block;margin-top:5px;font-size:11.5px;font-weight:700;color:var(--muted)}
+  .chat-glow .tf-btn{margin-top:11px;height:44px;font-size:14px;border-radius:13px}
+  .chat-foot{padding-top:10px}
+  .chat-foot .talk{height:52px}
+  .talk.done{background:#f1f0f7;border-color:#e3e1ee;color:#a29cba;pointer-events:none}
+
+</style>
+</head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="bossG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cdc0ff"/><stop offset="1" stop-color="#7a63ff"/>
+    </linearGradient>
+  </defs>
+</svg>
+<div class="app">
+
+  <div class="status-bar"><span>11:20</span><span>5G <span class="battery"></span></span></div>
+
+  <header class="page-head">
+    <button class="ph-back" type="button" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <h1 class="ph-title">实战</h1>
+    <span class="ph-tag">💬 情景对话</span>
+  </header>
+
+  <main class="flow">
+
+
+    <!-- 实战 1：场景卡 -->
+    <section class="screen scene-screen" data-screen="scene">
+      <div class="scene">
+        <div>
+          <p class="t1">上午 9:40 · 工位</p>
+          <p class="t2">主管来了</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 实战 2：数字人亮相 -->
+    <section class="screen" data-screen="boss1">
+      <div class="q-kicker">实战 · 数字人主管</div>
+      <div class="boss-stage">
+        <div class="boss-figure">
+          <svg viewBox="0 0 150 132">
+            <circle cx="75" cy="46" r="26" fill="url(#bossG)"/>
+            <circle cx="75" cy="46" r="26" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+            <path d="M20 132c5-32 26-46 55-46s50 14 55 46z" fill="url(#bossG)"/>
+          </svg>
+        </div>
+        <div class="boss-name">陈主管 · 仓库部</div>
+      </div>
+      <div class="boss-voice">
+        <span class="vp">
+          <span class="p">&#9654;</span>
+          <span class="bars"><i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:95%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:60%"></i></span>
+          <span class="t">00:09</span>
+        </span>
+      </div>
+      <div class="demo-line">
+        <button class="demo-toggle">演示台词 ▸</button>
+        <div class="demo-text">
+          <p>这批货的清单你整理一下，下班前发给仓库的老陈，有问题随时来问我。</p>
+          <small>演示时由人念 · 学生屏不显示这句</small>
+        </div>
+      </div>
+      <div class="cta"><button class="tf-btn" data-go="chat">开始对话</button></div>
+    </section>
+
+    <!-- 实战 3：数字人聊天 -->
+    <section class="screen chat-screen" data-screen="chat">
+      <div class="chat-head">
+        <span class="chat-ava"><svg viewBox="0 0 150 132"><circle cx="75" cy="46" r="26" fill="url(#bossG)"/><path d="M20 132c5-32 26-46 55-46s50 14 55 46z" fill="url(#bossG)"/></svg></span>
+        <div class="nm"><b>陈主管 · 仓库部</b><small><span class="online-dot"></span>在线 · 数字人</small></div>
+      </div>
+      <div class="demo-line">
+        <button class="demo-toggle">演示台词 ▸</button>
+        <div class="demo-text">
+          <p>① 这批货的清单你整理一下，下班前发给仓库的老陈，有问题随时来问我。</p>
+          <small>第一次 · 演示时由人念</small>
+          <p>② 这份清单整理好后，今天收工前给仓库的老陈，卡住随时问我。</p>
+          <small>第二次 · 演示时由人念</small>
+        </div>
+      </div>
+      <div class="chat-body" id="chatBody"></div>
+      <div class="chat-foot">
+        <button class="talk" id="talk">🎙️ 按住说话</button>
+        <p class="talk-hint" id="talkHint">按住不放，说完松手</p>
+      </div>
+    </section>
+
+    <!-- 结束态 -->
+    <section class="screen" data-screen="end">
+      <div class="end-wrap">
+        <div class="end-card">
+          <div class="end-ico">✓</div>
+          <h2>今天完成</h2>
+          <p>明天见</p>
+        </div>
+      </div>
+    </section>
+
+
+  </main>
+</div>
+<script>
+
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  var screens = $$(".screen");
+  var curEl = null;
+  var timers = [];
+  var later = function (fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; };
+  var clearTimers = function () { timers.forEach(clearTimeout); timers = []; };
+
+  function goto(id) {
+    var next = document.querySelector('.screen[data-screen="' + id + '"]');
+    if (!next) return;
+    clearTimers();
+    var prev = curEl;
+    screens.forEach(function (s) {
+      s.classList.remove("leave");
+      s.classList.toggle("active", s === next);
+    });
+    if (prev && prev !== next) {
+      prev.classList.add("leave");
+      setTimeout(function () { prev.classList.remove("leave"); }, 460);
+    }
+    curEl = next;
+    next.scrollTop = 0;
+    if (enter[id]) enter[id](next);
+  }
+  window.__tfJump = goto; /* QA 用：直接跳到某屏（可删） */
+
+  function pulse(el, ms) {
+    if (!el) return;
+    el.classList.add("playing");
+    clearTimeout(el._vpt);
+    el._vpt = setTimeout(function () { el.classList.remove("playing"); }, ms || 1200);
+  }
+  document.addEventListener("click", function (e) {
+    var vp = e.target.closest ? e.target.closest(".vp") : null;
+    if (vp) pulse(vp);
+  });
+
+  document.addEventListener("click", function (e) {
+    var g = e.target.closest ? e.target.closest("[data-go]") : null;
+    if (g) goto(g.dataset.go);
+  });
+
+  var backBtn = $(".ph-back");
+  if (backBtn) {
+    backBtn.addEventListener("click", function () {
+      if (window.history.length > 1) window.history.back();
+    });
+  }
+
+  /* 演示台词折叠 */
+  $$(".demo-toggle").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var box = btn.parentElement;
+      box.classList.toggle("open");
+      btn.textContent = box.classList.contains("open") ? "演示台词 ▾" : "演示台词 ▸";
+    });
+  });
+
+  /* 数字人聊天 */
+  var chatBody = $("#chatBody");
+  var talkBtn = $("#talk"), talkHint = $("#talkHint");
+  var chatStarted = false, chatLock = false, chatStage = 0;
+
+  function scrollDown() { chatBody.scrollTop = chatBody.scrollHeight; }
+  function reveal(node, delay) {
+    later(function () { node.classList.add("show"); scrollDown(); }, delay || 30);
+    return node;
+  }
+  function bossAva() {
+    var a = document.createElement("span");
+    a.className = "mava";
+    a.innerHTML = '<svg viewBox="0 0 150 132"><circle cx="75" cy="46" r="26" fill="url(#bossG)"/><path d="M20 132c5-32 26-46 55-46s50 14 55 46z" fill="url(#bossG)"/></svg>';
+    return a;
+  }
+  function meAva() {
+    var a = document.createElement("span");
+    a.className = "mava me";
+    a.textContent = "我";
+    return a;
+  }
+  function addMsg(side, content, delay) {
+    var m = document.createElement("div");
+    m.className = "msg " + side;
+    m.appendChild(side === "left" ? bossAva() : meAva());
+    m.appendChild(content);
+    chatBody.appendChild(m);
+    return reveal(m, delay);
+  }
+  function addNote(text, delay) {
+    var n = document.createElement("div");
+    n.className = "chat-note";
+    n.textContent = text;
+    chatBody.appendChild(n);
+    return reveal(n, delay);
+  }
+  function textBubble(text) {
+    var s = document.createElement("div");
+    s.className = "bubble";
+    s.textContent = text;
+    return s;
+  }
+  function vpEl(sec) {
+    var s = document.createElement("span");
+    s.className = "vp vp-mini";
+    s.innerHTML = '<span class="p">&#9654;</span><span class="bars"><i style="height:50%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:75%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:40%"></i><i style="height:65%"></i></span><span class="t">' + sec + "</span>";
+    return s;
+  }
+  function recapCard(rows, noteText, delay) {
+    var card = document.createElement("div");
+    card.className = "chat-card";
+    var cap = document.createElement("div");
+    cap.className = "cap";
+    cap.textContent = "你听到了什么";
+    card.appendChild(cap);
+    var rowEls = [];
+    rows.forEach(function (r) {
+      var d = document.createElement("div");
+      d.className = "chat-row " + (r.ok ? "ok" : "miss");
+      d.innerHTML = "<span>" + r.text + '</span><span class="mark">' + (r.ok ? "&#10003;" : "&#10007;") + "</span>";
+      card.appendChild(d);
+      rowEls.push(d);
+    });
+    var n = document.createElement("p");
+    n.className = "chat-note-in";
+    n.textContent = noteText;
+    card.appendChild(n);
+    addMsg("left", card, delay);
+    later(function () {
+      rowEls.forEach(function (r, i) {
+        later(function () { r.classList.add("show"); scrollDown(); }, 150 + i * 320);
+      });
+    }, (delay || 30) + 250);
+  }
+  function studyStack() {
+    var wrap = document.createElement("div");
+    wrap.className = "chat-stack";
+    wrap.innerHTML = '<div class="study-card"><div class="txt"><b>下班前</b><small>= 今天收工之前</small></div><span class="vp vp-mini"><span class="p">&#9654;</span><span class="bars"><i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i></span></span></div><div class="study-card"><div class="txt"><b>仓库的老陈</b><small>= 名字和部门一起记</small></div><span class="vp vp-mini"><span class="p">&#9654;</span><span class="bars"><i style="height:50%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:75%"></i></span></span></div>';
+    addMsg("left", wrap, 0);
+  }
+  function glowCard() {
+    var card = document.createElement("div");
+    card.className = "chat-glow";
+    card.innerHTML = '<div class="gi">&#10024;</div><b>听懂工作安排 · 完成</b><small>明天为你安排了 3 分钟复习</small><button class="tf-btn" data-go="end">回到今天</button>';
+    addMsg("left", card, 0);
+  }
+  function chatIntro() {
+    addNote("上午 9:40 · 工位", 50);
+    later(function () { addMsg("left", vpEl("00:09"), 0); }, 800);
+    later(function () { talkHint.textContent = "听清了就按住说话，复述给主管"; }, 1600);
+  }
+  function firstReply() {
+    chatLock = true;
+    addMsg("right", vpEl("00:06"), 0);
+    later(function () {
+      recapCard([{ text: "整理清单", ok: true }, { text: "下班前", ok: false }, { text: "仓库老陈", ok: false }], "主要意思抓到了，两个点没跟上，补一下再试。", 0);
+    }, 900);
+    later(function () { addMsg("left", textBubble("这两个点补一下，然后我们再听一遍。"), 0); }, 3700);
+    later(function () { studyStack(); }, 4600);
+    later(function () { addMsg("left", vpEl("00:09"), 0); }, 6400);
+    later(function () {
+      chatStage = 1;
+      chatLock = false;
+      talkHint.textContent = "再按住说话，这次把它说全";
+    }, 6900);
+  }
+  function secondReply() {
+    chatLock = true;
+    addMsg("right", vpEl("00:06"), 0);
+    later(function () {
+      recapCard([{ text: "整理清单", ok: true }, { text: "下班前", ok: true }, { text: "仓库老陈", ok: true }], "三个点全跟上了！", 0);
+    }, 900);
+    later(function () { glowCard(); }, 3500);
+    later(function () {
+      chatStage = 2;
+      talkBtn.classList.add("done");
+      talkBtn.textContent = "已完成";
+      talkHint.textContent = "点「回到今天」收工";
+    }, 3800);
+  }
+
+  var downAt = 0;
+  talkBtn.addEventListener("pointerdown", function (e) {
+    if (chatLock || chatStage > 1) return;
+    e.preventDefault();
+    downAt = Date.now();
+    talkBtn.classList.add("pressing");
+    if (talkBtn.setPointerCapture) { try { talkBtn.setPointerCapture(e.pointerId); } catch (err) {} }
+  });
+  var talkUp = function () {
+    if (!downAt) return;
+    var held = Date.now() - downAt;
+    downAt = 0;
+    talkBtn.classList.remove("pressing");
+    if (chatLock || chatStage > 1) return;
+    if (held < 250) {
+      talkHint.textContent = "再按久一点，说完再松手";
+      talkHint.classList.add("warn");
+      later(function () { talkHint.textContent = "按住不放，说完松手"; talkHint.classList.remove("warn"); }, 1600);
+      return;
+    }
+    if (chatStage === 0) firstReply();
+    else if (chatStage === 1) secondReply();
+  };
+  talkBtn.addEventListener("pointerup", talkUp);
+  talkBtn.addEventListener("pointercancel", talkUp);
+
+  var enter = {
+    scene: function () { later(function () { goto("boss1"); }, 2000); },
+    chat: function () {
+      if (chatStarted) return;
+      chatStarted = true;
+      chatIntro();
+    }
+  };
+
+  goto("scene");
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>背景强度对比 · today-blue</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#FFFFFF}
+body{width:max-content}
+.wrap{display:flex;gap:36px;padding:26px 28px 30px}
+.col{width:390px;flex:none}
+.lab{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15px;font-weight:800;color:#3A3A44;letter-spacing:.01em;margin:0 0 12px 2px;height:21px}
+.screen{position:relative;width:390px;height:844px;overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#17171A;-webkit-font-smoothing:antialiased;
+  --vR:.58; --vL:.60; --vT:.34;
+  background:
+    linear-gradient(270deg, rgba(150,156,170,var(--vR)) 0px, rgba(150,156,170,0) 30px),
+    radial-gradient(400px 270px at 390px -10px, rgba(74,82,105,var(--vT)), rgba(74,82,105,0) 74%),
+    radial-gradient(430px 260px at 50% -30px, #FFFFFF 0%, rgba(255,255,255,0) 72%),
+    linear-gradient(180deg,#F4F4F7 0%,#EFEFF3 100%)}
+.lvA{--vR:.38;--vL:.39;--vT:.22}
+.lvB{--vR:.58;--vL:.60;--vT:.34}
+.lvC{--vR:.87;--vL:.90;--vT:.51}
+.edgeL{position:absolute;left:0;top:0;width:34px;height:844px;pointer-events:none;
+  background:linear-gradient(90deg, rgba(160,165,180,var(--vL)), rgba(160,165,180,0));
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 20%,transparent 58%);
+  mask-image:linear-gradient(180deg,#000 0%,#000 20%,transparent 58%)}
+.st{position:absolute;left:30px;top:15px;font-size:15px;font-weight:800;letter-spacing:.01em}
+.si{position:absolute;right:28px;top:17px;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.bat{display:inline-block;width:23px;height:12px;border:1.6px solid #17171A;border-radius:3.5px;position:relative}
+.bat::after{content:"";position:absolute;left:2px;top:2px;bottom:2px;width:12px;border-radius:2px;background:#17171A}
+.hd-label{position:absolute;left:28px;top:60px;font-size:12.5px;font-weight:700;color:#8B8B95}
+.hd-days{position:absolute;left:27px;top:74px;display:flex;align-items:baseline;gap:7px}
+.hd-days .num{font-size:33px;line-height:1;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(128deg,#123FB4 10%,#2E74E9 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hd-days .unit{font-size:14px;font-weight:800;color:#3A3A44}
+.hd-rlab{position:absolute;right:28px;top:66px;font-size:12px;font-weight:700;color:#8B8B95;text-align:right;white-space:nowrap}
+.hd-rlab b{color:#17171A;font-weight:800}
+.hd-bar{position:absolute;right:28px;top:90px;width:132px;height:6px;border-radius:3px;background:#E2E4EC;overflow:hidden}
+.hd-bar i{position:absolute;left:0;top:0;bottom:0;width:26px;border-radius:3px;background:linear-gradient(90deg,#2E74E9,#0560E2)}
+.greet{position:absolute;left:28px;top:146px;font-size:37px;line-height:1.14;font-weight:800;letter-spacing:-.02em}
+.greet-sub{position:absolute;left:28px;top:200px;font-size:14px;font-weight:600;color:#8B8B95}
+.card3{position:absolute;left:45px;top:264px;width:300px;height:350px;border-radius:38px;background:#AEC9F3}
+.card2{position:absolute;left:37px;top:282px;width:316px;height:346px;border-radius:38px;background:#2E74E9;transform:rotate(-3deg)}
+.front{position:absolute;left:25px;top:300px;width:340px;height:350px;border-radius:38px;
+  background:linear-gradient(168deg,#0561E4 0%,#0560E2 52%,#0A63DF 100%);
+  box-shadow:0 14px 30px rgba(9,32,90,.14)}
+.tag{position:absolute;left:24px;top:24px;height:36px;padding:0 17px;border-radius:18px;background:#fff;color:#0560E2;
+  font-size:14.5px;font-weight:800;display:flex;align-items:center}
+.cap{position:absolute;right:24px;top:24px;height:36px;padding:0 16px 0 12px;border-radius:18px;background:rgba(255,255,255,.28);
+  display:flex;align-items:center;gap:8px;color:#fff;white-space:nowrap}
+.cap .ring{width:21px;height:21px;border-radius:50%;border:2px solid rgba(255,255,255,.92);position:relative;flex:none}
+.cap .ring::after{content:"";position:absolute;left:8.4px;top:3.6px;width:2px;height:7.6px;background:rgba(255,255,255,.92);border-radius:1px}
+.cap .ring::before{content:"";position:absolute;left:8.4px;top:9.6px;width:5.6px;height:2px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center}
+.cap b{font-size:13.5px;font-weight:700}
+.ttl{position:absolute;left:24px;top:186px;width:292px;font-size:30px;line-height:1.26;font-weight:700;letter-spacing:-.01em;color:#fff}
+.sub{position:absolute;left:24px;top:234px;font-size:15px;font-weight:600;color:rgba(255,255,255,.84)}
+.slide{position:absolute;left:24px;top:278px;width:232px;height:48px;border-radius:24px;background:rgba(255,255,255,.32)}
+.knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border-radius:50%;background:#0560E2;
+  box-shadow:0 0 0 2px rgba(255,255,255,.95);display:grid;place-items:center}
+.chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.chev i{width:6px;height:6px;border-right:2px solid rgba(255,255,255,.9);border-top:2px solid rgba(255,255,255,.9);
+  transform:rotate(45deg);border-radius:1px}
+.stx{position:absolute;left:0;right:0;top:15.5px;text-align:center;font-size:15.5px;font-weight:700;color:#fff;letter-spacing:.02em}
+.next{position:absolute;right:24px;top:278px;width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.nav{position:absolute;left:54px;top:700px;width:282px;height:66px;border-radius:33px;background:#fff;
+  box-shadow:0 14px 30px rgba(20,30,60,.13)}
+.nv-home{position:absolute;left:10.5px;top:10.5px;width:90px;height:45px;border-radius:22.5px;background:#0560E2;
+  display:flex;align-items:center;justify-content:center;gap:6px;color:#fff;font-size:14.5px;font-weight:800}
+.nv-r{position:absolute;top:10px;width:46px;height:46px;border-radius:50%;background:#F0F1F5;
+  display:grid;place-items:center;color:#6B6B76}
+.hbar{position:absolute;left:135px;top:802px;width:120px;height:5px;border-radius:2.5px;background:#101014}
+svg{display:block}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap"></div>
+<template id="tpl">
+  <div class="screen">
+    <div class="edgeL"></div>
+    <div class="st">11:20</div>
+    <div class="si">5G <span class="bat"></span></div>
+    <div class="hd-label">距离加入中资企业还有</div>
+    <div class="hd-days"><span class="num">58</span><span class="unit">天</span></div>
+    <div class="hd-rlab">已准备好 <b>2 / 10</b> 项能力</div>
+    <div class="hd-bar"><i></i></div>
+    <div class="greet">下午好，Alia</div>
+    <div class="greet-sub">今天有 4 件事要收走</div>
+    <div class="card3"></div>
+    <div class="card2"></div>
+    <div class="front">
+      <div class="tag">复习</div>
+      <div class="cap"><span class="ring"></span><b>约 2 分钟</b></div>
+      <div class="ttl">请求说明（第 2 次）</div>
+      <div class="sub">快问快答 · 3 题</div>
+      <div class="slide">
+        <div class="knob">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg>
+        </div>
+        <div class="stx">滑动开始</div>
+        <div class="chev"><i></i><i></i><i></i></div>
+      </div>
+      <div class="next">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0560E2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nv-home">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.9 11.3 12 4.3l8.1 7"/><path d="M6.3 9.6v9.6h11.4V9.6"/></svg>
+        今天
+      </div>
+      <div class="nv-r" style="left:111.5px">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><circle cx="9" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="15" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><path d="M8.8 14.6c1.9 1.9 4.5 1.9 6.4 0"/></svg>
+      </div>
+      <div class="nv-r" style="left:168.5px">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.6" y="5.2" width="16.8" height="15" rx="3"/><path d="M3.6 9.6h16.8M8.2 3.4v3.4M15.8 3.4v3.4"/></svg>
+      </div>
+      <div class="nv-r" style="left:225.5px">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.7"/><path d="M4.8 20.2c1-4.2 3.8-6.4 7.2-6.4s6.2 2.2 7.2 6.4"/></svg>
+      </div>
+    </div>
+    <div class="hbar"></div>
+  </div>
+</template>
+<script>
+const levels=[["lvA","1 · 参考原图强度"],["lvB","2 · 当前页面（已加强）"],["lvC","3 · 再压暗一档（示范）"]];
+const wrap=document.getElementById("wrap");
+for(const item of levels){
+  const col=document.createElement("div");col.className="col";
+  const lab=document.createElement("div");lab.className="lab";lab.textContent=item[1];
+  const screen=document.getElementById("tpl").content.firstElementChild.cloneNode(true);
+  screen.classList.add(item[0]);
+  col.append(lab,screen);wrap.append(col);
+}
+</script>
+</body>
+</html>

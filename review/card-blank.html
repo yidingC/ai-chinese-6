@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>无配图任务卡 · 三种做法</title>
+<style>
+  :root{--purple:#6552ff;--purple-deep:#4c35e8}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#E9E8F5}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    color:#17171A;-webkit-font-smoothing:antialiased;display:grid;place-items:center}
+  svg{display:block}
+  .phone{position:relative;width:390px;height:844px;border-radius:47.33px;overflow:hidden;background:#F5F3FA;
+    box-shadow:0 24px 60px rgba(18,24,45,.16)}
+  .deck{position:absolute;left:25px;top:300px;width:340px;height:350px}
+  .peek1{position:absolute;left:12px;top:-16px;width:316px;height:70px;border-radius:38px 38px 0 0;background:#7E6BFF;
+    box-shadow:0 14px 30px rgba(38,22,120,.20)}
+  .peek2{position:absolute;left:20px;top:-28px;width:300px;height:70px;border-radius:38px 38px 0 0;background:#C9C0FB}
+  .tcard{position:absolute;left:0;top:0;width:340px;height:350px;border-radius:38px;color:#fff;overflow:hidden;
+    background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);
+    box-shadow:0 14px 30px rgba(38,22,120,.20)}
+
+  /* 四角构成 + 文案：照 goal-work.html 原参数 */
+  .tc-tag{position:absolute;left:24px;top:24px;height:36px;padding:0 17px;border-radius:18px;background:#fff;color:#6552FF;
+    font-size:14.5px;font-weight:800;display:flex;align-items:center}
+  .tc-cap{position:absolute;right:24px;top:24px;height:36px;padding:0 16px 0 12px;border-radius:18px;background:rgba(255,255,255,.28);
+    display:flex;align-items:center;gap:8px;color:#fff;white-space:nowrap}
+  .tc-cap .ring{width:21px;height:21px;border-radius:50%;border:2px solid rgba(255,255,255,.92);position:relative;flex:none}
+  .tc-cap .ring::after{content:"";position:absolute;left:8.4px;top:3.6px;width:2px;height:7.6px;background:rgba(255,255,255,.92);border-radius:1px}
+  .tc-cap .ring::before{content:"";position:absolute;left:8.4px;top:9.6px;width:5.6px;height:2px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center}
+  .tc-cap b{font-size:13.5px;font-weight:700}
+  .tc-title{position:absolute;left:24px;top:186px;width:292px;font-size:24px;line-height:1.26;font-weight:700;letter-spacing:-.01em}
+  .tc-sub{position:absolute;left:24px;top:234px;font-size:15px;font-weight:600;color:rgba(255,255,255,.84)}
+  .slide{position:absolute;left:24px;top:278px;width:232px;height:48px;border-radius:24px;background:rgba(255,255,255,.32);overflow:hidden}
+  .slide-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(255,255,255,.38)}
+  .slide-label{position:absolute;left:0;right:0;top:15.5px;text-align:center;font-size:15.5px;font-weight:700;letter-spacing:.02em}
+  .chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+  .chev i{width:6px;height:6px;border-right:2px solid rgba(255,255,255,.9);border-top:2px solid rgba(255,255,255,.9);transform:rotate(45deg);border-radius:1px}
+  .slide-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;
+    box-shadow:0 0 0 2px rgba(255,255,255,.95);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;
+    transition:transform .24s cubic-bezier(.22,1,.36,1)}
+  .slide-knob svg{width:19px;height:19px}
+  .next{position:absolute;right:24px;top:278px;width:48px;height:48px;border:0;border-radius:50%;background:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+
+  /* ---------- A 柔光 + 玻璃声波 ---------- */
+  .v-a::before{content:"";position:absolute;left:0;top:0;width:100%;height:210px;border-radius:38px 38px 0 0;
+    background:radial-gradient(250px 200px at 300px 26px, rgba(255,255,255,.30), rgba(255,255,255,0) 72%)}
+  .v-a .glass{position:absolute;right:24px;top:82px;width:178px;height:86px;border-radius:26px;
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    background:linear-gradient(180deg,rgba(255,255,255,.36),rgba(255,255,255,.16) 48%,rgba(255,255,255,.22));
+    box-shadow:inset 0 1.5px 1px rgba(255,255,255,.9), inset 0 0 0 1px rgba(255,255,255,.34),
+      inset 0 -12px 20px rgba(255,255,255,.12), 0 12px 26px rgba(30,18,104,.18)}
+  .v-a .glass i{display:block;width:6px;border-radius:3px;background:rgba(255,255,255,.66)}
+
+  /* ---------- B 标签大字水印 ---------- */
+  .v-b::before{content:"";position:absolute;inset:0;border-radius:38px;
+    background:radial-gradient(280px 220px at 34px 330px, rgba(255,255,255,.17), rgba(255,255,255,0) 70%)}
+  .v-b .wm{position:absolute;right:-14px;top:-30px;font-size:196px;line-height:1;font-weight:900;letter-spacing:-.05em;
+    color:rgba(255,255,255,.10)}
+
+  /* ---------- C 三步玻璃胶囊（替配图讲题） ---------- */
+  .v-c::before{content:"";position:absolute;left:0;top:0;width:100%;height:210px;border-radius:38px 38px 0 0;
+    background:radial-gradient(300px 220px at 240px 10px, rgba(255,255,255,.22), rgba(255,255,255,0) 74%)}
+  .v-c .steps{position:absolute;left:24px;top:88px;display:flex;align-items:center;gap:9px}
+  .v-c .steps span{height:36px;padding:0 15px;border-radius:18px;display:flex;align-items:center;gap:6px;
+    font-size:13.5px;font-weight:800;color:#fff;
+    background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.16) 50%,rgba(255,255,255,.22));
+    box-shadow:inset 0 1.5px 1px rgba(255,255,255,.85), inset 0 0 0 1px rgba(255,255,255,.30), 0 8px 18px rgba(30,18,104,.14)}
+  .v-c .steps em{width:8px;height:8px;border-right:2px solid rgba(255,255,255,.62);border-top:2px solid rgba(255,255,255,.62);
+    transform:rotate(45deg);border-radius:1px;font-style:normal}
+</style>
+</head>
+<body>
+<div class="phone"><div class="deck">
+  <span class="peek2"></span><span class="peek1"></span>
+  <article class="tcard" id="card"></article>
+</div></div>
+<script>
+(function(){
+  var v = (new URLSearchParams(location.search)).get("v") || "a";
+  var KNOB = '<button class="slide-knob" type="button" aria-label="滑动开始"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>';
+  var base =
+    '<span class="tc-tag">练习</span>' +
+    '<span class="tc-cap"><span class="ring"></span><b>约 4 分钟</b></span>' +
+    '<h3 class="tc-title">听音选词 + 排序</h3>' +
+    '<p class="tc-sub">2 道题</p>' +
+    '<div class="slide"><span class="slide-fill"></span><span class="slide-label">滑动开始</span><span class="chev"><i></i><i></i><i></i></span>' + KNOB + '</div>' +
+    '<button class="next" type="button" aria-label="下一个"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6552FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 6.4 13.4 12l-6 5.6"/><path d="M17.4 6.4v11.2"/></svg></button>';
+  var extra = "";
+  if (v === "a"){
+    var hs = [14,26,38,52,34,58,44,30,50,36,22,42];
+    extra = '<span class="glass">' + hs.map(function(h){ return '<i style="height:' + h + 'px"></i>'; }).join("") + '</span>';
+  } else if (v === "b"){
+    extra = '<span class="wm">练</span>';
+  } else {
+    extra = '<div class="steps"><span>听音</span><em></em><span>选词</span><em></em><span>排序</span></div>';
+  }
+  var card = document.getElementById("card");
+  card.className = "tcard v-" + v;
+  card.innerHTML = extra + base;
+
+  var knob = card.querySelector(".slide-knob"), slide = card.querySelector(".slide");
+  var x0 = 0, maxX = 1, dragging = false;
+  function apply(px){
+    knob.style.transform = "translateX(" + px + "px)";
+    card.querySelector(".slide-fill").style.width = (px + 48) + "px";
+  }
+  knob.addEventListener("pointerdown", function(e){
+    e.preventDefault(); e.stopPropagation();
+    dragging = true; maxX = slide.clientWidth - 48; x0 = e.clientX;
+    try { knob.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  knob.addEventListener("pointermove", function(e){
+    if (!dragging) return;
+    var px = e.clientX - x0;
+    if (px < 0) px = 0;
+    if (px > maxX) px = maxX;
+    apply(px);
+  });
+  function up(){ if (!dragging) return; dragging = false; apply(0); }
+  knob.addEventListener("pointerup", up);
+  knob.addEventListener("pointercancel", up);
+})();
+</script>
+</body>
+</html>

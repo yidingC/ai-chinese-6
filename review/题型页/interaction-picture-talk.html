@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7fc">
+  <title>看图说话 · AI Chinese Cloud</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="interaction-picture-talk.css">
+</head>
+<body data-page="activity" data-activity-type="picture-talk">
+  <div class="app-shell">
+    <div class="status-bar" aria-hidden="true">
+      <span>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <header class="page-header">
+      <a class="icon-button" href="index.html" data-activity-back aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1><span data-activity-title>看图说话</span></h1>
+      <span class="header-spacer"></span>
+    </header>
+
+    <main class="page page-content">
+      <!-- 轮内多题（跨页那一轮）：进度行。不是轮内时整块不出现（由 shared/round-flow.js 管） -->
+      <div class="round-progress hidden" data-round-progress>
+        <span class="round-progress-dots" data-round-dots aria-hidden="true"></span>
+        <p class="round-progress-text" data-round-text></p>
+      </div>
+
+      <!-- 卡片 + 学习卡：学习卡是卡片的下一层，平时整条压在卡片下沿后面，出结果才滑出来 -->
+      <div class="picture-talk-stage">
+        <section class="picture-talk-card" aria-labelledby="picture-talk-prompt">
+          <!-- 题面只说给读屏听：页面上让大图和底部那枚麦克风自己说话 -->
+          <p class="picture-talk-sr" id="picture-talk-prompt" data-picture-talk-prompt>看这张图，用中文说一句话。</p>
+
+          <div class="picture-talk-figure">
+            <!-- 图槽内容由脚本渲染：现在是 emoji，数据里填上 image 路径就换成真图 -->
+            <div class="picture-talk-slot" data-picture-talk-slot></div>
+          </div>
+
+          <p class="picture-talk-hint" data-picture-talk-hint></p>
+        </section>
+
+        <!-- 学习卡：录完（＝交卷）出现，只放「一句鼓励 + 参考答案」——不打分，约 2 秒后自己弹弹窗 -->
+        <div class="picture-talk-result hidden" role="status" aria-live="polite" tabindex="-1" data-picture-talk-result>
+          <!-- 鼓励行：中文大字 + 「·」+ 印尼小字，和下面两行同一根左轴（不居中），点只做装饰 -->
+          <p class="picture-talk-cheer">
+            <span data-picture-talk-cheer>说得不错！</span>
+            <i class="picture-talk-cheer-dot" aria-hidden="true">·</i>
+            <span class="picture-talk-cheer-id" lang="id" data-picture-talk-cheer-id>Bagus!</span>
+          </p>
+
+          <!-- 参考答案：句子自己说明是参考答案，不再挂「参考答案 · Jawaban contoh」标签行（同开放问答页） -->
+          <p class="picture-talk-answer" data-picture-talk-answer></p>
+          <p class="picture-talk-answer-id" lang="id" data-picture-talk-answer-id></p>
+        </div>
+      </div>
+
+      <!-- 贴底动作区：一行小字（状态都靠它说）→ 通栏麦克风 -->
+      <div class="picture-talk-actions">
+        <p class="picture-talk-record-hint" data-picture-talk-record-hint>按住说完松开 · Tahan, lepas setelah selesai</p>
+        <!-- 视觉上只有麦克风；名字靠 aria-label 给读屏（见 js），不留可见文字 -->
+        <button type="button" class="picture-talk-mic" data-picture-talk-mic aria-label="按住说话" aria-pressed="false" aria-busy="false">
+          <span class="picture-talk-mic-icon" aria-hidden="true" data-picture-talk-mic-icon>🎤</span>
+        </button>
+      </div>
+
+      <p class="picture-talk-announcer" data-picture-talk-announcer role="status" aria-live="polite"></p>
+
+      <!-- 轮内多题：【下一题 / Lanjut】。轮内进场就摆着（灰、点不动），出结果才变紫可点；题型体验时整块不出现 -->
+      <div class="pt-next hidden" data-pt-next>
+        <button type="button" class="primary-button btn-stacked" data-pt-next-btn disabled>
+          <span data-pt-next-label>下一题</span>
+          <span class="btn-id" lang="id" data-pt-next-label-id>Lanjut</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="shared/activity-types.js"></script>
+  <script type="module" src="shared/activity-fab.js"></script>
+  <script type="module" src="shared/activity-bridge.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="shared/activity-page.js"></script>
+  <script type="module" src="shared/feedback-copy.js"></script>
+  <script type="module" src="shared/feedback-modal.js"></script>
+  <script type="module" src="round-content.js"></script>
+  <script type="module" src="shared/round-flow.js"></script>
+  <script type="module" src="interaction-picture-talk.js"></script>
+</body>
+</html>

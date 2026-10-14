@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日历 · AI Chinese 6.0</title>
+<style>
+  :root{
+    --purple:#6552ff; --purple-deep:#4c35e8; --purple-soft:#eeeaff;
+    --done:#35c88f; --done-deep:#1d8f6e;
+    --ink:#252244; --ink-soft:#6a6680; --ink-faint:#9b97ae;
+    --line:#e8e6f3; --paper:#fff; --page:#f7f7fc;
+    --shadow-card:0 10px 28px rgba(35,32,58,.07);
+    --shadow-float:0 16px 36px rgba(35,32,58,.15);
+    --accent-line:rgba(101,82,255,.30);
+    --tint:#f2f0fa;
+    --safe-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--page)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  button:focus-visible{outline:2px solid #cfcaff;outline-offset:2px}
+
+  /* 整页固定：顶部 / 日历区 / 待办卡，谁都不滚；状态栏、手机壳、底栏都归公区壳管 */
+  .cal-main{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#fff}
+
+  /* 顶部：标题 + 切月；去掉返回，整块往下坐 */
+  .cal-top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:26px 16px 12px;background:#fff}
+  .cal-title{margin:0;font-size:30px;font-weight:800;letter-spacing:.01em}
+
+  .month-pick{position:relative;margin-left:auto}
+  .month-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-size:13px;font-weight:800;box-shadow:0 4px 12px rgba(35,32,58,.05)}
+  .month-btn:active{transform:scale(.97)}
+  .month-btn .chev{width:13px;height:13px;color:var(--ink-faint);transition:transform .18s ease}
+  .month-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+  .month-menu{position:absolute;right:0;top:calc(100% + 7px);z-index:40;min-width:116px;padding:6px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow-float)}
+  .month-menu[hidden]{display:none}
+  .month-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 11px;border:0;border-radius:12px;background:none;font-size:13.5px;font-weight:700;color:var(--ink)}
+  .month-opt:active{background:#f5f3fd}
+  .month-opt[aria-selected="true"]{background:var(--purple-soft);color:var(--purple-deep);font-weight:800}
+  .month-opt .tick{width:13px;height:13px;color:var(--purple-deep);opacity:0}
+  .month-opt[aria-selected="true"] .tick{opacity:1}
+
+  /* 日历区：固定高度，同一时刻只有一个月 */
+  .cal-area{flex:6 1 0%;min-height:0;display:flex;flex-direction:column;padding:0 14px;background:#fff;--wk-h:22px}
+  /* 表头和日期在同一张网格里：日期行平分剩余高度，整块铺满、下沿贴着卡片，五行和六行的月份看着一样满 */
+  .grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:var(--wk-h);grid-auto-rows:1fr}
+  .wk{display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--ink-faint)}
+  .cell{display:grid;justify-items:center;align-content:center;gap:3px;padding:0;border:0;background:none;border-radius:16px}
+  .cell .d{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:500;font-variant-numeric:tabular-nums;color:#c4c1d4;transition:transform .12s ease,box-shadow .18s ease,background .18s ease}
+  .cell .dot{width:5px;height:5px;border-radius:50%;background:transparent}
+  .cell.is-empty{pointer-events:none}
+  .cell:active .d{transform:scale(.93)}
+  /* 数字统一细字重：状态只用颜色和圆点区分，不再靠加粗 */
+  .cell.is-done .d{color:var(--ink)}
+  .cell.is-done .dot{background:var(--done)}
+  .cell.is-rest .d{color:var(--ink-faint)}
+  .cell.is-out .d{color:#dcd9e8}
+  .cell.is-today .d{background:var(--purple);color:#fff;box-shadow:0 8px 18px rgba(101,82,255,.3)}
+  .cell.is-selected:not(.is-today) .d{border:1.5px solid var(--accent-line);background:var(--purple-soft);color:var(--purple-deep)}
+
+  /* 底部待办卡：参考「白卡片 + 细边框 + 轻投影」的卡片感，直接坐在白底上 */
+  /* min-height 取「四行 + 备注」那版卡片的自然高度：任何窗口下，切日期都不带动上方的月历 */
+  .day-panel{flex:4 1 0%;min-height:322px;display:flex;flex-direction:column;padding:11px 12px calc(9px + var(--safe-bottom));background:#fff}
+  .panel-card{flex:1 1 auto;display:flex;flex-direction:column;justify-content:flex-start;padding:16px 18px;border-radius:22px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-card)}
+  .panel-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:26px}
+  /* 卡头只留一行大字标题，状态由内容本身说明 */
+  .panel-title{margin:0;font-size:26px;font-weight:800;line-height:1.25;letter-spacing:.01em;color:var(--ink)}
+  .back-today{flex:0 0 auto;padding:2px 0;border:0;background:none;font-size:12.5px;font-weight:800;color:var(--purple-deep)}
+  .back-today:active{opacity:.6}
+  .back-today[hidden]{display:none}
+
+  .panel-body{flex:0 0 auto;display:flex;flex-direction:column;gap:13px}
+  .task-list{list-style:none;margin:0;padding:0;display:grid;gap:15px}
+  .task-list[hidden]{display:none}
+  /* 两行结构：第一行任务名，第二行时长小字；标签和圈跨两行居中 */
+  .task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:9px;row-gap:2px;align-items:center}
+  .task-tag{grid-column:1;grid-row:1/3;padding:3px 9px;border-radius:999px;background:var(--purple-soft);color:var(--purple-deep);font-size:11.5px;font-weight:800;white-space:nowrap}
+  .task-text{grid-column:2;grid-row:1;font-size:14.5px;font-weight:500;line-height:1.4}
+  .task-time{grid-column:2;grid-row:2;font-size:12.5px;font-weight:600;color:var(--ink-faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .task-check{grid-column:3;grid-row:1/3;width:30px;height:30px;padding:0;display:grid;place-items:center;border:2px solid #DCD8EB;border-radius:50%;background:#fff;color:transparent}
+  .task-check svg{width:15px;height:15px}
+  .task.done .task-text{color:var(--ink-soft)}
+  .task.done .task-check{border-color:transparent;background:var(--done);color:#fff}
+  .task.future .task-tag{background:#e8e5f4;color:#a9a6bf}
+  .task.future .task-text{color:#a9a6bf}
+  .task.future .task-time{color:#c7c4d6}
+  .task.future .task-check{border-color:#e9e6f6}
+  .panel-plain{margin:0;font-size:13.5px;font-weight:600;line-height:1.6;color:var(--ink-soft)}
+  .panel-plain[hidden]{display:none}
+
+  .toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-bottom));transform:translate(-50%,10px);max-width:82vw;padding:11px 18px;border-radius:999px;background:rgba(35,32,58,.93);color:#fff;font-size:13.5px;font-weight:600;text-align:center;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;z-index:80}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* 原来按「窗口高度 / 宽度」分档的矮屏、宽屏规则已删：
+     现在画布固定 390 × 844，窗口变小是整机等比缩小，那些分档只会误触发。 */
+</style>
+<link rel="stylesheet" href="shell-slide.css">
+<style>
+  /* ---------- 公区壳适配（必须放在 shell.css 之后）----------
+     状态栏 / Home 条 / 悬浮导航 / 手机框都归 shell.css + shell.js；
+     这里只做两件事：内容区止步于导航上方、顶部收紧一点给月历腾格子高度。 ---------- */
+  .shell-screen{--shell-bg:#F7F7FC}
+  .shell-main{display:flex;flex-direction:column;bottom:115px;padding-bottom:0;overflow:hidden}
+  .cal-top{padding:14px 16px 10px}
+</style>
+</head>
+<body data-tab="calendar">
+<div class="shell-stage">
+<div class="shell-screen">
+
+  <div class="shell-main">
+    <main class="cal-main">
+      <header class="cal-top">
+        <h1 class="cal-title">日历</h1>
+        <div class="month-pick" id="monthPick">
+          <button class="month-btn" id="monthBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="切换月份">
+            <span class="month-label">10 月</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.4 12 15.4l6-6"/></svg>
+          </button>
+          <div class="month-menu" id="monthMenu" role="listbox" aria-label="选择月份" hidden>
+            <button class="month-opt" type="button" role="option" data-m="10" aria-selected="true">
+              <span>10 月</span>
+              <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>
+            </button>
+            <button class="month-opt" type="button" role="option" data-m="11" aria-selected="false">
+              <span>11 月</span>
+              <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>
+            </button>
+            <button class="month-opt" type="button" role="option" data-m="12" aria-selected="false">
+              <span>12 月</span>
+              <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section class="cal-area" aria-label="月历">
+        <div class="grid" id="grid"></div>
+      </section>
+
+      <section class="day-panel" aria-label="这一天的安排">
+        <div class="panel-card">
+          <div class="panel-head">
+            <h2 class="panel-title" id="panelTitle"></h2>
+            <button class="back-today" id="backToday" type="button" hidden>回到今天</button>
+          </div>
+          <div class="panel-body">
+            <ul class="task-list" id="taskList"></ul>
+            <p class="panel-plain" id="panelPlain" hidden></p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+</div>
+</div>
+<script src="shell-slide.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 模拟数据（写死，不用日期库） ----------
+     演示当天：2026-10-14；准备期 10/6 - 12/11（入职日）；10/9 是缓冲日 */
+  var MONTHS = [
+    { m: 10, lead: 3, days: 31 },
+    { m: 11, lead: 6, days: 30 },
+    { m: 12, lead: 1, days: 31 }
+  ];
+  var TODAY = { m: 10, d: 14 };
+  var PLAN_FROM = { m: 10, d: 6 };
+  var PLAN_TO = { m: 12, d: 11 };
+  var REST_DAYS = [9];
+  var DONE_DAYS = [6, 7, 8, 10, 11, 12, 13];
+
+  /* 过去每天：复习 / 新学 / 练习 / 实战 / 实战结果 */
+  var PAST = {
+    6:  { review: "打招呼和自我介绍", learn: "数字和工位", drill: "听音选词", battle: "自我介绍", result: "用了 3 次提示" },
+    7:  { review: "数字和工位", learn: "时间说法（三点、四点）", drill: "听音选词", battle: "跟虚拟主管打招呼", result: "用了 2 次提示" },
+    8:  { review: "时间说法（三点、四点）", learn: "常用礼貌开头", drill: "句子排序", battle: "跟虚拟主管演一遍", result: "用了 2 次提示" },
+    10: { review: "打招呼和自我介绍", learn: "请再说一遍", drill: "听音选词", battle: "跟虚拟主管演一遍", result: "用了 1 次提示" },
+    11: { review: "数字和工位", learn: "听不清时怎么问", drill: "拼句子", battle: "跟虚拟主管演一遍", result: "用了 1 次提示" },
+    12: { review: "常用礼貌开头", learn: "确认时间（几点前）", drill: "句子排序", battle: "跟虚拟主管演一遍", result: "一次通过" },
+    13: { review: "时间说法（三点、四点）", learn: "请求说明（第 1 次）", drill: "句子排序", battle: "跟虚拟主管演一遍", result: "用了 2 次提示" }
+  };
+  /* 今天（10/14） */
+  var TODAY_ROWS = [
+    ["复习", "请求说明（第 2 次）", "2 分钟"],
+    ["新学", "把……一下 / 发给", "8 分钟"],
+    ["练习", "听音选词 ＋ 排序", "4 分钟"],
+    ["实战", "跟虚拟主管演一遍", "5 分钟"]
+  ];
+  /* 未来：四行概括说法（新学那行按月微调） */
+  var FUTURE_LEARN = { 10: "下一组工作句式", 11: "会议和邮件里的说法", 12: "上岗前的常用交代" };
+  var ROW_MIN = ["2 分钟", "8 分钟", "4 分钟", "5 分钟"];
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>';
+
+  var gridEl = document.getElementById("grid");
+  var titleEl = document.getElementById("panelTitle");
+  var listEl = document.getElementById("taskList");
+  var plainEl = document.getElementById("panelPlain");
+  var backTodayBtn = document.getElementById("backToday");
+  var monthPick = document.getElementById("monthPick");
+  var monthBtn = document.getElementById("monthBtn");
+  var monthMenu = document.getElementById("monthMenu");
+  var monthLabel = monthBtn.querySelector(".month-label");
+
+  var viewMonth = TODAY.m;                         /* 日历区现在显示哪个月 */
+  var current = { m: TODAY.m, d: TODAY.d };        /* 选中的是哪天 */
+
+  /* ---------- 提示条 ---------- */
+  var toastEl = document.querySelector(".toast");
+  var toastTimer = null;
+  function toast(text) {
+    toastEl.textContent = text;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2000);
+  }
+
+  /* ---------- 每天的状态 ---------- */
+  function dayState(m, d) {
+    if (m === PLAN_FROM.m && d < PLAN_FROM.d) return "out";
+    if (m === PLAN_TO.m && d > PLAN_TO.d) return "out";
+    if (m === 10 && REST_DAYS.indexOf(d) > -1) return "rest";
+    if (m === 10 && DONE_DAYS.indexOf(d) > -1) return "done";
+    if (m === TODAY.m && d === TODAY.d) return "today";
+    return "future";
+  }
+
+  /* ---------- 月网格（只画当前月） ---------- */
+  function monthData(m) {
+    for (var i = 0; i < MONTHS.length; i++) if (MONTHS[i].m === m) return MONTHS[i];
+    return MONTHS[0];
+  }
+
+  function dayCell(m, d) {
+    var cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "cell is-" + dayState(m, d);
+    cell.dataset.m = m;
+    cell.dataset.d = d;
+    cell.setAttribute("aria-label", m + " 月 " + d + " 日");
+    if (m === TODAY.m && d === TODAY.d) cell.setAttribute("aria-current", "date");
+    var num = document.createElement("span");
+    num.className = "d";
+    num.textContent = String(d);
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    cell.appendChild(num);
+    cell.appendChild(dot);
+    cell.addEventListener("click", function () { select(m, d); });
+    return cell;
+  }
+
+  function renderGrid() {
+    var mo = monthData(viewMonth);
+    gridEl.innerHTML = "";
+    /* 表头也放进网格里，跟着日期一起贴底 */
+    ["一", "二", "三", "四", "五", "六", "日"].forEach(function (t) {
+      var s = document.createElement("span");
+      s.className = "wk";
+      s.textContent = t;
+      s.setAttribute("aria-hidden", "true");
+      gridEl.appendChild(s);
+    });
+    for (var i = 0; i < mo.lead; i++) {
+      var blank = document.createElement("span");
+      blank.className = "cell is-empty";
+      gridEl.appendChild(blank);
+    }
+    for (var d = 1; d <= mo.days; d++) gridEl.appendChild(dayCell(mo.m, d));
+    /* 补满当月最后一行即可；行高由 CSS 平分，整块始终铺满 */
+    for (var k = mo.lead + mo.days; k % 7 !== 0; k++) {
+      var pad = document.createElement("span");
+      pad.className = "cell is-empty";
+      gridEl.appendChild(pad);
+    }
+  }
+
+  /* ---------- 选中态 ---------- */
+  function paintSelection() {
+    Array.prototype.forEach.call(gridEl.querySelectorAll(".cell"), function (c) {
+      var on = Number(c.dataset.m) === current.m && Number(c.dataset.d) === current.d;
+      c.classList.toggle("is-selected", on);
+      if (on) c.setAttribute("aria-pressed", "true");
+      else c.removeAttribute("aria-pressed");
+    });
+    /* 选中的就是今天时，「回到今天」藏起来 */
+    backTodayBtn.hidden = current.m === TODAY.m && current.d === TODAY.d;
+  }
+
+  function select(m, d) {
+    current = { m: m, d: d };
+    paintSelection();
+    renderPanel(m, d);
+  }
+
+  function setMonth(m) {
+    viewMonth = m;
+    monthLabel.textContent = m + " 月";
+    Array.prototype.forEach.call(monthMenu.querySelectorAll(".month-opt"), function (opt) {
+      opt.setAttribute("aria-selected", Number(opt.dataset.m) === m ? "true" : "false");
+    });
+    renderGrid();
+    /* 切月后默认选 1 日；切回 10 月落回今天 */
+    select(m, m === TODAY.m ? TODAY.d : 1);
+  }
+
+  /* ---------- 四行 ---------- */
+  function rowHtml(state, tag, text, time) {
+    var check;
+    if (state === "todo") {
+      check = '<button class="task-check" type="button" aria-pressed="false" aria-label="标记完成：' + text + '">' + CHECK + "</button>";
+    } else {
+      check = '<span class="task-check" aria-hidden="true">' + CHECK + "</span>";
+    }
+    var cls = state === "done" ? "task done" : (state === "future" ? "task future" : "task");
+    return '<li class="' + cls + '"><span class="task-tag">' + tag + '</span><span class="task-text">' + text +
+      '</span><span class="task-time">' + time + "</span>" + check + "</li>";
+  }
+
+  function setTitle(text) {
+    titleEl.textContent = text;
+  }
+
+  function renderPanel(m, d) {
+    var state = dayState(m, d);
+    var dateText = m + " 月 " + d + " 日";
+    listEl.innerHTML = "";
+    listEl.hidden = false;
+    plainEl.hidden = true;
+    plainEl.textContent = "";
+
+    /* 计划外：准备期之前 / 入职日之后 */
+    if (state === "out") {
+      setTitle(dateText);
+      plainEl.hidden = false;
+      plainEl.textContent = m === PLAN_TO.m
+        ? "准备期到 12 月 11 日为止，之后就是正式上岗了。"
+        : "准备期从 10 月 6 日开始，那一天还没排上内容。";
+      listEl.hidden = true;
+      return;
+    }
+
+    /* 缓冲日：10 月 9 日没有安排 */
+    if (state === "rest") {
+      setTitle(dateText);
+      plainEl.hidden = false;
+      plainEl.textContent = "留一天喘口气：想练就补补前面没吃透的地方，不想练也可以跳过。";
+      listEl.hidden = true;
+      return;
+    }
+
+    if (state === "today") {
+      setTitle("今日任务");
+      listEl.innerHTML = TODAY_ROWS.map(function (r) {
+        return rowHtml("todo", r[0], r[1], r[2]);
+      }).join("");
+    } else if (state === "done") {
+      var p = PAST[d] || PAST[13];
+      setTitle(dateText);
+      listEl.innerHTML = [
+        rowHtml("done", "复习", p.review, ROW_MIN[0]),
+        rowHtml("done", "新学", p.learn, ROW_MIN[1]),
+        rowHtml("done", "练习", p.drill, ROW_MIN[2]),
+        rowHtml("done", "实战", p.battle, ROW_MIN[3])
+      ].join("");
+    } else {
+      setTitle(dateText);
+      listEl.innerHTML = [
+        rowHtml("future", "复习", "巩固之前内容", ROW_MIN[0]),
+        rowHtml("future", "新学", FUTURE_LEARN[m] || FUTURE_LEARN[10], ROW_MIN[1]),
+        rowHtml("future", "练习", "听音与排序", ROW_MIN[2]),
+        rowHtml("future", "实战", "情景对话", ROW_MIN[3])
+      ].join("");
+    }
+
+    /* 今天的圆圈：点一下就是做完了 */
+    Array.prototype.forEach.call(listEl.querySelectorAll("button.task-check"), function (btn) {
+      btn.addEventListener("click", function () {
+        var row = btn.closest(".task");
+        var on = row.classList.toggle("done");
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.setAttribute("aria-label", (on ? "取消完成：" : "标记完成：") + row.querySelector(".task-text").textContent);
+      });
+    });
+  }
+
+  /* ---------- 切月菜单 ---------- */
+  function setMenu(open) {
+    monthMenu.hidden = !open;
+    monthBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  monthBtn.addEventListener("click", function () { setMenu(monthMenu.hidden); });
+  Array.prototype.forEach.call(monthMenu.querySelectorAll(".month-opt"), function (opt) {
+    opt.addEventListener("click", function () {
+      setMenu(false);
+      setMonth(Number(opt.dataset.m));
+    });
+  });
+  document.addEventListener("click", function (e) {
+    if (!monthMenu.hidden && !monthPick.contains(e.target)) setMenu(false);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") setMenu(false);
+  });
+
+  /* ---------- 入口 ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-toast]"), function (el) {
+    el.addEventListener("click", function () { toast(el.getAttribute("data-toast")); });
+  });
+  backTodayBtn.addEventListener("click", function () { setMonth(TODAY.m); });
+
+  renderGrid();
+  select(TODAY.m, TODAY.d);
+})();
+</script>
+</body>
+</html>

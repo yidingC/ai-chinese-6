@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F5F3FA">
+  <title>AI Chinese 6.0 · 快速测试</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ---------- 测试页（新）：4 题快速能力测试 ---------- */
+
+    .test-main { display: grid; align-content: start; padding: 4px 20px calc(30px + var(--safe-bottom)); }
+
+    .test-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 6px; }
+    .t-back { text-decoration: none; }
+    .t-back svg { width: 19px; height: 19px; }
+    .t-dots { display: flex; gap: 6px; }
+    .t-dots i { width: 22px; height: 4px; border-radius: 2px; background: #E4E1F0; transition: background .25s ease, transform .25s ease; }
+    .t-dots i.done { background: rgba(101, 82, 255, .42); }
+    .t-dots i.on { background: var(--accent); transform: scaleY(1.25); }
+    .t-slot { width: 42px; height: 42px; }
+
+    .t-step { display: none; }
+    .t-step.is-on { display: grid; gap: 14px; animation: tRise .32s cubic-bezier(.22, .61, .36, 1) both; }
+    @keyframes tRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    .t-cap { margin: 2px 2px 0; font-size: 12.5px; font-weight: 800; letter-spacing: .04em; color: var(--ink-faint); }
+    .t-q { margin: 0 2px; font-size: 21px; line-height: 1.45; font-weight: 800; letter-spacing: .01em; }
+
+    /* 大喇叭播放键 */
+    .t-play { justify-self: center; position: relative; width: 104px; height: 104px; margin: 12px 0 4px; padding: 0; border: 0; border-radius: 50%; background: linear-gradient(145deg, #7B68FF 0%, var(--accent-deep) 100%); color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 14px 28px var(--accent-glow), inset 0 -6px 0 rgba(0, 0, 0, .16); transition: transform .14s ease; }
+    .t-play:active { transform: scale(.96); }
+    .t-play:focus-visible { outline: 3px solid var(--accent-line); outline-offset: 3px; }
+    .t-play svg { width: 42px; height: 42px; }
+    .t-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent-line); opacity: 0; pointer-events: none; }
+    .t-play.is-playing .t-ring { animation: tRing 1.05s ease-out both; }
+    .t-play.is-playing .t-ring.r2 { animation-delay: .22s; }
+    @keyframes tRing { 0% { transform: scale(1); opacity: .75; } 100% { transform: scale(1.55); opacity: 0; } }
+    .t-play-cap { justify-self: center; margin: 0; font-size: 12px; font-weight: 700; color: var(--ink-faint); }
+
+    /* 选项 */
+    .t-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+    .t-opts.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .t-opt { min-height: 78px; padding: 12px 10px; border: 2px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 6px 16px rgba(35, 32, 58, .05); display: grid; place-items: center; gap: 3px; font-size: 17px; font-weight: 800; color: var(--ink); cursor: pointer; transition: transform .14s ease, border-color .18s ease, background .18s ease, color .18s ease, opacity .2s ease; }
+    .t-opt small { font-size: 11.5px; font-weight: 700; color: var(--ink-faint); }
+    .t-opt:active { transform: scale(.97); }
+    .t-opt:disabled { cursor: default; }
+    .t-opt.correct { border-color: #27AE72; background: #E9F7F0; color: #157A50; }
+    .t-opt.correct small { color: #157A50; opacity: .75; }
+    .t-opt.wrong { border-color: #E2574C; background: #FCEDEC; color: #C0392E; }
+    .t-opt.wrong small { color: #C0392E; opacity: .75; }
+    .t-opt.dim { opacity: .5; }
+
+    .t-fb { margin: 2px 2px 0; min-height: 22px; font-size: 14.5px; font-weight: 800; color: transparent; }
+    .t-fb.ok { color: #157A50; }
+    .t-fb.no { color: var(--ink-soft); }
+    .t-fb.no b { color: var(--accent-deep); }
+
+    /* 难度过场 */
+    .adapt-wrap { min-height: 420px; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; }
+    .adapt-ico { font-size: 30px; line-height: 1; animation: tRise .5s cubic-bezier(.22, .61, .36, 1) both; }
+    .adapt-line { margin: 0; font-size: 15px; font-weight: 800; color: var(--ink-soft); letter-spacing: .02em; animation: tRise .55s cubic-bezier(.22, .61, .36, 1) .08s both; }
+    .adapt-bar { width: 152px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+    .adapt-bar i { display: block; height: 100%; width: 42%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #9C8BFF); animation: adaptSlide 1.05s ease-in-out infinite; }
+    @keyframes adaptSlide { 0% { transform: translateX(-110%); } 100% { transform: translateX(300%); } }
+
+    /* 口语跟读（复用任务流跟读评分长相） */
+    .spk-card { background: #fff; border-radius: 20px; padding: 18px; box-shadow: 0 10px 26px rgba(71, 57, 142, .09); text-align: center; margin-top: 4px; }
+    .spk-sentence { font-size: 22px; font-weight: 900; margin: 0 0 12px; line-height: 1.5; }
+    .vp { display: inline-flex; align-items: center; gap: 9px; background: #fff; border: 2px solid #eceaf6; border-radius: 999px; padding: 9px 14px; box-shadow: 0 6px 14px rgba(71, 57, 142, .07); cursor: pointer; user-select: none; }
+    .vp .p { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-deep); display: grid; place-items: center; font-size: 11px; flex: 0 0 auto; transition: background .15s, color .15s; padding-left: 2px; }
+    .vp .bars { display: flex; align-items: center; gap: 2.5px; height: 18px; }
+    .vp .bars i { width: 3px; border-radius: 2px; background: #cfcaff; display: block; transform-origin: center; }
+    .vp .t { font-size: 11.5px; font-weight: 800; color: var(--ink-soft); }
+    .vp.playing .p { background: var(--accent); color: #fff; }
+    .vp.playing .bars i { animation: vpBar .9s ease-in-out infinite; }
+    .vp.playing .bars i:nth-child(2n) { animation-delay: .12s; }
+    .vp.playing .bars i:nth-child(3n) { animation-delay: .22s; }
+    @keyframes vpBar { 0%, 100% { transform: scaleY(.55); } 50% { transform: scaleY(1.15); } }
+
+    .talk-zone { margin-top: 16px; }
+    .talk { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 58px; border-radius: 18px; border: 2px solid #ddd6ff; background: #fff; color: var(--accent-deep); font-size: 16px; font-weight: 800; cursor: pointer; user-select: none; -webkit-user-select: none; transition: transform .1s, background .1s, color .1s, border-color .1s; }
+    .talk.pressing { background: var(--accent); border-color: var(--accent); color: #fff; transform: scale(.985); box-shadow: 0 10px 22px var(--accent-glow); }
+    .talk-hint { text-align: center; color: #a9a6bf; font-size: 11.5px; font-weight: 700; margin: 10px 0 0; transition: color .2s; }
+    .talk-hint.warn { color: #d9822b; }
+
+    .score { margin-top: 16px; background: #fff; border-radius: 18px; padding: 14px 16px; box-shadow: 0 10px 24px rgba(71, 57, 142, .09); opacity: 0; transform: translateY(8px); transition: .3s; }
+    .score.show { opacity: 1; transform: none; }
+    .score-line { display: flex; align-items: baseline; gap: 6px; }
+    .score-line b { font-size: 27px; font-weight: 900; color: var(--accent-deep); }
+    .score-line span { font-size: 13px; font-weight: 800; color: var(--ink-soft); }
+    .score-track { margin-top: 10px; height: 6px; border-radius: 999px; background: #efeafa; overflow: hidden; }
+    .score-track i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #8d7bff); transition: width .9s ease .15s; }
+    .score.show .score-track i { width: var(--score, 86%); }
+    .tone-cap { margin: 13px 0 0; font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--ink-faint); }
+    .tone-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .tone { display: grid; justify-items: center; gap: 0; padding: 4px 6px 5px; border-radius: 10px; background: #F5F3FC; border: 1px solid #ECE9F8; font-size: 13.5px; font-weight: 800; color: var(--ink); opacity: 0; transform: translateY(5px); animation: tRise .3s ease both; }
+    .tone small { font-size: 10px; font-weight: 700; color: var(--ink-faint); }
+    .tone.weak { background: #FFF4E8; border-color: #F6D9BC; color: #A9660F; }
+    .tone.weak small { color: #B4762A; }
+    .tone-note { margin: 10px 0 0; font-size: 12px; font-weight: 700; color: #A9660F; text-align: left; }
+
+    /* 正在分析 · 半屏过场 */
+    .analyze { position: absolute; inset: 0; z-index: 60; background: rgba(30, 26, 54, .30); display: grid; align-items: end; opacity: 0; transition: opacity .28s ease; }
+    .analyze[hidden] { display: none; }
+    .analyze.show { opacity: 1; }
+    .analyze-sheet { height: 46%; border-radius: 30px 30px 0 0; background: #fff; box-shadow: 0 -18px 44px rgba(35, 32, 58, .22); display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; text-align: center; transform: translateY(24px); transition: transform .3s cubic-bezier(.22, .61, .36, 1); }
+    .analyze.show .analyze-sheet { transform: none; }
+    .analyze-dots { display: flex; gap: 8px; }
+    .analyze-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); opacity: .22; animation: aPulse 1.05s ease-in-out infinite; }
+    .analyze-dots i:nth-child(2) { animation-delay: .18s; }
+    .analyze-dots i:nth-child(3) { animation-delay: .36s; }
+    @keyframes aPulse { 0%, 100% { opacity: .22; transform: scale(.86); } 40% { opacity: 1; transform: scale(1); } }
+    .analyze-title { margin: 4px 0 0; font-size: 19px; font-weight: 800; letter-spacing: .02em; }
+    .analyze-sub { margin: 0; font-size: 12.5px; font-weight: 700; color: var(--ink-faint); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="status-bar" aria-hidden="true">
+      <span data-status-time>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <main class="test-main">
+      <header class="test-top">
+        <a class="icon-btn t-back" href="goal-date.html?goal=work" aria-label="返回 · 选择日期"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.6 5.4 8 12l6.6 6.6"/></svg></a>
+        <div class="t-dots" data-dots aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <span class="t-slot" aria-hidden="true"></span>
+      </header>
+
+      <div class="t-steps">
+        <!-- 第 1 题 · 听力 -->
+        <section class="t-step" data-step="q1">
+          <p class="t-cap">第 1 题 / 共 4 题 · 听力</p>
+          <h2 class="t-q" data-q1-prompt>听一听，选出你听到的话</h2>
+          <button class="t-play" type="button" data-q1-play aria-label="播放题目声音">
+            <span class="t-ring" aria-hidden="true"></span>
+            <span class="t-ring r2" aria-hidden="true"></span>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9.4v5.2h3.3l4.5 3.8V5.6L7.3 9.4H4Z"/><path d="M15.2 8.4a5 5 0 0 1 0 7.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17.6 6a8.4 8.4 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <p class="t-play-cap" data-q1-playcap>点一下，听一遍</p>
+          <div class="t-opts" data-q1-opts></div>
+          <p class="t-fb" data-fb role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- 难度自适应过场 -->
+        <section class="t-step" data-step="adapt">
+          <div class="adapt-wrap">
+            <span class="adapt-ico" aria-hidden="true">🎚️</span>
+            <p class="adapt-line">根据你的作答调整难度</p>
+            <span class="adapt-bar" aria-hidden="true"><i></i></span>
+          </div>
+        </section>
+
+        <!-- 第 2 题 · 听力（按第 1 题对错变难 / 变易） -->
+        <section class="t-step" data-step="q2">
+          <p class="t-cap">第 2 题 / 共 4 题 · 听力</p>
+          <h2 class="t-q" data-q2-prompt>听一听，选出你听到的话</h2>
+          <button class="t-play" type="button" data-q2-play aria-label="播放题目声音">
+            <span class="t-ring" aria-hidden="true"></span>
+            <span class="t-ring r2" aria-hidden="true"></span>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9.4v5.2h3.3l4.5 3.8V5.6L7.3 9.4H4Z"/><path d="M15.2 8.4a5 5 0 0 1 0 7.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17.6 6a8.4 8.4 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <p class="t-play-cap" data-q2-playcap>点一下，听一遍</p>
+          <div class="t-opts" data-q2-opts></div>
+          <p class="t-fb" data-fb role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- 第 3 题 · 阅读 -->
+        <section class="t-step" data-step="q3">
+          <p class="t-cap">第 3 题 / 共 4 题 · 阅读</p>
+          <h2 class="t-q" data-q3-prompt>句子里缺哪个词？</h2>
+          <h2 class="t-q" data-q3-stem></h2>
+          <div class="t-opts" data-q3-opts></div>
+          <p class="t-fb" data-fb role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- 第 4 题 · 口语跟读 -->
+        <section class="t-step" data-step="q4">
+          <p class="t-cap">第 4 题 / 共 4 题 · 口语跟读</p>
+          <h2 class="t-q" data-q4-prompt>跟着读一遍（按住说完松手）</h2>
+          <div class="spk-card">
+            <p class="spk-sentence" data-q4-sentence>把这批货的清单整理一下</p>
+            <button class="vp vp-mini" type="button" data-q4-demo>
+              <span class="p" aria-hidden="true">&#9654;</span>
+              <span class="bars" aria-hidden="true"><i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i></span>
+              <span class="t">听示范</span>
+            </button>
+          </div>
+          <div class="talk-zone">
+            <button class="talk" type="button" data-q4-talk>🎙️ 按住说话</button>
+            <p class="talk-hint" data-q4-hint>按住不放，说完松手</p>
+          </div>
+          <div class="score" data-q4-score>
+            <div class="score-line"><b data-q4-num>86</b><span data-q4-word>分 · 不错</span></div>
+            <div class="score-track"><i></i></div>
+            <p class="tone-cap">声调回放</p>
+            <div class="tone-row" data-q4-tones></div>
+            <p class="tone-note" data-q4-note></p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 正在分析 · 半屏过场 -->
+    <div class="analyze" data-analyze hidden>
+      <div class="analyze-sheet">
+        <div class="analyze-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <p class="analyze-title">正在分析…</p>
+        <p class="analyze-sub" data-analyze-sub>根据 4 道题的结果，生成你的学习计划</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      /* 快速测试：4 题（听力 → 难度自适应 → 阅读 → 口语跟读）
+         判分照常；诊断结果由计划页预置（脚本化演示）。 */
+      var params = new URLSearchParams(window.location.search);
+      var rawGoal = params.get('goal');
+      var KEY = (rawGoal === 'study' || rawGoal === 'hsk') ? rawGoal : 'work';
+      var rawDays = params.get('days');
+      var urlDays = (rawDays !== null && /^\d+$/.test(rawDays.trim())) ? Math.round(Number(rawDays)) : null;
+      var urlDate = params.get('date') || '';
+
+      var DATA = {
+        work: {
+          days: 58,
+          q1: { correct: '早上好', options: [['早上好', 'zǎo shang hǎo'], ['晚上好', 'wǎn shang hǎo'], ['再见', 'zài jiàn'], ['谢谢', 'xiè xie']] },
+          q2: {
+            hard: { correct: '发给', options: [['发给', 'fā gěi'], ['回家', 'huí jiā'], ['放假', 'fàng jià'], ['开会', 'kāi huì']] },
+            easy: { correct: '再见', options: [['谢谢', 'xiè xie'], ['再见', 'zài jiàn'], ['你好', 'nǐ hǎo'], ['对不起', 'duì bu qǐ']] }
+          },
+          q3: { stem: '清单整理好以后，请＿＿＿给仓库的老陈。', correct: '发', options: [['发', 'fā'], ['买', 'mǎi'], ['听', 'tīng']] },
+          q4: {
+            sentence: '把这批货的清单整理一下', score: 86, word: '分 · 不错',
+            tones: [['把', 'bǎ'], ['这', 'zhè'], ['批', 'pī'], ['货', 'huò'], ['的', 'de'], ['清', 'qīng'], ['单', 'dān'], ['整', 'zhěng', 1], ['理', 'lǐ'], ['一', 'yí'], ['下', 'xià', 1]],
+            note: '“整”“下”的声调再稳一点 · 计划里安排了声调复习'
+          }
+        },
+        hsk: {
+          days: 30,
+          q1: { correct: '考试', options: [['考试', 'kǎo shì'], ['开始', 'kāi shǐ'], ['老师', 'lǎo shī'], ['故事', 'gù shi']] },
+          q2: {
+            hard: { correct: '参加', options: [['参加', 'cān jiā'], ['参观', 'cān guān'], ['房间', 'fáng jiān'], ['时间', 'shí jiān']] },
+            easy: { correct: '谢谢', options: [['谢谢', 'xiè xie'], ['再见', 'zài jiàn'], ['你好', 'nǐ hǎo'], ['对不起', 'duì bu qǐ']] }
+          },
+          q3: { stem: '我每天六点起床，七点吃早饭。他几点吃早饭？', correct: '七点', options: [['六点', 'liù diǎn'], ['七点', 'qī diǎn'], ['八点', 'bā diǎn']] },
+          q4: {
+            sentence: '我下个月参加考试', score: 84, word: '分 · 不错',
+            tones: [['我', 'wǒ'], ['下', 'xià'], ['个', 'gè'], ['月', 'yuè', 1], ['参', 'cān'], ['加', 'jiā'], ['考', 'kǎo'], ['试', 'shì', 1]],
+            note: '“月”“试”收声太快 · 声调部分要加练'
+          }
+        },
+        study: {
+          days: 83,
+          q1: { correct: '你好', options: [['你好', 'nǐ hǎo'], ['谢谢', 'xiè xie'], ['再见', 'zài jiàn'], ['不客气', 'bú kè qi']] },
+          q2: {
+            hard: { correct: '护照', options: [['护照', 'hù zhào'], ['照顾', 'zhào gù'], ['照片', 'zhào piàn'], ['车站', 'chē zhàn']] },
+            easy: { correct: '再见', options: [['谢谢', 'xiè xie'], ['再见', 'zài jiàn'], ['你好', 'nǐ hǎo'], ['对不起', 'duì bu qǐ']] }
+          },
+          q3: { stem: '想吃饭的时候，去＿＿＿。', correct: '食堂', options: [['食堂', 'shí táng'], ['宿舍', 'sù shè'], ['教学楼', 'jiào xué lóu']] },
+          q4: {
+            sentence: '请问，食堂在哪儿？', score: 88, word: '分 · 不错',
+            tones: [['请', 'qǐng'], ['问', 'wèn'], ['食', 'shí'], ['堂', 'táng'], ['在', 'zài'], ['哪', 'nǎ', 1], ['儿', 'r']],
+            note: '“哪”的三声没转完 · 声调再练一轮'
+          }
+        }
+      };
+      var D = DATA[KEY];
+      var effDays = urlDays !== null ? urlDays : D.days;
+
+      var steps = {};
+      Array.prototype.forEach.call(document.querySelectorAll('.t-step'), function (el) {
+        steps[el.getAttribute('data-step')] = el;
+      });
+      var dots = Array.prototype.slice.call(document.querySelectorAll('.t-dots i'));
+      var timers = [];
+      var later = function (fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; };
+      var clearTimers = function () { timers.forEach(clearTimeout); timers = []; };
+
+      function paintDots(n) {
+        dots.forEach(function (d, i) {
+          d.classList.toggle('done', i < n - 1);
+          d.classList.toggle('on', i === n - 1);
+        });
+      }
+
+      function goto(step, questionNo) {
+        clearTimers();
+        Object.keys(steps).forEach(function (k) { steps[k].classList.toggle('is-on', k === step); });
+        if (questionNo) paintDots(questionNo);
+        window.scrollTo(0, 0);
+        var main = document.querySelector('.test-main');
+        if (main) main.scrollTop = 0;
+        if (step === 'adapt') later(function () { goto('q2', 2); }, 1750);
+        if (step === 'q2') buildQ2();
+        if (step === 'q4') buildQ4();
+      }
+
+      /* ---------- 通用：选项渲染与判分 ---------- */
+      function fbOf(box) { return box.closest('.t-step').querySelector('[data-fb]'); }
+
+      function buildOptions(box, list, correct, variant, done) {
+        box.innerHTML = '';
+        box.dataset.locked = '';
+        box.classList.toggle('cols-3', list.length === 3);
+        if (variant) box.setAttribute('data-variant', variant);
+        list.forEach(function (pair) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 't-opt';
+          var w = document.createElement('span');
+          w.textContent = pair[0];
+          b.appendChild(w);
+          if (pair[1]) {
+            var s = document.createElement('small');
+            s.textContent = pair[1];
+            b.appendChild(s);
+          }
+          b.addEventListener('click', function () { pickOption(box, b, pair[0] === correct, correct, done); });
+          box.appendChild(b);
+        });
+        var fb = fbOf(box);
+        fb.className = 't-fb';
+        fb.textContent = '';
+      }
+
+      function pickOption(box, btn, ok, correctText, done) {
+        if (box.dataset.locked === '1') return;
+        box.dataset.locked = '1';
+        Array.prototype.forEach.call(box.querySelectorAll('.t-opt'), function (b) {
+          b.disabled = true;
+          var isCorrect = b.firstChild && b.firstChild.textContent === correctText;
+          if (b === btn) b.classList.add(ok ? 'correct' : 'wrong');
+          if (!ok && isCorrect) b.classList.add('correct');
+          if (b !== btn && !isCorrect) b.classList.add('dim');
+        });
+        var fb = fbOf(box);
+        fb.className = 't-fb ' + (ok ? 'ok' : 'no');
+        if (ok) {
+          fb.textContent = '✓ 答对了';
+        } else {
+          fb.innerHTML = '再想想 · 正确答案：<b></b>';
+          fb.querySelector('b').textContent = correctText;
+        }
+        if (done) done(ok);
+      }
+
+      /* ---------- 假播放 ---------- */
+      function wirePlay(playBtn, capEl) {
+        if (!playBtn) return;
+        playBtn.addEventListener('click', function () {
+          playBtn.classList.remove('is-playing');
+          void playBtn.offsetWidth;
+          playBtn.classList.add('is-playing');
+          capEl.textContent = '播放中…';
+          setTimeout(function () {
+            playBtn.classList.remove('is-playing');
+            capEl.textContent = '点一下，再听一遍';
+          }, 1100);
+        });
+      }
+
+      /* ---------- 第 1 题 ---------- */
+      var q1Box = document.querySelector('[data-q1-opts]');
+      buildOptions(q1Box, D.q1.options, D.q1.correct, null, function (ok) {
+        later(function () { goto('adapt', 2); }, ok ? 1400 : 2200);
+      });
+      wirePlay(document.querySelector('[data-q1-play]'), document.querySelector('[data-q1-playcap]'));
+      var adaptQ2Hard = false;
+
+      /* ---------- 第 2 题（自适应：按第 1 题对错变难 / 变易） ---------- */
+      function buildQ2() {
+        adaptQ2Hard = !q1Box.querySelector('.t-opt.wrong');
+        var src = adaptQ2Hard ? D.q2.hard : D.q2.easy;
+        var box = document.querySelector('[data-q2-opts]');
+        buildOptions(box, src.options, src.correct, adaptQ2Hard ? 'hard' : 'easy', function (ok) {
+          later(function () { goto('q3', 3); }, ok ? 1400 : 2200);
+        });
+        wirePlay(document.querySelector('[data-q2-play]'), document.querySelector('[data-q2-playcap]'));
+      }
+
+      /* ---------- 第 3 题 ---------- */
+      document.querySelector('[data-q3-stem]').textContent = D.q3.stem;
+      var q3Box = document.querySelector('[data-q3-opts]');
+      buildOptions(q3Box, D.q3.options, D.q3.correct, null, function (ok) {
+        later(function () { goto('q4', 4); }, ok ? 1400 : 2200);
+      });
+
+      /* ---------- 第 4 题 · 口语跟读 ---------- */
+      function buildQ4() {
+        document.querySelector('[data-q4-sentence]').textContent = D.q4.sentence;
+        var score = document.querySelector('[data-q4-score]');
+        score.classList.remove('show');
+        score.style.setProperty('--score', D.q4.score + '%');
+        document.querySelector('[data-q4-num]').textContent = String(D.q4.score);
+        document.querySelector('[data-q4-word]').textContent = D.q4.word;
+        var toneRow = document.querySelector('[data-q4-tones]');
+        toneRow.innerHTML = '';
+        D.q4.tones.forEach(function (t, i) {
+          var chip = document.createElement('span');
+          chip.className = 'tone' + (t[2] ? ' weak' : '');
+          chip.style.animationDelay = (i * 40) + 'ms';
+          var c = document.createElement('span');
+          c.textContent = t[0];
+          var p = document.createElement('small');
+          p.textContent = t[1];
+          chip.appendChild(c);
+          chip.appendChild(p);
+          toneRow.appendChild(chip);
+        });
+        document.querySelector('[data-q4-note]').textContent = D.q4.note;
+      }
+
+      (function () {
+        var talk = document.querySelector('[data-q4-talk]');
+        var hint = document.querySelector('[data-q4-hint]');
+        var score = document.querySelector('[data-q4-score]');
+        var downAt = 0;
+        talk.addEventListener('pointerdown', function (e) {
+          e.preventDefault();
+          downAt = Date.now();
+          talk.classList.add('pressing');
+          if (talk.setPointerCapture) { try { talk.setPointerCapture(e.pointerId); } catch (err) {} }
+        });
+        var up = function () {
+          if (!downAt) return;
+          var held = Date.now() - downAt;
+          downAt = 0;
+          talk.classList.remove('pressing');
+          if (held < 250) {
+            hint.textContent = '再按久一点，说完再松手';
+            hint.classList.add('warn');
+            setTimeout(function () { hint.textContent = '按住不放，说完松手'; hint.classList.remove('warn'); }, 1600);
+            return;
+          }
+          hint.textContent = '收到，正在评分…';
+          setTimeout(function () { hint.textContent = '按住不放，说完松手'; }, 1800);
+          score.classList.add('show');
+          later(function () { startAnalyze(); }, 2600);
+        };
+        talk.addEventListener('pointerup', up);
+        talk.addEventListener('pointercancel', up);
+      })();
+
+      var demoPill = document.querySelector('[data-q4-demo]');
+      demoPill.addEventListener('click', function () {
+        demoPill.classList.add('playing');
+        setTimeout(function () { demoPill.classList.remove('playing'); }, 1000);
+      });
+
+      /* ---------- 正在分析 → 计划页 ---------- */
+      function startAnalyze() {
+        clearTimers();
+        var overlay = document.querySelector('[data-analyze]');
+        overlay.hidden = false;
+        requestAnimationFrame(function () { requestAnimationFrame(function () { overlay.classList.add('show'); }); });
+        var sub = document.querySelector('[data-analyze-sub]');
+        sub.textContent = '根据 4 道题，生成你的 ' + effDays + ' 天计划';
+        var q = new URLSearchParams();
+        q.set('goal', KEY);
+        if (rawDays !== null) q.set('days', String(urlDays));
+        if (urlDate) q.set('date', urlDate);
+        later(function () { window.location.href = 'goal-plan.html?' + q.toString(); }, 1550);
+      }
+
+      /* 启动 */
+      document.querySelector('.t-back').setAttribute('href', 'goal-date.html?goal=' + KEY);
+      goto('q1', 1);
+    })();
+  </script>
+</body>
+</html>

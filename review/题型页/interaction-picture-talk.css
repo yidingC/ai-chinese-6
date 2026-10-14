@@ -1,0 +1,391 @@
+/* 看图说话 · interaction-picture-talk.html 专用样式
+   本页只有一个"说话的人"：大图（现在 🏃 占位，以后换真图）——没有题干块、没有角标、没有说明条。
+   "说完之后"照跟读模仿页：卡片只装 图槽 + 那行提示；小字 + 麦克风搬进贴底动作区；
+   学习卡是卡片的下一层，平时整条压在卡片下沿后面，出结果才滑出来。
+   尺子与黄金样板 interaction-choice.css / interaction-listening.css 对齐：顶部变量整块照抄，
+   不自造颜色 / 厚度 / 时长。假流程的状态（录音中 / 识别中）都是 CSS 动画，不接麦克风、不发声音。 */
+
+:root {
+  /* 颜色 */
+  --surface-page: #f5f4fb;
+  --line-soft: #e9e7f2;
+  --line-card: #eceaf4;
+  --edge-quiet: #ece9f5;
+  --edge-select: #c9bcff;
+  --edge-button: #4331c4;
+  --select-fill: #f1eeff;
+  --text-quiet: #3f3a5c;
+  --text-subtle: #8f8aa3;
+  --chip-fill: #f1f0f6;
+  --button-disabled-fill: #eceaf4;
+  --button-disabled-text: #a5a0bd;
+  --plate-fill: #f4f1ff;
+  --plate-line: #e6e1ff;
+
+  /* 圆角 / 厚度 / 按下幅度 */
+  --radius-card: 28px;
+  --radius-option: 20px;
+  --radius-button: 20px;
+  --edge-quiet-w: 2px;
+  --edge-button-w: 6px;
+  --press-button: 4px;
+
+  /* 字号 */
+  --text-option: 15px;
+  --text-button: 17px;
+
+  /* 动效 */
+  --dur-press: .15s;
+  --dur-enter: .26s;
+  --dur-pop: .3s;
+  --ease-enter: cubic-bezier(.2, .85, .25, 1);
+  --ease-pop: cubic-bezier(.2, .9, .3, 1.25);
+}
+
+/* 正文只撑到「屏幕 − 假状态栏 − 顶栏」；底部给贴底动作区留出地方，别让卡片被压住 */
+.page-content {
+  min-height: calc(100svh - 92px);
+  padding-bottom: calc(170px + env(safe-area-inset-bottom));
+}
+
+/* ---------- 页面底子 ---------- */
+.app-shell {
+  background: var(--surface-page);
+}
+
+.page-header {
+  min-height: 64px;
+  background: rgba(245, 244, 251, 0.94);
+  border-bottom: 0;
+}
+
+.page-header h1 { font-size: 18px; }
+
+.header-subtitle { color: var(--text-subtle); }
+
+/* 读屏专用：题面只播报，不占版面 */
+.picture-talk-sr,
+.picture-talk-announcer {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+/* 卡片 + 学习卡的定位上下文：学习卡绝对定位在卡片下沿，卡片压在它上面 */
+.picture-talk-stage {
+  position: relative;
+}
+
+/* ---------- 卡片：只装大图和那行提示；按钮那一组已经搬到贴底动作区 ---------- */
+.picture-talk-card {
+  position: relative;
+  z-index: 1;
+  padding: 16px 16px 16px;
+  border: 2px solid var(--line-card);
+  border-radius: var(--radius-card);
+  background: #ffffff;
+  box-shadow: 0 6px 0 #e6e3ef, 0 22px 40px rgba(71, 57, 142, 0.08);
+}
+
+/* ---------- 图槽：这页的主角。emoji 与真图共用同一个槽位（照二期可替换槽位的写法） ---------- */
+.picture-talk-figure {
+  /* 边长同时看屏高：按钮搬走后卡片矮了一截，空出来的高度还给图（478 → 354）；
+     矮屏上仍收一点，图底边不会钻到贴底动作区下面，卡片底边离动作区就剩一指宽（约 15px）；
+     屏够高时就是满宽的方形（100%） */
+  width: min(100%, max(200px, calc(100svh - 354px)));
+  margin: 0 auto 12px;
+}
+
+.picture-talk-slot {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 2px solid var(--plate-line);
+  border-radius: var(--radius-option);
+  background: linear-gradient(160deg, #f4f1ff, #eef4ff);
+  overflow: hidden;
+}
+
+.picture-talk-slot-inner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.picture-talk-slot-emoji {
+  font-size: clamp(104px, 44vw, 176px);
+  line-height: 1;
+}
+
+.picture-talk-slot-inner img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- 提示词：谁 ＋ 在做什么（卡片最后一块，下方只留卡片自己的内边距） ---------- */
+.picture-talk-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  color: var(--text-quiet);
+  background: var(--surface-page);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.45;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 贴底动作区：一行小字 → 通栏麦克风 ----------
+   卡片外的固定底栏：白底微透、上沿一条细分割线 + 很淡的投影。
+   录音 / 识别的状态都靠上面那行小字说：手指压在按钮正中间，小字在手指上方，是唯一看得见的反馈。
+   z-index 低于公共悬浮胶囊（80+）和弹窗（100+），不抢它们那一层 */
+.picture-talk-actions {
+  position: fixed;
+  z-index: 30;
+  bottom: 0;
+  left: 50%;
+  width: min(100%, 430px);
+  padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid var(--line-soft);
+  box-shadow: 0 -10px 24px rgba(71, 57, 142, 0.06);
+}
+
+/* 一行小字：状态全在这行字里（见 js）——待作答「按住说完松开 · Tahan, lepas setelah selesai」、
+   录音中「正在听…… · Sedang mendengar」、识别中「听出来了？· Sebentar ya…」、
+   出结果「再说一次 · Bicara lagi」。是换文案，不是藏起来 */
+.picture-talk-record-hint {
+  margin: 0 0 8px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ---------- 麦克风：贴底动作区里唯一的主动作，同跟读页那一枚 ----------
+   视觉上只有图标，名字（按住说话 / 再说一次）靠 aria-label 给读屏（见 js） */
+.picture-talk-mic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 76px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius-button);
+  color: #ffffff;
+  background: linear-gradient(180deg, #7d68ff, #5b45ee);
+  box-shadow: 0 var(--edge-button-w) 0 var(--edge-button), 0 14px 26px rgba(79, 58, 224, 0.28);
+  font-size: var(--text-button);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: transform var(--dur-press) ease, box-shadow var(--dur-press) ease,
+    background var(--dur-press) ease;
+}
+
+/* 按下：陷下去（底边从 6px 收到 2px） */
+.picture-talk-mic:active {
+  transform: translateY(var(--press-button));
+  box-shadow: 0 2px 0 var(--edge-button), 0 8px 16px rgba(79, 58, 224, 0.24);
+}
+
+/* 按钮里唯一的可见内容：麦克风（录音时由 js 换成红点） */
+.picture-talk-mic-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+/* 录音中：红 + 图标脉冲（状态动效，说完就停） */
+.picture-talk-mic.is-recording {
+  background: linear-gradient(180deg, #ff7d8b, #e2465a);
+  box-shadow: 0 6px 0 #c2333f, 0 14px 26px rgba(226, 70, 90, 0.26);
+}
+
+.picture-talk-mic.is-recording .picture-talk-mic-icon {
+  animation: pictureTalkMicPulse 1s ease-in-out infinite;
+}
+
+/* 识别中：紫 + 更快的图标脉冲（固定 1 秒后就停） */
+.picture-talk-mic.is-recognizing {
+  background: linear-gradient(180deg, #8d79ff, #6a55e8);
+}
+
+.picture-talk-mic.is-recognizing .picture-talk-mic-icon {
+  animation: pictureTalkMicPulse .7s ease-in-out infinite;
+}
+
+/* 说完之后：还是原来那条大按钮，原地换成白色安静款（同平台「次要按钮」家族）；
+   名字「再说一次」落在 aria-label 上（见 js）——按下才重录，不自动开录 */
+.picture-talk-mic.is-retry {
+  border: 2px solid var(--line-soft);
+  color: var(--text-quiet);
+  background: #ffffff;
+  box-shadow: 0 2px 0 var(--edge-quiet);
+}
+
+.picture-talk-mic.is-retry:active {
+  transform: translateY(var(--press-button));
+  box-shadow: 0 0 0 var(--edge-quiet);
+}
+
+@keyframes pictureTalkMicPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+
+/* ---------- 学习卡：卡片的下一层兄弟（只夸"开口说了"，不评价结果） ----------
+   位置：绝对定位在卡片下沿，往上压进约 13px（那一段被卡片吃掉）——不占位、不留空隙；
+   卡片 z-index 更高，滑动的全过程都被卡片下沿压着。
+   形状：扁平一张纸条——无厚度、无阴影、无描边，只有下方两个圆角。
+   颜色：整张底换成 #d9ceff（同跟读页的回执条）；深紫底上浅灰会糊，小字压深一档。
+   出场：往下滑约 30px，滑到位就停；减弱动态效果由公共层兜底（直接出现，不滑）。 */
+.picture-talk-result {
+  position: absolute;
+  z-index: 0;
+  top: calc(100% - 13px);
+  right: 0;
+  left: 0;
+  /* 卡片自己有 2px 描边：左右让到 18，回执里的字才能和卡片内文同一根左轴（390 屏上是 34） */
+  padding: 30px 18px 16px;
+  border-radius: 0 0 18px 18px;
+  background: #d9ceff;
+  animation: pictureTalkReceiptIn .28s ease-out both;
+}
+
+.picture-talk-result:focus {
+  outline: none;
+}
+
+@keyframes pictureTalkReceiptIn {
+  from { opacity: .3; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 中文参考答案：回执里的主角，字最大最黑；和上面那句鼓励、下面那行翻译同一根左轴 */
+.picture-talk-answer {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* 印尼语翻译：斜体小字，压深一档（比中文小两档，只做辅助，不抢主角） */
+.picture-talk-answer-id {
+  margin: 3px 0 0;
+  color: #918bb0;
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* 鼓励只说「你开口了」这件事，不评结果；和下面两行同一根左轴，不居中（同开放问答页）。
+   自己不画盒子（底色 / 圆角由学习卡给），出场跟着学习卡一起滑，不再单独播动画 */
+.picture-talk-cheer {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.picture-talk-cheer-dot {
+  margin: 0 6px;
+  color: #6b6390;
+  font-size: 11px;
+  font-style: normal;
+}
+
+/* 深紫底（#d9ceff）上浅灰会糊：印尼小字压深一档；中文深墨色不变 */
+.picture-talk-cheer-id {
+  color: #6b6390;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 360px) {
+  /* 两种状态的录音键一样大（结果态只是换颜色），窄屏照跟读页缩一档 */
+  .picture-talk-mic {
+    min-height: 68px;
+  }
+
+  .picture-talk-answer {
+    font-size: 19px;
+  }
+}
+
+/* 矮屏退路：学习卡（约 150px）比跟读页那条回执条高，动作区又贴在屏幕底，
+   屏不够高时它装不下（800 以下就会露出尾巴）。正文底部再留出学习卡那块高度，
+   并让 scrollIntoView 把动作区算进视野底部：装不下就滚上来，不硬塞。
+   800 以上的屏幕整套都装得下，不用这份余量，保持原样 */
+@media (max-height: 799px) {
+  .page-content {
+    padding-bottom: calc(320px + env(safe-area-inset-bottom));
+  }
+
+  .picture-talk-result {
+    /* 动作区（125px）再加一点：学习卡是边滑边被测量的，滑到一半时量到的位置偏高 30px */
+    scroll-margin-bottom: calc(180px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 桌面预览：app-shell 有 16px 外边距和下方圆角，动作区跟着对齐，别悬在手机框外面 */
+@media (min-width: 700px) {
+  .picture-talk-actions {
+    bottom: 16px;
+    border-radius: 0 0 34px 34px;
+  }
+
+  /* 动作区在桌面预览里抬高了 16px，图跟着收 16px，卡片底边仍离动作区一指宽 */
+  .picture-talk-figure {
+    width: min(100%, max(200px, calc(100svh - 370px)));
+  }
+}
+
+/* ---------- 轮内多题：卡下面的【下一题】——常驻，不做入场动画 ----------
+   学习卡会从卡片下沿滑出来、露出约 119px：这颗键让它一让，排在学习卡的下沿后面 */
+.pt-next {
+  margin: 137px 0 0;
+  /* 出结果时这颗键要滚进视野（见 js）：贴底的麦克风区约 180px，滚的时候让开它 */
+  scroll-margin-bottom: calc(180px + env(safe-area-inset-bottom));
+}
+
+/* 没出结果＝灰、不带紫（口径与其它题型页的禁用键一致） */
+.pt-next .primary-button[disabled] {
+  opacity: 1;
+  color: var(--button-disabled-text);
+  background: var(--button-disabled-fill);
+  box-shadow: 0 3px 0 #e2dfee;
+  cursor: not-allowed;
+}
+
+/* 轮内说完这一题：底栏麦克风停用（变灰、点不动）——重练留给轮末弹窗的「再做一次」 */
+.picture-talk-mic[disabled] {
+  color: var(--button-disabled-text);
+  background: var(--button-disabled-fill);
+  box-shadow: 0 3px 0 #e2dfee;
+  cursor: not-allowed;
+}

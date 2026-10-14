@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7fc">
+  <title>快速选择 · AI Chinese Cloud</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="interaction-choice.css">
+</head>
+<body data-page="activity" data-activity-type="choice">
+  <div class="app-shell">
+    <div class="status-bar" aria-hidden="true">
+      <span>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <header class="page-header">
+      <a class="icon-button" href="index.html" data-activity-back aria-label="返回上一页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1><span data-activity-title>快速选择</span></h1>
+      <span class="header-spacer"></span>
+    </header>
+
+    <main class="page page-content">
+      <!-- 卡片 + 回执条：回执条是卡片的下一层，平时整条压在卡片下沿后面，出结果才滑出来 -->
+      <div class="choice-stage">
+        <section class="choice-card" data-choice-card aria-labelledby="choice-word">
+          <!-- 一轮多题：左边小点（做完＝绿 / 当前＝紫 / 没做＝灰），右边第几题。
+               样式在 styles.css（.round-progress*，四个题型页共用）；
+               跨页那一轮（第 3 轮）由 shared/round-flow.js 按 URL 里的 q / total 重画。 -->
+          <div class="round-progress" data-round-progress>
+            <span class="round-progress-dots" data-round-dots aria-hidden="true"></span>
+            <p class="round-progress-text" data-round-text>第 1 题 / 共 3 题</p>
+          </div>
+
+          <div class="choice-stem">
+            <h3 class="choice-question" id="choice-word" data-choice-word>一杯茶</h3>
+            <p class="choice-pinyin" data-choice-pinyin>Yì bēi chá</p>
+          </div>
+
+          <div class="choice-grid" role="group" aria-labelledby="choice-word" data-choice-options></div>
+
+          <button type="button" class="primary-button btn-stacked" data-choice-submit disabled>
+            <span data-choice-submit-label>提交</span>
+            <span class="btn-id" lang="id" data-choice-submit-label-id>Kirim</span>
+          </button>
+        </section>
+
+        <!-- 回执条：卡片的下一层兄弟。未提交时 hidden；提交后从卡片底下滑出——
+             答对＝绿底（✓ 答对了！+ 正确图的印尼语意思），答错＝粉底，只留答案行 -->
+        <div class="choice-feedback hidden" role="status" aria-live="polite" data-choice-feedback>
+          <strong class="choice-feedback-title">
+            <span aria-hidden="true" data-choice-feedback-icon></span>
+            <span data-choice-feedback-title></span>
+          </strong>
+          <p class="choice-feedback-answer hidden" data-choice-feedback-answer></p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="shared/activity-types.js"></script>
+  <script type="module" src="shared/activity-fab.js"></script>
+  <script type="module" src="shared/activity-bridge.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="shared/activity-page.js"></script>
+  <script type="module" src="shared/feedback-copy.js"></script>
+  <script type="module" src="shared/feedback-modal.js"></script>
+  <script type="module" src="round-content.js"></script>
+  <script type="module" src="shared/round-flow.js"></script>
+  <script type="module" src="interaction-choice.js"></script>
+</body>
+</html>

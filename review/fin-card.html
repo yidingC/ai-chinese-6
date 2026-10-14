@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>收工卡 · 三版对照</title>
+<style>
+  :root{--purple:#6552ff;--purple-deep:#4c35e8;--ink:#17171A;--muted:#8B8B95;--line:rgba(23,23,42,.08)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#E9E8F5}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    color:var(--ink);-webkit-font-smoothing:antialiased;display:grid;place-items:center}
+  svg{display:block}
+  .phone{position:relative;width:390px;height:844px;border-radius:47.33px;overflow:hidden;background:#F5F3FA;
+    box-shadow:0 24px 60px rgba(18,24,45,.16)}
+  .deck{position:absolute;left:25px;top:300px;width:340px;height:350px}
+  .peek{position:absolute;left:12px;top:-30px;width:316px;height:80px;border-radius:38px 38px 0 0;background:#7E6BFF}
+  .tcard{position:absolute;left:0;top:0;width:340px;height:350px;border-radius:38px}
+  .tcard.is-fin{color:var(--ink);background:linear-gradient(168deg,#FFFEFB 0%,#F6F1E7 100%);
+    box-shadow:0 14px 30px rgba(38,22,120,.16)}
+
+  /* ---------- 通用滑条（三版共用，参数照原版） ---------- */
+  .fin-slide,.sl{position:absolute;height:48px;border-radius:24px;background:rgba(23,23,42,.055);overflow:hidden}
+  .fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(101,82,255,.14);transition:width .18s ease-out}
+  .lab{position:absolute;left:0;right:0;top:15.5px;text-align:center;font-size:15.5px;font-weight:800;color:var(--purple);letter-spacing:.02em;transition:opacity .15s}
+  .chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+  .chev i{width:6px;height:6px;border-right:2px solid rgba(101,82,255,.85);border-top:2px solid rgba(101,82,255,.85);transform:rotate(45deg);border-radius:1px}
+  .knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:var(--purple);color:#fff;
+    box-shadow:0 5px 12px rgba(101,82,255,.35);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;
+    transition:transform .24s cubic-bezier(.22,1,.36,1)}
+  .knob svg{width:19px;height:19px}
+  .sl.grabbing{background:rgba(101,82,255,.12)}
+  .sl.grabbing .knob,.sl.grabbing .fill,.sl.grabbing .lab{transition:none}
+  .sl.done{background:rgba(29,143,110,.12)}
+  .sl.done .lab{color:#0B7B5C}
+
+  /* ================= 原版（goal-work.html 现状，照抄） ================= */
+  .fin-h{position:absolute;left:24px;right:78px;top:26px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .fin-chips{position:absolute;left:24px;right:24px;top:62px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fc{height:30px;border-radius:15px;background:rgba(23,23,42,.05);display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:700;color:#3A3A44}
+  .fc i{font-style:normal;font-weight:900;color:#0B7B5C}
+  .fin-day{position:absolute;left:24px;right:24px;top:134px;display:flex;align-items:center;justify-content:space-between}
+  .fin-dlabel{font-size:13px;font-weight:700;color:#6E6E7A}
+  .fin-dots{display:flex;gap:7px}
+  .fin-dots i{width:9px;height:9px;border-radius:50%;background:#DAD9E6;transition:background .3s}
+  .fin-dots i.on{background:var(--purple)}
+  .fin-line{position:absolute;left:24px;right:24px;top:166px;font-size:14px;font-weight:800;letter-spacing:-.01em}
+  .fin-note{position:absolute;left:24px;top:193px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .fin-div{position:absolute;left:24px;right:24px;top:226px;height:1px;background:var(--line)}
+  .fin-foot{position:absolute;left:24px;top:242px;font-size:11.5px;font-weight:700;color:#A0A0AA}
+  .fin-slide{left:24px;right:24px;top:278px}
+  .fin-star{position:absolute;right:24px;top:22px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(23,23,42,.06);transition:background .35s,box-shadow .35s}
+  .fin-star svg{width:24px;height:24px}
+  .fin-star svg path{fill:#C9C2B4;transition:fill .35s}
+  .fin-star.lit{background:linear-gradient(150deg,#FFE7B8,#FFC65C);box-shadow:0 8px 18px rgba(255,178,60,.35)}
+  .fin-star.lit svg path{fill:#fff}
+
+  /* ================= A 收据式 ================= */
+  .a-h{position:absolute;left:24px;right:24px;top:30px;font-size:19px;font-weight:800;letter-spacing:-.01em}
+  .a-h .cheer{color:var(--purple-deep);font-weight:900}
+  .a-cheerkick{position:absolute;left:24px;top:26px;font-size:14px;font-weight:800;color:var(--purple-deep);letter-spacing:.01em}
+  .a-h2{position:absolute;left:24px;right:24px;top:48px;font-size:19px;font-weight:800;letter-spacing:-.01em}
+  .a-panel{position:absolute;left:20px;right:20px;top:78px;height:120px;border-radius:24px;background:#fff;
+    box-shadow:0 4px 14px rgba(38,22,120,.05)}
+  .a-row{position:absolute;left:22px;right:22px;top:18px;display:flex;align-items:baseline;justify-content:space-between}
+  .a-name{font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .a-badge{font-size:13px;font-weight:800;color:#B9B5C6;letter-spacing:.02em;transition:color .3s}
+  .a-badge.on{color:var(--purple-deep)}
+  .a-bars{position:absolute;left:22px;right:22px;top:54px;display:flex;gap:8px}
+  .a-bars i{flex:1;height:8px;border-radius:4px;background:#EAE7F1;transition:background .3s,box-shadow .3s}
+  .a-bars i.on{background:linear-gradient(90deg,#7B68FF,#4C35E8);box-shadow:0 4px 10px rgba(101,82,255,.28)}
+  .a-next{position:absolute;left:22px;top:74px;font-size:13px;font-weight:600;color:var(--muted)}
+  .a-foot{position:absolute;left:24px;right:24px;top:214px;display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#A6A3B0}
+  .a-slide{left:24px;right:24px;top:262px}
+
+  /* ================= B 里程碑 ================= */
+  .b-kicker{position:absolute;left:24px;top:30px;font-size:12.5px;font-weight:800;color:var(--muted);letter-spacing:.02em}
+  .b-name{position:absolute;left:24px;top:56px;width:200px;font-size:26px;line-height:1.15;font-weight:900;letter-spacing:-.02em}
+  .b-medal{position:absolute;right:24px;top:52px;width:54px;height:54px;border-radius:50%;background:#fff;
+    display:flex;align-items:baseline;justify-content:center;padding-top:14px;color:#B9B5C6;box-shadow:inset 0 0 0 2px #EAE7F1;
+    transition:background .35s,color .35s,box-shadow .35s}
+  .b-medal b{font-size:19px;font-weight:900;letter-spacing:-.02em}
+  .b-medal small{font-size:11px;font-weight:800;margin-left:1px}
+  .b-medal.on{background:linear-gradient(150deg,#7B68FF,#4C35E8);color:#fff;box-shadow:0 10px 20px rgba(101,82,255,.32)}
+  .b-track{position:absolute;left:24px;right:24px;top:126px;display:flex;gap:8px}
+  .b-track i{flex:1;height:10px;border-radius:5px;background:#EAE7F1;transition:background .3s,box-shadow .3s}
+  .b-track i.on{background:linear-gradient(90deg,#7B68FF,#4C35E8);box-shadow:0 4px 10px rgba(101,82,255,.28)}
+  .b-next{position:absolute;left:24px;top:154px;font-size:13.5px;font-weight:700}
+  .b-next span{color:var(--muted);font-weight:600}
+  .b-pills{position:absolute;left:24px;top:196px;display:flex;gap:8px}
+  .b-pills span{height:26px;padding:0 11px;border-radius:13px;background:rgba(23,23,42,.05);display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#3A3A44}
+  .b-pills i{font-style:normal;font-weight:900;color:#0B7B5C}
+  .b-foot{position:absolute;left:24px;top:238px;font-size:11.5px;font-weight:700;color:#A6A3B0}
+  .b-slide{left:24px;right:24px;top:278px}
+
+  /* ================= B2 = B 骨架 + A 的白框（去掉圆徽章 / 连续天数行） ================= */
+  .b2-panel{position:absolute;left:20px;right:20px;top:24px;height:158px;border-radius:24px;background:#fff;
+    box-shadow:0 4px 14px rgba(38,22,120,.05)}
+  .b2-kicker{position:absolute;left:22px;top:18px;font-size:12.5px;font-weight:800;color:var(--muted);letter-spacing:.02em}
+  .b2-name{position:absolute;left:22px;top:42px;width:196px;font-size:25px;line-height:1.15;font-weight:900;letter-spacing:-.02em}
+  .b2-count{position:absolute;right:22px;top:48px;font-size:15px;font-weight:800;color:#B9B5C6;letter-spacing:.02em;
+    transition:color .3s,transform .3s}
+  .b2-count.on{color:var(--purple-deep);transform:scale(1.06)}
+  .b2-track{position:absolute;left:22px;right:22px;top:98px;display:flex;gap:8px}
+  .b2-track i{flex:1;height:10px;border-radius:5px;background:#EAE7F1;transition:background .3s,box-shadow .3s}
+  .b2-track i.on{background:linear-gradient(90deg,#7B68FF,#4C35E8);box-shadow:0 4px 10px rgba(101,82,255,.28)}
+  .b2-track i.pop{animation:barpop .42s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes barpop{45%{transform:scale(1.1)}}
+  .b2-next{position:absolute;left:22px;top:122px;font-size:13.5px;font-weight:700}
+  .b2-next span{color:var(--muted);font-weight:600}
+  .b2-pills{position:absolute;left:24px;top:204px;display:flex;gap:8px}
+  .b2-pills span{height:26px;padding:0 11px;border-radius:13px;background:rgba(23,23,42,.05);display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#3A3A44}
+  .b2-pills i{font-style:normal;font-weight:900;color:#0B7B5C}
+  .b2-slide{left:24px;right:24px;top:278px}
+</style>
+</head>
+<body>
+<div class="phone"><div class="deck"><span class="peek"></span><article class="tcard is-fin" id="card"></article></div></div>
+<script>
+(function(){
+  var v = (new URLSearchParams(location.search)).get("v") || "now";
+  var lit = (new URLSearchParams(location.search)).get("lit") === "1";
+  var card = document.getElementById("card");
+  var KNOB = '<button class="knob" type="button" aria-label="滑动完成"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg></button>';
+  var CHEV = '<span class="chev"><i></i><i></i><i></i></span>';
+  var TAGS = ["复习","新学","练习","实战"];
+  var TASKS = ["复习 把清单整理一下","新学 听懂工作安排","练习 “先、马上、一会儿”","实战 主管派活"];
+
+  var html = "";
+  if (v === "now"){
+    var chips = TASKS.map(function(t){ return '<span class="fc"><i>✓</i>' + t + '</span>'; }).join("");
+    var dots = '<i></i><i></i><i></i><i></i><i></i>';
+    html =
+      '<h2 class="fin-h">今天 4 件事 · 全部完成</h2>' +
+      '<div class="fin-chips">' + chips + '</div>' +
+      '<div class="fin-day"><span class="fin-dlabel">听懂工作安排 · 完成（5 / 5）</span><span class="fin-dots">' + dots + '</span></div>' +
+      '<p class="fin-line">明天开始：没听懂就问</p>' +
+      '<p class="fin-note">声调这几题，今天都过了</p>' +
+      '<div class="fin-div"></div>' +
+      '<p class="fin-foot">连续 15 天 · 明天见</p>' +
+      '<div class="fin-slide sl"><span class="fill"></span><span class="lab">滑动完成</span>' + CHEV + KNOB + '</div>' +
+      '<span class="fin-star" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.95 6 6.6.9-4.8 4.6 1.2 6.6L12 17.4l-5.95 3.1 1.2-6.6-4.8-4.6 6.6-.9z"/></svg></span>';
+  } else if (v === "a"){
+    html =
+      '<h2 class="a-h"><span class="cheer">真棒！</span>今天 4 件事 · 全部完成</h2>' +
+      '<div class="a-panel">' +
+        '<div class="a-row"><span class="a-name">听懂工作安排</span><span class="a-badge" id="aBadge" data-done="5 / 5">4 / 5</span></div>' +
+        '<div class="a-bars" id="aBars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>' +
+        '<p class="a-next">明天开始：没听懂就问</p>' +
+      '</div>' +
+      '<p class="a-foot"><span>复习 · 新学 · 练习 · 实战</span><span>连续 15 天 · 明天见</span></p>' +
+      '<div class="a-slide sl"><span class="fill"></span><span class="lab">滑动完成</span>' + CHEV + KNOB + '</div>';
+  } else if (v === "a2"){
+    html =
+      '<p class="a-cheerkick">真棒！</p>' +
+      '<h2 class="a-h2">今天 4 件事 · 全部完成</h2>' +
+      '<div class="a-panel">' +
+        '<div class="a-row"><span class="a-name">听懂工作安排</span><span class="a-badge" id="aBadge" data-done="5 / 5">4 / 5</span></div>' +
+        '<div class="a-bars" id="aBars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>' +
+        '<p class="a-next">明天开始：没听懂就问</p>' +
+      '</div>' +
+      '<p class="a-foot"><span>复习 · 新学 · 练习 · 实战</span><span>连续 15 天 · 明天见</span></p>' +
+      '<div class="a-slide sl"><span class="fill"></span><span class="lab">滑动完成</span>' + CHEV + KNOB + '</div>';
+  } else if (v === "b2"){
+    html =
+      '<div class="b2-panel">' +
+        '<p class="b2-kicker">今天 4 件事 · 全部完成</p>' +
+        '<h2 class="b2-name">听懂工作安排</h2>' +
+        '<span class="b2-count" id="aBadge" data-done="5 / 5">4 / 5</span>' +
+        '<div class="b2-track" id="aBars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>' +
+        '<p class="b2-next">明天开始：<span>没听懂就问</span></p>' +
+      '</div>' +
+      '<div class="b2-pills">' + TAGS.map(function(t){ return '<span><i>✓</i>' + t + '</span>'; }).join("") + '</div>' +
+      '<div class="b2-slide sl"><span class="fill"></span><span class="lab">滑动完成</span>' + CHEV + KNOB + '</div>';
+  } else {
+    html =
+      '<p class="b-kicker">今天 4 件事 · 全部完成</p>' +
+      '<h2 class="b-name">听懂工作安排</h2>' +
+      '<span class="b-medal" id="aBadge"><b>5</b><small>/5</small></span>' +
+      '<div class="b-track" id="aBars"><i></i><i></i><i></i><i></i><i></i></div>' +
+      '<p class="b-next">明天开始：<span>没听懂就问</span></p>' +
+      '<div class="b-pills">' + TAGS.map(function(t){ return '<span><i>✓</i>' + t + '</span>'; }).join("") + '</div>' +
+      '<p class="b-foot">连续 15 天 · 明天见</p>' +
+      '<div class="b-slide sl"><span class="fill"></span><span class="lab">滑动完成</span>' + CHEV + KNOB + '</div>';
+  }
+  card.innerHTML = html;
+
+  /* 滑到底 → 点亮（各版点亮的对象不同） */
+  var slide = card.querySelector(".sl");
+  var knob = slide.querySelector(".knob");
+  var fill = slide.querySelector(".fill");
+  var label = slide.querySelector(".lab");
+  var x0 = 0, x = 0, maxX = 1, dragging = false;
+  function apply(px){
+    x = px;
+    knob.style.transform = "translateX(" + px + "px)";
+    fill.style.width = (px + 48) + "px";
+    label.style.opacity = String(Math.max(0, 1 - px / Math.max(1, maxX * 0.55)));
+  }
+  function light(){
+    var bars = card.querySelectorAll("#aBars i");
+    var step = 0;
+    Array.prototype.forEach.call(bars, function(b){
+      if (b.classList.contains("on")) return;
+      var d = step; step += 130;
+      setTimeout(function(){ b.classList.add("on", "pop"); }, d);
+    });
+    var badge = card.querySelector("#aBadge");
+    if (badge) setTimeout(function(){
+      badge.classList.add("on");
+      if (badge.dataset.done) badge.textContent = badge.dataset.done;
+    }, step + 120);
+    setTimeout(function(){ slide.classList.add("done"); label.textContent = "已收工 · 明天见"; label.style.opacity = "1"; }, 420);
+    var star = card.querySelector(".fin-star");
+    if (star) star.classList.add("lit");
+  }
+  knob.addEventListener("pointerdown", function(e){
+    e.preventDefault(); e.stopPropagation();
+    dragging = true; maxX = slide.clientWidth - 48; x0 = e.clientX;
+    slide.classList.add("grabbing");
+    try { knob.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  knob.addEventListener("pointermove", function(e){
+    if (!dragging) return;
+    var px = e.clientX - x0;
+    if (px < 0) px = 0;
+    if (px > maxX) px = maxX;
+    apply(px);
+  });
+  function up(){
+    if (!dragging) return;
+    dragging = false;
+    slide.classList.remove("grabbing");
+    if (x >= maxX * 0.9) light();
+    apply(0);
+  }
+  knob.addEventListener("pointerup", up);
+  knob.addEventListener("pointercancel", up);
+  /* 原版：进卡时点先亮（前 4 颗先亮、第 5 颗延迟 + pop），照 goal-work.html 的节奏 */
+  if (v === "now"){
+    var dots = card.querySelectorAll(".fin-dots i");
+    Array.prototype.forEach.call(dots, function(d, i){
+      if (i < 4) d.classList.add("on");
+    });
+    setTimeout(function(){ if (dots[4]) dots[4].className = "on"; }, 420);
+  }
+  if (lit) setTimeout(function(){
+    light();
+    label.style.opacity = "0";
+    setTimeout(function(){ label.style.opacity = "1"; }, 500);
+  }, 300);
+})();
+</script>
+</body>
+</html>
