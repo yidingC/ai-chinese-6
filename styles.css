@@ -454,6 +454,10 @@ button { font-family: inherit; }
   }
   .app > main::-webkit-scrollbar { display: none; }
 
+  /* 顶条 / 底条固定占位，不参与收缩（否则内容稍长的页面会把状态栏压扁：28px -> 20px） */
+  .app > .status-bar,
+  .app > .bottom-nav { flex: 0 0 auto; }
+
   .goal-main { padding-bottom: 56px; }
 
   .bottom-nav {

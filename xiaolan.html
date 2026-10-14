@@ -20,7 +20,7 @@
   .app{width:100%;max-width:430px;margin:0 auto;height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;background:var(--page)}
 
   /* 状态栏：与原型设计系统一致（28px 细条 + 半透明白 + 18×9 电池带正极）；只改这一处，其余样式不动 */
-  .status-bar{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;height:28px;padding:4px 20px 0;color:#121126;background:rgba(255,255,255,.72);font-size:12px;font-weight:800;letter-spacing:.02em}
+  .status-bar{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;height:28px;padding:4px 20px 0;color:#121126;background:rgba(255,255,255,.72);font-size:12px;font-weight:800;letter-spacing:.02em;flex:0 0 auto}
   .status-icons{display:flex;align-items:center;gap:5px}
   .status-icons .battery{display:inline-block;width:18px;height:9px;border:1.5px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px}
   .status-icons .battery::before{content:"";position:absolute;inset:1.5px;width:10px;background:currentColor;border-radius:1px}
@@ -100,7 +100,7 @@
 </style>
 <style>
   /* ---------- AI Chinese 6.0 原型外壳：底部导航 + 桌面手机框（不动页面本身设计） ---------- */
-  .bottom-nav { display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 14px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(255, 255, 255, .92); border-top: 1px solid #f0eff7; }
+  .bottom-nav { display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 14px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(255, 255, 255, .92); border-top: 1px solid #f0eff7; flex: 0 0 auto; }
   .nav-item { display: grid; justify-items: center; gap: 3px; padding: 6px 0 4px; border: 0; background: none; color: #a5a2bb; font-size: 11px; font-weight: 700; cursor: pointer; }
   .nav-item svg { width: 24px; height: 24px; }
   .nav-item.active { color: var(--purple-deep); }
