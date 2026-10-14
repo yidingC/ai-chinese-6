@@ -19,9 +19,12 @@
 
   .app{width:100%;max-width:430px;margin:0 auto;height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;background:var(--page)}
 
-  .status-bar{display:flex;align-items:center;justify-content:space-between;height:30px;padding:6px 20px 0;font-size:12px;font-weight:800;background:#fff}
-  .battery{display:inline-block;width:18px;height:9px;border:1.5px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px}
-  .battery::before{content:"";position:absolute;inset:1.5px;background:currentColor;border-radius:1px}
+  /* 状态栏：与原型设计系统一致（28px 细条 + 半透明白 + 18×9 电池带正极）；只改这一处，其余样式不动 */
+  .status-bar{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;height:28px;padding:4px 20px 0;color:#121126;background:rgba(255,255,255,.72);font-size:12px;font-weight:800;letter-spacing:.02em}
+  .status-icons{display:flex;align-items:center;gap:5px}
+  .status-icons .battery{display:inline-block;width:18px;height:9px;border:1.5px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px}
+  .status-icons .battery::before{content:"";position:absolute;inset:1.5px;width:10px;background:currentColor;border-radius:1px}
+  .status-icons .battery::after{content:"";position:absolute;top:2px;right:-3px;width:2px;height:4px;border-radius:0 2px 2px 0;background:currentColor}
 
   .chat-nav{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;background:#fff;border-bottom:1px solid #f0eff7}
   .chat-avatar{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;box-shadow:0 6px 14px rgba(101,82,255,.3)}
@@ -112,7 +115,7 @@
 <body>
 <div class="app">
 
-  <div class="status-bar"><span id="statusTime">11:20</span><span>5G <span class="battery"></span></span></div>
+  <div class="status-bar" aria-hidden="true"><span id="statusTime">11:20</span><span class="status-icons">5G <span class="battery"></span></span></div>
 
   <header class="chat-nav">
     <div class="chat-avatar">安</div>
