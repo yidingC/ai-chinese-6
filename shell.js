@@ -14,9 +14,15 @@
     me: '<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.7"/><path d="M4.8 20.2c1-4.2 3.8-6.4 7.2-6.4s6.2 2.2 7.2 6.4"/></svg>'
   };
 
-  /* 四个 tab 的落点。今天页 = goal-work.html（职场版首页，其余目标首页接新版时再跟着换） */
+  /* 四个 tab 的落点。今天页按 ?goal= 分流：study 走留学版今天页，其余（含默认）走职场版 goal-work.html */
+  var goalKey = new URLSearchParams(location.search).get('goal');
+  /* review/ 下的页面 base 是 '../'，留学今天页就在同目录，直接用文件名，别再拼一层 review/ */
+  var inReview = /\/review\//.test(window.location.pathname);
+  var TODAY_HREF = (goalKey === 'study')
+    ? (inReview ? 'study-work.html' : base + 'review/study-work.html')
+    : base + 'goal-work.html';
   var TABS = [
-    { key: 'today',    label: '今天', icon: ICON.today,    href: base + 'goal-work.html' },
+    { key: 'today',    label: '今天', icon: ICON.today,    href: TODAY_HREF },
     { key: 'an',       label: '小安', icon: ICON.an,       href: base + 'xiaolan.html' },
     { key: 'calendar', label: '日历', icon: ICON.calendar, href: base + 'calendar.html' },
     { key: 'me',       label: '我的', icon: ICON.me,       href: base + 'profile.html' }

@@ -348,7 +348,7 @@
       });
 
       el('[data-start]').addEventListener('click', function () {
-        /* 今天页已搬回正式位：goal-work.html（其余目标首页接新版后再跟着换），把 goal / days / date 带过去 */
+        /* 今天页落点按 goal 分流：留学走留学版今天页，其余走职场版；goal / days / date 照旧带过去 */
         var q = new URLSearchParams();
         q.set('goal', current);
         var cfg = DATA[current];
@@ -365,7 +365,8 @@
           q.set('date', sel);
         }
         q.set('days', String(cd));
-        window.location.href = 'goal-work.html?' + q.toString();
+        var dest = current === 'study' ? 'review/study-work.html' : 'goal-work.html';
+        window.location.href = dest + '?' + q.toString();
       });
 
       apply(START);
