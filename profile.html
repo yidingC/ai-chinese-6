@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F5F3FA">
+  <title>AI Chinese 6.0 · 我的</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-goal="work">
+  <div class="app">
+    <div class="status-bar" aria-hidden="true">
+      <span data-status-time>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <main class="page-main">
+      <div class="page-head">
+        <h1 class="page-title">我的</h1>
+      </div>
+
+      <section class="profile-card" aria-label="我的资料">
+        <div class="profile-row">
+          <span class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.5"/><path d="M5.2 19.8c1.3-3.6 3.7-5.4 6.8-5.4s5.5 1.8 6.8 5.4"/></svg></span>
+          <div>
+            <p class="profile-name">Rina</p>
+            <p class="profile-sub">正在准备：<span id="meGoal">进入中资企业工作</span></p>
+          </div>
+          <button class="icon-btn" type="button" data-toast="编辑资料 · 概念未展开" aria-label="编辑资料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+        </div>
+        <div class="profile-stats">
+          <div class="stat"><span class="stat-num">36</span><span class="stat-cap">学习天数</span></div>
+          <div class="stat"><span class="stat-num">12</span><span class="stat-cap">连续打卡</span></div>
+          <div class="stat"><span class="stat-num" id="meAbil">2</span><span class="stat-cap">已准备能力</span></div>
+        </div>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">学习足迹</p>
+        <div class="heat-card">
+          <div class="heat-grid" id="heatGrid" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">我的目标</p>
+        <a class="goal-row" id="goalRow" href="goal-date.html?goal=work">
+          <span class="pr-copy">
+            <span class="pr-title" id="goalTitle">进入中资企业工作</span>
+            <span class="pr-sub" id="goalDate">12 月 10 日 · 还有 58 天</span>
+          </span>
+          <span class="pr-action">修改 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg></span>
+        </a>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">我的路线</p>
+        <a class="goal-row" id="routeRow" href="route.html?goal=work">
+          <span class="pr-copy">
+            <span class="pr-title">准备路线</span>
+            <span class="pr-sub">你的准备旅程</span>
+          </span>
+          <span class="pr-action"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg></span>
+        </a>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">我的能力</p>
+        <section class="abil-card" aria-label="我的能力">
+          <p class="abil-cap" id="abilCap">已能应对 <b>2</b> 项</p>
+          <ul class="abil-list" id="abilList"></ul>
+          <p class="abil-sub">在准备中</p>
+          <ul class="abil-list" id="prepList"></ul>
+        </section>
+      </section>
+
+      <section class="settings-card" aria-label="设置">
+        <button class="set-row" type="button" data-toast="设置 · 概念未展开">
+          <span class="set-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M19.3 12a7.3 7.3 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-2-1.2L14.4 3h-4l-.4 2.6a7.4 7.4 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.3 7.3 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z"/></svg></span>
+          <span class="set-label">设置</span>
+          <span class="set-value" aria-hidden="true"></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
+        </button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="底部导航">
+      <a class="nav-item" id="navToday" href="goal-work.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg>
+        今天
+      </a>
+      <a class="nav-item" id="navAn" href="xiaolan.html?goal=work">
+        <svg class="nav-avatar" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="anAvatarGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8F7DFF"/><stop offset="1" stop-color="#5A45EC"/></linearGradient></defs><circle cx="24" cy="24" r="23" fill="url(#anAvatarGrad)"/><circle cx="16.6" cy="20.8" r="3.1" fill="#fff"/><circle cx="31.4" cy="20.8" r="3.1" fill="#fff"/><path d="M15.4 30.2c2.7 3.7 5.5 5.3 8.6 5.3s5.9-1.6 8.6-5.3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+        小安
+      </a>
+      <button class="nav-item active" type="button" data-top aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.5"/><path d="M5.2 19.8c1.3-3.6 3.7-5.4 6.8-5.4s5.5 1.8 6.8 5.4"/></svg>
+        我的
+      </button>
+    </nav>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      /* ?goal=work|study|hsk：目标 / 路线 / 能力整页跟随；支持 ?days=、?date= 透传 */
+      var GOALS = {
+        work: {
+          page: 'goal-work.html',
+          title: '进入中资企业工作',
+          days: 58,
+          can: ['中文面试', '入职自我介绍'],
+          prep: ['听懂工作安排', '不懂时请求说明', '回复工作消息']
+        },
+        study: {
+          page: 'goal-study.html',
+          title: '前往中国留学',
+          days: 83,
+          can: ['出发前准备', '基础自我介绍', '常见信息填写'],
+          prep: ['机场入境', '前往学校', '办理报到']
+        },
+        hsk: {
+          page: 'goal-hsk.html',
+          title: 'HSK 3 级考试',
+          days: 72,
+          can: ['初始能力诊断'],
+          prep: ['基础知识补齐', '听力专项训练', '阅读与语法训练']
+        }
+      };
+      var params = new URLSearchParams(window.location.search);
+      var rawKey = params.get('goal');
+      var key = GOALS[rawKey] ? rawKey : 'work';
+      var goal = GOALS[key];
+
+      document.body.dataset.goal = key;
+
+      /* 倒计时：优先用链接带来的 ?days= / ?date=，没有就用推荐值兜底 */
+      var days = goal.days;
+      var rawDays = params.get('days');
+      if (rawDays !== null && rawDays.trim() !== '') {
+        var n = Number(rawDays);
+        if (isFinite(n) && n >= 0) days = Math.round(n);
+      }
+      var dateText = '';
+      var rawDate = params.get('date');
+      var dateMatch = rawDate && rawDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (dateMatch) {
+        dateText = Number(dateMatch[2]) + ' 月 ' + Number(dateMatch[3]) + ' 日';
+      } else {
+        var t = new Date();
+        var d = new Date(t.getFullYear(), t.getMonth(), t.getDate() + days);
+        dateText = (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日';
+      }
+
+      document.getElementById('goalTitle').textContent = goal.title;
+      document.getElementById('goalDate').textContent = dateText + '（还有 ' + days + ' 天）';
+      document.getElementById('abilCap').innerHTML = '已能应对 <b>' + goal.can.length + '</b> 项';
+      document.getElementById('meGoal').textContent = goal.title;
+      document.getElementById('meAbil').textContent = goal.can.length;
+
+      var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>';
+      var renderList = function (id, items, kind) {
+        var list = document.getElementById(id);
+        items.forEach(function (name) {
+          var li = document.createElement('li');
+          li.className = 'abil-item ' + kind;
+          li.innerHTML = '<span class="n" aria-hidden="true">' + (kind === 'can' ? CHECK : '') + '</span>' + name;
+          list.appendChild(li);
+        });
+      };
+      renderList('abilList', goal.can, 'can');
+      renderList('prepList', goal.prep, 'todo');
+
+      var q = new URLSearchParams();
+      q.set('goal', key);
+      ['days', 'date'].forEach(function (k) {
+        var v = params.get(k);
+        if (v !== null && v !== '') q.set(k, v);
+      });
+      var tail = q.toString();
+      document.getElementById('goalRow').setAttribute('href', 'goal-date.html?goal=' + key);
+      document.getElementById('routeRow').setAttribute('href', 'route.html?' + tail);
+      document.getElementById('navToday').setAttribute('href', goal.page + '?' + tail);
+      document.getElementById('navAn').setAttribute('href', 'xiaolan.html?' + tail);
+
+      /* 学习足迹：最近 13 周 × 7 天示意格（固定图案，与旧版截图一致；静态演示、不做交互） */
+      var heatGrid = document.getElementById('heatGrid');
+      if (heatGrid) {
+        var HEAT = ['0100001', '2000001', '0300001', '0002001', '0110101', '1042000', '1201000', '0100000', '0000021', '0302000', '1000124', '3131112', '3400000'];
+        var frag = document.createDocumentFragment();
+        for (var w = 0; w < HEAT.length; w += 1) {
+          for (var d = 0; d < 7; d += 1) {
+            var lv = Number(HEAT[w][d]);
+            var cell = document.createElement('span');
+            cell.className = 'heat-cell' + (lv > 0 ? ' lv' + lv : '');
+            frag.appendChild(cell);
+          }
+        }
+        heatGrid.appendChild(frag);
+      }
+    })();
+  </script>
+</body>
+</html>

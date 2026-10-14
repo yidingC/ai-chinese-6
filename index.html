@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F5F3FA">
+  <title>AI Chinese 6.0 · 选择你的目标</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="status-bar" aria-hidden="true">
+      <span data-status-time>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <header class="brand">
+      <svg class="spark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.4c.76 5.06 2.54 6.84 7.6 7.6-5.06.76-6.84 2.54-7.6 7.6-.76-5.06-2.54-6.84-7.6-7.6 5.06-.76 6.84-2.54 7.6-7.6Z"/></svg>
+      AI Chinese 6.0
+    </header>
+
+    <section class="select-head">
+      <h1>你正在为什么学习中文？</h1>
+      <p>告诉我们你的目标，我们为你规划接下来的路。</p>
+    </section>
+
+    <main class="goal-list">
+      <a class="goal-card" href="goal-date.html?goal=work">
+        <span class="goal-icon tint-indigo" aria-hidden="true">💼</span>
+        <span class="goal-copy">
+          <span class="goal-title">进入中资企业工作</span>
+          <span class="goal-desc">为面试、入职和中文职场沟通做准备</span>
+        </span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
+      </a>
+
+      <a class="goal-card" href="goal-date.html?goal=study">
+        <span class="goal-icon tint-teal" aria-hidden="true">🎓</span>
+        <span class="goal-copy">
+          <span class="goal-title">前往中国留学</span>
+          <span class="goal-desc">为入境、报到和校园生活做准备</span>
+        </span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
+      </a>
+
+      <a class="goal-card" href="goal-date.html?goal=hsk">
+        <span class="goal-icon tint-amber" aria-hidden="true">📝</span>
+        <span class="goal-copy">
+          <span class="goal-title">准备 HSK 考试</span>
+          <span class="goal-desc">在目标日期前达到对应等级能力</span>
+        </span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
+      </a>
+
+      <button class="goal-card" type="button" data-toast="自定义目标 · 概念页面暂未展开">
+        <span class="goal-icon tint-violet" aria-hidden="true">✨</span>
+        <span class="goal-copy">
+          <span class="goal-title">说说我的目标</span>
+          <span class="goal-desc">输入自己的真实目标</span>
+        </span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
+      </button>
+    </main>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

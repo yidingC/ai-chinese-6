@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F5F3FA">
+  <title>AI Chinese 6.0 · 准备路线</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-goal="work">
+  <div class="app">
+    <div class="status-bar" aria-hidden="true">
+      <span data-status-time>11:20</span>
+      <span class="status-icons">5G <span class="battery"></span></span>
+    </div>
+
+    <main class="page-main">
+      <header class="topbar">
+        <a class="icon-btn" id="routeBack" href="goal-work.html" aria-label="返回首页"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.6 5.4 8 12l6.6 6.6"/></svg></a>
+      </header>
+
+      <div class="page-head">
+        <h1 class="page-title">准备路线</h1>
+        <p class="page-sub">你的准备旅程</p>
+      </div>
+
+      <section class="route-sec">
+        <ol class="route-list" id="routeList"></ol>
+        <div class="destination">
+          <span class="dest-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4.6"/><path d="M6 5.4h11.4l-2.7 3.3 2.7 3.3H6"/></svg></span>
+          <p class="dest-text" id="routeDest">完成路线后，你将能够应对基础中文职场沟通。</p>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="底部导航">
+      <a class="nav-item active" id="navToday" href="goal-work.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg>
+        今天
+      </a>
+      <a class="nav-item" id="navAn" href="xiaolan.html?goal=work">
+        <svg class="nav-avatar" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="anAvatarGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8F7DFF"/><stop offset="1" stop-color="#5A45EC"/></linearGradient></defs><circle cx="24" cy="24" r="23" fill="url(#anAvatarGrad)"/><circle cx="16.6" cy="20.8" r="3.1" fill="#fff"/><circle cx="31.4" cy="20.8" r="3.1" fill="#fff"/><path d="M15.4 30.2c2.7 3.7 5.5 5.3 8.6 5.3s5.9-1.6 8.6-5.3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+        小安
+      </a>
+      <a class="nav-item" id="navMe" href="profile.html?goal=work">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.5"/><path d="M5.2 19.8c1.3-3.6 3.7-5.4 6.8-5.4s5.5 1.8 6.8 5.4"/></svg>
+        我的
+      </a>
+    </nav>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      /* ?goal=work|study|hsk：换整条路线内容；返回键 / 底部导航带参数（数字口径一致） */
+      var GOALS = {
+        work: {
+          page: 'goal-work.html',
+          items: [['中文面试','done'],['入职自我介绍','done'],['听懂工作安排','active'],['不懂时请求说明','todo'],['回复工作消息','todo'],['汇报工作进度','todo'],['参加基础会议','todo']],
+          dest: '完成路线后，你将能够应对基础中文职场沟通。'
+        },
+        study: {
+          page: 'goal-study.html',
+          items: [['出发前准备','done'],['基础自我介绍','done'],['常见信息填写','done'],['机场入境','active'],['前往学校','todo'],['办理报到','todo'],['入住宿舍','todo'],['认识同学','todo'],['听懂课堂要求','todo']],
+          dest: '完成路线后，你将能够独立应对入学初期的生活和学习场景。'
+        },
+        hsk: {
+          page: 'goal-hsk.html',
+          items: [['初始能力诊断','done'],['基础知识补齐','active'],['听力专项训练','todo'],['阅读与语法训练','todo'],['阶段能力验证','todo'],['薄弱项补习','todo'],['完整模拟考试','todo']],
+          dest: '目标：在考试日期前达到 HSK 3 所需能力。'
+        }
+      };
+      var params = new URLSearchParams(window.location.search);
+      var rawKey = params.get('goal');
+      var key = GOALS[rawKey] ? rawKey : 'work';
+      var goal = GOALS[key];
+
+      document.body.dataset.goal = key;
+
+      var CHIP = { done: '已完成', active: '进行中' };
+      var list = document.getElementById('routeList');
+      goal.items.forEach(function (pair) {
+        var li = document.createElement('li');
+        li.className = 'route-item ' + pair[1];
+        li.innerHTML = '<span class="r-node" aria-hidden="true">' + (pair[1] === 'done' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>' : '') + '</span>' +
+          '<span class="r-body"><span class="r-title">' + pair[0] + '</span>' +
+          (CHIP[pair[1]] ? '<span class="r-chip">' + CHIP[pair[1]] + '</span>' : '') + '</span>';
+        list.appendChild(li);
+      });
+      document.getElementById('routeDest').textContent = goal.dest;
+
+      var q = new URLSearchParams();
+      q.set('goal', key);
+      ['days', 'date'].forEach(function (k) {
+        var v = params.get(k);
+        if (v !== null && v !== '') q.set(k, v);
+      });
+      var tail = q.toString();
+      document.getElementById('routeBack').setAttribute('href', goal.page + '?' + tail);
+      document.getElementById('navToday').setAttribute('href', goal.page + '?' + tail);
+      document.getElementById('navMe').setAttribute('href', 'profile.html?' + tail);
+      document.getElementById('navAn').setAttribute('href', 'xiaolan.html?' + tail);
+    })();
+  </script>
+</body>
+</html>

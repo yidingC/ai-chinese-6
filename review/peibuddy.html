@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>互教语伴 · 场景模拟</title>
+<style>
+  :root{
+    --purple:#6552ff; --purple-deep:#4c35e8; --purple-soft:#eeeaff;
+    --mint:#69d5c5; --mint-soft:#e0f8f2; --success:#1d8f6e;
+    --ink:#252244; --muted:#77738f; --line:#e8e6f3; --paper:#fff; --page:#f7f7fc;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--page)}
+  body{width:430px; font-family:ui-rounded,"SF Pro Rounded","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased}
+  .app{width:430px; min-height:990px; display:flex; flex-direction:column; background:var(--page)}
+
+  .status-bar{display:flex;align-items:center;justify-content:space-between;height:30px;padding:6px 20px 0;font-size:12px;font-weight:800;background:#fff}
+  .battery{display:inline-block;width:18px;height:9px;border:1.5px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px}
+  .battery::before{content:"";position:absolute;inset:1.5px;background:currentColor;border-radius:1px}
+
+  .chat-nav{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;background:#fff;border-bottom:1px solid #f0eff7}
+  .nav-back{width:26px;border:0;background:none;font-size:22px;line-height:1;color:var(--ink);padding:0;text-align:left}
+  .chat-avatar{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;box-shadow:0 6px 14px rgba(101,82,255,.3)}
+  .chat-id{flex:1;min-width:0}
+  .chat-name{font-size:15.5px;font-weight:800}
+  .chat-sub{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block}
+  .nav-more{border:0;background:none;color:var(--muted);font-size:19px;font-weight:800}
+
+  .goal-strip{background:var(--purple-soft);color:var(--purple-deep);font-size:12px;font-weight:700;padding:9px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .goal-day{background:#fff;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800}.flame{background:linear-gradient(135deg,#ff9a3d,#ff4d4f);color:#fff;box-shadow:0 4px 10px rgba(255,77,79,.35);padding:4px 10px}
+
+  .chat{flex:1;padding:14px 0 6px}
+  .day-divider{text-align:center;color:#b4b1c9;font-size:11px;margin-bottom:14px}
+  .row{display:flex;gap:9px;margin:0 16px 13px;align-items:flex-start}
+  .row.ai .avatar{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px;box-shadow:0 6px 12px rgba(101,82,255,.25);flex:0 0 auto}
+  .bubble{max-width:288px;background:#fff;border-radius:16px;border-top-left-radius:6px;padding:10px 13px;font-size:14.5px;line-height:1.6;box-shadow:0 6px 18px rgba(71,57,142,.08)}
+  .row.me{justify-content:flex-end}
+  .row.me .bubble{background:linear-gradient(135deg,#6552ff,#4c35e8);color:#fff;border-radius:16px;border-top-right-radius:6px;box-shadow:0 8px 18px rgba(101,82,255,.3);max-width:270px}
+
+  .voice{display:flex;align-items:center;gap:9px}
+  .play{width:26px;height:26px;border-radius:50%;background:var(--purple-soft);color:var(--purple-deep);display:grid;place-items:center;font-size:10px;flex:0 0 auto}
+  .row.me .play{background:rgba(255,255,255,.22);color:#fff}
+  .bars{display:flex;align-items:center;gap:2.5px;height:20px;flex:1}
+  .bars i{width:2.5px;border-radius:2px;background:#cfcaff;display:block}
+  .row.me .bars i{background:rgba(255,255,255,.65)}
+  .dur{font-size:11px;color:var(--muted);flex:0 0 auto}
+  .row.me .dur{color:rgba(255,255,255,.85)}
+
+  .transcript{margin-top:9px;padding-top:9px;border-top:1px dashed #eceaf6;font-size:13.5px;color:#3a3757}
+  .t-word{color:var(--purple-deep);font-weight:700;border-bottom:1.5px dotted #a99fff;position:relative}
+  .tip{position:absolute;left:-6px;bottom:calc(100% + 9px);background:#fff;border:1px solid var(--line);box-shadow:0 10px 24px rgba(71,57,142,.16);border-radius:12px;padding:7px 11px;font-size:11.5px;color:var(--ink);white-space:nowrap;font-weight:700}
+  .tip small{color:var(--muted);font-weight:600;margin-left:2px}
+  .tip::after{content:"";position:absolute;left:12px;top:100%;border:6px solid transparent;border-top-color:#fff;filter:drop-shadow(0 1px 0 #e8e6f3)}
+  .t-foot{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:11px;color:var(--muted)}
+  .t-chip{background:var(--page);border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-weight:700}
+
+  .sys{display:flex;justify-content:center;margin:2px 16px 13px}
+  .sys-pill{background:var(--mint-soft);color:var(--success);font-size:11.5px;font-weight:700;padding:7px 13px;border-radius:999px;box-shadow:0 4px 12px rgba(105,213,197,.25)}
+
+  .composer{background:#fff;border-top:1px solid #f0eff7;padding:10px 16px 16px;margin-top:auto}
+  .input-row{display:flex;align-items:center;gap:9px}
+  .icon-btn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:18px;border:0;flex:0 0 auto}
+  .mic{background:var(--purple-soft)}
+  .field{flex:1;height:46px;border-radius:23px;background:var(--page);border:1px solid #eceaf6;display:flex;align-items:center;padding:0 16px;color:#a9a6bf;font-size:13.5px}
+  .send{background:var(--purple);color:#fff;box-shadow:0 8px 16px rgba(101,82,255,.35);font-weight:800}
+  .hint{margin-top:8px;text-align:center;font-size:11px;color:#b4b1c9}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="status-bar"><span>11:20</span><span>5G <span class="battery"></span></span></div>
+
+  <header class="chat-nav">
+    <button class="nav-back">&#8249;</button>
+    <div class="chat-avatar">北</div>
+    <div class="chat-id">
+      <div class="chat-name">小北</div>
+      <div class="chat-sub"><i class="dot"></i>在线 · 想学印尼语的中国朋友</div>
+    </div>
+    <button class="nav-more">&#8943;</button>
+  </header>
+
+  <div class="goal-strip">今日目标：把火花续上，互相教一个词<span class="goal-day flame">🔥 火花 5 天</span></div>
+
+  <main class="chat">
+    <div class="day-divider">今天 16:40</div>
+
+    <div class="row ai">
+      <div class="avatar">北</div>
+      <div class="bubble">
+        <div class="voice">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:30%"></i><i style="height:55%"></i><i style="height:80%"></i><i style="height:45%"></i><i style="height:90%"></i><i style="height:60%"></i><i style="height:35%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:40%"></i><i style="height:60%"></i>
+          </span>
+          <span class="dur">0:12</span>
+        </div>
+        <div class="transcript">
+          今天有点<span class="t-word">倒霉<span class="tip">倒霉 · dǎoméi<small>sial</small></span></span> 😭 早上忘带伞，走到半路突然下大雨，鞋子全湿了。
+          <div class="t-foot"><span class="t-chip">0.8&times; 慢速</span><span>点词看拼音</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row me">
+      <div class="bubble">哈哈 我也没带伞！雅加达也下雨 ☔️</div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">北</div>
+      <div class="bubble">我们一样惨 😂 对了，我想问你：印尼语的「伞」怎么说？我要记下来。</div>
+    </div>
+
+    <div class="row me">
+      <div class="bubble">payung！ 说 payung 就行</div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">北</div>
+      <div class="bubble">好！我先自己读一遍，你听听对不对 😅
+        <div class="voice" style="margin-top:8px">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:40%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:90%"></i><i style="height:45%"></i><i style="height:65%"></i><i style="height:35%"></i><i style="height:55%"></i>
+          </span>
+          <span class="dur">0:04</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row me">
+      <div class="bubble">
+        <div class="voice">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:60%"></i><i style="height:90%"></i><i style="height:45%"></i><i style="height:70%"></i><i style="height:95%"></i><i style="height:50%"></i><i style="height:65%"></i>
+          </span>
+          <span class="dur">0:03</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">北</div>
+      <div class="bubble">
+        <div class="voice">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:95%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:60%"></i>
+          </span>
+          <span class="dur">0:05</span>
+        </div>
+        <div style="margin-top:8px"><b style="color:var(--purple-deep)">Payung！</b>这次对了吧？你把我教会了 ✓</div>
+      </div>
+    </div>
+
+    <div class="sys">
+      <div class="sys-pill">🔥 火花续到第 5 天 ｜ 你今天说了 6 句中文 · 教会小北 1 个词</div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">北</div>
+      <div class="bubble">明天换你教我一道菜？我只会说 nasi goreng，想知道「炒饭」怎么用中文点 😋</div>
+    </div>
+  </main>
+
+  <footer class="composer">
+    <div class="input-row">
+      <button class="icon-btn mic">🎤</button>
+      <div class="field">跟小北说点什么…</div>
+      <button class="icon-btn send">&#8593;</button>
+    </div>
+    <div class="hint">长按麦克风说中文 · 也可以教小北一句印尼语</div>
+  </footer>
+
+</div>
+</body>
+</html>
+
+

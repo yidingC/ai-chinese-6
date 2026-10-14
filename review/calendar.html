@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日历 · AI Chinese 6.0</title>
+<style>
+  :root{
+    --purple:#6552ff; --purple-deep:#4c35e8; --purple-soft:#eeeaff;
+    --done:#35c88f; --done-deep:#1d8f6e;
+    --ink:#252244; --ink-soft:#6a6680; --ink-faint:#9b97ae;
+    --line:#e8e6f3; --paper:#fff; --page:#f7f7fc;
+    --shadow-card:0 10px 28px rgba(35,32,58,.07);
+    --safe-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--page)}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  button:focus-visible{outline:2px solid #cfcaff;outline-offset:2px}
+
+  .app{width:100%;max-width:430px;margin:0 auto;height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;overflow:hidden;background:var(--page);box-shadow:0 0 60px rgba(44,37,89,.10)}
+
+  .status-bar{display:flex;align-items:center;justify-content:space-between;height:30px;padding:6px 20px 0;font-size:12px;font-weight:800;background:#fff}
+  .battery{display:inline-block;width:18px;height:9px;border:1.5px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px}
+  .battery::before{content:"";position:absolute;inset:1.5px;background:currentColor;border-radius:1px}
+
+  .cal-main{flex:1;min-height:0;display:flex;flex-direction:column;background:#fff}
+
+  /* 顶部：返回箭头 + 大标题 */
+  .cal-top{flex:0 0 auto;padding:0 18px 8px;background:#fff}
+  .back-btn{width:30px;height:30px;padding:0;display:grid;place-items:center;border:0;background:none;color:var(--ink)}
+  .back-btn svg{width:20px;height:20px}
+  .back-btn:active{opacity:.55}
+  .cal-title{margin:2px 0 0;font-size:27px;font-weight:800;letter-spacing:.01em}
+
+  /* 月网格（自己滚，滚到今天附近） */
+  .cal-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:0 14px 12px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent)}
+  .cal-scroll::-webkit-scrollbar{display:none}
+  .month{padding-top:8px}
+  .month + .month{margin-top:10px;border-top:1px solid #f2f0f9}
+  .month-cap{margin:0;padding:0 8px 6px;font-size:14px;font-weight:800;letter-spacing:.02em;color:var(--ink)}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);padding-bottom:2px}
+  .week span{text-align:center;font-size:11px;font-weight:700;color:var(--ink-faint)}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px}
+  .cell{display:grid;justify-items:center;gap:2px;padding:2px 0 3px;border:0;background:none;border-radius:16px}
+  .cell .d{width:33px;height:33px;border-radius:50%;display:grid;place-items:center;font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums;color:#c4c1d4;transition:transform .12s ease,box-shadow .18s ease}
+  .cell .dot{width:5px;height:5px;border-radius:50%;background:transparent}
+  .cell.is-empty{pointer-events:none}
+  .cell:active .d{transform:scale(.93)}
+  .cell.is-done .d{color:var(--ink);font-weight:800}
+  .cell.is-done .dot{background:var(--done)}
+  .cell.is-rest .d{color:var(--ink-faint);font-weight:600}
+  .cell.is-out .d{color:#dcd9e8;font-weight:600}
+  .cell.is-today .d{background:var(--purple);color:#fff;font-weight:800;box-shadow:0 8px 18px rgba(101,82,255,.3)}
+  .cell.is-selected:not(.is-today) .d{border:1.6px solid var(--purple);background:#fff;color:var(--purple-deep);font-weight:800;box-shadow:0 6px 14px rgba(101,82,255,.16)}
+
+  /* 下方：选中那天的四行 */
+  .day-panel{flex:0 0 auto;max-height:min(54vh,420px);overflow-y:auto;scrollbar-width:none;padding:11px 12px calc(9px + var(--safe-bottom));background:var(--page);border-top:1px solid var(--line);box-shadow:0 -12px 28px rgba(35,32,58,.06)}
+  .day-panel::-webkit-scrollbar{display:none}
+  .panel-card{padding:14px 14px 13px;border:1px solid #f1eff8;border-radius:22px;background:var(--paper);box-shadow:var(--shadow-card)}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:11px}
+  .panel-cap{margin:0;font-size:13px;font-weight:800;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .panel-cap b{color:var(--purple-deep)}
+  .panel-cap i{font-style:normal;font-weight:600;color:#c7c4d6;padding:0 3px}
+  .back-today{flex:0 0 auto;padding:2px 0;border:0;background:none;font-size:12.5px;font-weight:800;color:var(--purple-deep)}
+  .back-today:active{opacity:.6}
+
+  .task-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  .task-list[hidden]{display:none}
+  .task{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:9px;align-items:center;padding:12px 13px;border:1px solid var(--line);border-radius:18px;background:#FBFAFE}
+  .task-tag{padding:4px 10px;border-radius:999px;background:var(--purple-soft);color:var(--purple-deep);font-size:12px;font-weight:800;white-space:nowrap}
+  .task-text{font-size:15px;font-weight:700;line-height:1.45}
+  .task-time{font-size:12.5px;font-weight:700;color:var(--ink-faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .task-check{width:30px;height:30px;padding:0;display:grid;place-items:center;border:2px solid #DCD8EB;border-radius:50%;background:#fff;color:transparent}
+  .task-check svg{width:15px;height:15px}
+  .task.done .task-text{color:var(--ink-soft)}
+  .task.done .task-check{border-color:transparent;background:var(--done);color:#fff}
+  .task.future{border-color:#f0eef8;background:#FCFBFE}
+  .task.future .task-tag{background:#F1EFF8;color:#a9a6bf}
+  .task.future .task-text{color:#a9a6bf}
+  .task.future .task-time{color:#c7c4d6}
+  .task.future .task-check{border-color:#e9e6f6}
+  .task-note{margin:10px 2px 0;font-size:12.5px;font-weight:600;line-height:1.5;color:var(--ink-faint)}
+  .task-note[hidden]{display:none}
+  .panel-plain{margin:0 2px 2px;font-size:13.5px;font-weight:600;line-height:1.65;color:var(--ink-soft)}
+  .panel-plain[hidden]{display:none}
+
+  /* 底栏 */
+  .bottom-nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);padding:7px 10px calc(9px + var(--safe-bottom));background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border-top:1px solid var(--line)}
+  .nav-item{display:grid;justify-items:center;gap:3px;padding:6px 0 4px;border:0;background:none;color:var(--ink-faint);font-size:11px;font-weight:700}
+  .nav-item svg{width:23px;height:23px}
+  .nav-item.active{color:var(--purple-deep)}
+  .nav-avatar{width:23px;height:23px}
+
+  .toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-bottom));transform:translate(-50%,10px);max-width:82vw;padding:11px 18px;border-radius:999px;background:rgba(35,32,58,.93);color:#fff;font-size:13.5px;font-weight:600;text-align:center;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;z-index:80}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* 高屏：整页一起滚（月网格保持完整高度，四行跟在下面） */
+  @media (max-height:660px){
+    .cal-main{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+    .cal-main::-webkit-scrollbar{display:none}
+    .cal-scroll{flex:0 0 auto;overflow:visible;-webkit-mask-image:none;mask-image:none}
+    .day-panel{max-height:none}
+  }
+
+  /* 桌面宽屏：收成居中的手机框（跟主原型一致） */
+  @media (min-width:700px){
+    .app{height:calc(100vh - 32px);height:calc(100dvh - 32px);min-height:0;margin:16px auto;border-radius:34px;box-shadow:0 0 80px rgba(44,37,89,.14)}
+    .toast{bottom:calc(112px + var(--safe-bottom))}
+  }
+
+  @media (max-width:362px){
+    .cal-top{padding:0 14px 6px}
+    .cal-title{font-size:24px}
+    .cal-scroll{padding:0 10px 10px}
+    .month-cap{padding:0 6px 6px;font-size:13.5px}
+    .cell .d{width:31px;height:31px;font-size:13.5px}
+    .day-panel{padding:10px 10px calc(8px + var(--safe-bottom))}
+    .panel-card{padding:12px 11px 11px;border-radius:20px}
+    .panel-cap{font-size:11.5px}
+    .back-today{font-size:11px}
+    .task-list{gap:9px}
+    .task{gap:8px;padding:10px 10px;border-radius:16px}
+    .task-tag{padding:3px 8px;font-size:11.5px}
+    .task-text{font-size:13.5px}
+    .task-time{font-size:11.5px}
+    .task-check{width:27px;height:27px}
+    .task-check svg{width:13.5px;height:13.5px}
+    .task-note{font-size:11.5px}
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="status-bar" aria-hidden="true">
+      <span>11:20</span>
+      <span>5G <span class="battery"></span></span>
+    </div>
+
+    <main class="cal-main">
+      <header class="cal-top">
+        <button class="back-btn" id="backBtn" type="button" aria-label="返回">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.6 5.4 8 12l6.6 6.6"/></svg>
+        </button>
+        <h1 class="cal-title">日历</h1>
+      </header>
+
+      <div class="cal-scroll" id="calScroll">
+        <div id="months"></div>
+      </div>
+
+      <section class="day-panel" aria-label="这一天的安排">
+        <div class="panel-card">
+          <div class="panel-head">
+            <p class="panel-cap" id="panelCap"></p>
+            <button class="back-today" id="backToday" type="button">回到今天</button>
+          </div>
+          <ul class="task-list" id="taskList"></ul>
+          <p class="panel-plain" id="panelPlain" hidden></p>
+          <p class="task-note" id="taskNote" hidden></p>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="底部导航">
+      <button class="nav-item" type="button" data-toast="概念页未展开">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg>
+        今天
+      </button>
+      <button class="nav-item" type="button" data-toast="概念页未展开">
+        <svg class="nav-avatar" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="calAnGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8F7DFF"/><stop offset="1" stop-color="#5A45EC"/></linearGradient></defs><circle cx="24" cy="24" r="23" fill="url(#calAnGrad)"/><circle cx="16.6" cy="20.8" r="3.1" fill="#fff"/><circle cx="31.4" cy="20.8" r="3.1" fill="#fff"/><path d="M15.4 30.2c2.7 3.7 5.5 5.3 8.6 5.3s5.9-1.6 8.6-5.3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+        小安
+      </button>
+      <button class="nav-item active" type="button" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="5.2" width="17.2" height="15.4" rx="3.4"/><path d="M8 3.1v3.7M16 3.1v3.7M3.4 10.3h17.2"/><circle cx="8.5" cy="14.4" r="1.05" fill="currentColor" stroke="none"/><circle cx="12" cy="14.4" r="1.05" fill="currentColor" stroke="none"/><circle cx="8.5" cy="17.7" r="1.05" fill="currentColor" stroke="none"/><circle cx="12" cy="17.7" r="1.05" fill="currentColor" stroke="none"/></svg>
+        日历
+      </button>
+      <button class="nav-item" type="button" data-toast="概念页未展开">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.5"/><path d="M5.2 19.8c1.3-3.6 3.7-5.4 6.8-5.4s5.5 1.8 6.8 5.4"/></svg>
+        我的
+      </button>
+    </nav>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 模拟数据（写死，不用日期库） ----------
+     演示当天：2026-10-14；准备期 10/6 - 12/11（入职日）；10/9 是缓冲日 */
+  var MONTHS = [
+    { m: 10, label: "10 月", lead: 3, days: 31 },
+    { m: 11, label: "11 月", lead: 6, days: 30 },
+    { m: 12, label: "12 月", lead: 1, days: 30 }
+  ];
+  var WEEK = ["一", "二", "三", "四", "五", "六", "日"];
+  var TODAY = { m: 10, d: 14 };
+  var PLAN_FROM = { m: 10, d: 6 };
+  var PLAN_TO = { m: 12, d: 11 };
+  var REST_DAYS = [9];
+  var DONE_DAYS = [6, 7, 8, 10, 11, 12, 13];
+
+  /* 过去每天：复习 / 新学 / 练习 / 实战 / 实战结果 */
+  var PAST = {
+    6:  { review: "打招呼和自我介绍", learn: "数字和工位", drill: "听音选词", battle: "自我介绍", result: "用了 3 次提示" },
+    7:  { review: "数字和工位", learn: "时间说法（三点、四点）", drill: "听音选词", battle: "跟虚拟主管打招呼", result: "用了 2 次提示" },
+    8:  { review: "时间说法（三点、四点）", learn: "常用礼貌开头", drill: "句子排序", battle: "跟虚拟主管演一遍", result: "用了 2 次提示" },
+    10: { review: "打招呼和自我介绍", learn: "请再说一遍", drill: "听音选词", battle: "跟虚拟主管演一遍", result: "用了 1 次提示" },
+    11: { review: "数字和工位", learn: "听不清时怎么问", drill: "拼句子", battle: "跟虚拟主管演一遍", result: "用了 1 次提示" },
+    12: { review: "常用礼貌开头", learn: "确认时间（几点前）", drill: "句子排序", battle: "跟虚拟主管演一遍", result: "一次通过" },
+    13: { review: "时间说法（三点、四点）", learn: "请求说明（第 1 次）", drill: "句子排序", battle: "跟虚拟主管演一遍", result: "用了 2 次提示" }
+  };
+  /* 今天（10/14） */
+  var TODAY_ROWS = [
+    ["复习", "请求说明（第 2 次）", "2 分钟"],
+    ["新学", "把……一下 / 发给", "8 分钟"],
+    ["练习", "听音选词 ＋ 排序", "4 分钟"],
+    ["实战", "跟虚拟主管演一遍", "5 分钟"]
+  ];
+  /* 未来：四行概括说法（新学那行按月微调） */
+  var FUTURE_LEARN = { 10: "下一组工作句式", 11: "会议和邮件里的说法", 12: "上岗前的常用交代" };
+  var ROW_MIN = ["2 分钟", "8 分钟", "4 分钟", "5 分钟"];
+  var ROW_META = "4 件事<i>·</i>约 20 分钟";
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>';
+
+  var scroller = document.getElementById("calScroll");
+  var monthsWrap = document.getElementById("months");
+  var capEl = document.getElementById("panelCap");
+  var listEl = document.getElementById("taskList");
+  var plainEl = document.getElementById("panelPlain");
+  var noteEl = document.getElementById("taskNote");
+
+  /* ---------- 提示条 ---------- */
+  var toastEl = document.querySelector(".toast");
+  var toastTimer = null;
+  function toast(text) {
+    toastEl.textContent = text;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2000);
+  }
+
+  /* ---------- 每天的状态 ---------- */
+  function dayState(m, d) {
+    if (m === PLAN_FROM.m && d < PLAN_FROM.d) return "out";
+    if (m === PLAN_TO.m && d > PLAN_TO.d) return "out";
+    if (m === 10 && REST_DAYS.indexOf(d) > -1) return "rest";
+    if (m === 10 && DONE_DAYS.indexOf(d) > -1) return "done";
+    if (m === TODAY.m && d === TODAY.d) return "today";
+    return "future";
+  }
+
+  /* ---------- 月网格 ---------- */
+  function dayCell(m, d) {
+    var cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "cell is-" + dayState(m, d);
+    cell.dataset.m = m;
+    cell.dataset.d = d;
+    cell.setAttribute("aria-label", m + " 月 " + d + " 日");
+    if (d === TODAY.d && m === TODAY.m) cell.setAttribute("aria-current", "date");
+    var num = document.createElement("span");
+    num.className = "d";
+    num.textContent = String(d);
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    cell.appendChild(num);
+    cell.appendChild(dot);
+    cell.addEventListener("click", function () { select(m, d); });
+    return cell;
+  }
+
+  function buildMonths() {
+    MONTHS.forEach(function (mo) {
+      var sec = document.createElement("section");
+      sec.className = "month";
+      var cap = document.createElement("h2");
+      cap.className = "month-cap";
+      cap.textContent = mo.label;
+      var week = document.createElement("div");
+      week.className = "week";
+      WEEK.forEach(function (w) {
+        var sp = document.createElement("span");
+        sp.textContent = w;
+        week.appendChild(sp);
+      });
+      var grid = document.createElement("div");
+      grid.className = "grid";
+      for (var i = 0; i < mo.lead; i++) {
+        var blank = document.createElement("span");
+        blank.className = "cell is-empty";
+        grid.appendChild(blank);
+      }
+      for (var d = 1; d <= mo.days; d++) grid.appendChild(dayCell(mo.m, d));
+      sec.appendChild(cap);
+      sec.appendChild(week);
+      sec.appendChild(grid);
+      monthsWrap.appendChild(sec);
+    });
+  }
+
+  /* ---------- 四行 ---------- */
+  function rowHtml(state, tag, text, time) {
+    var check;
+    if (state === "todo") {
+      check = '<button class="task-check" type="button" aria-pressed="false" aria-label="标记完成：' + text + '">' + CHECK + "</button>";
+    } else {
+      check = '<span class="task-check" aria-hidden="true">' + CHECK + "</span>";
+    }
+    var cls = state === "done" ? "task done" : (state === "future" ? "task future" : "task");
+    return '<li class="' + cls + '"><span class="task-tag">' + tag + '</span><span class="task-text">' + text +
+      '</span><span class="task-time">' + time + "</span>" + check + "</li>";
+  }
+
+  function setCap(dateText, stateText, metaText) {
+    capEl.innerHTML = "<span>" + dateText + "</span><i>·</i><b>" + stateText + "</b>" +
+      (metaText ? "<i>·</i><span>" + metaText + "</span>" : "");
+  }
+
+  function statusText(m, d) {
+    if (m === 10 && d === 13) return "昨天";
+    if (m === 10 && d === 12) return "前天";
+    return "已完成";
+  }
+
+  function renderPanel(m, d) {
+    var state = dayState(m, d);
+    var dateText = m + " 月 " + d + " 日";
+    listEl.innerHTML = "";
+    listEl.hidden = false;
+    noteEl.hidden = true;
+    noteEl.textContent = "";
+    plainEl.hidden = true;
+    plainEl.textContent = "";
+
+    /* 计划外：准备期之前 / 入职日之后 */
+    if (state === "out") {
+      setCap(dateText, "计划外", "");
+      plainEl.hidden = false;
+      plainEl.textContent = m === 10
+        ? "准备期从 10 月 6 日开始，那一天还没排上内容。"
+        : "准备期到 12 月 11 日为止，之后就是正式上岗了。";
+      listEl.hidden = true;
+      return;
+    }
+
+    /* 缓冲日：10 月 9 日没有安排 */
+    if (state === "rest") {
+      setCap(dateText, "缓冲日", "没有安排");
+      plainEl.hidden = false;
+      plainEl.textContent = "留一天喘口气：想练就补补前面没吃透的地方，不想练也可以跳过。";
+      listEl.hidden = true;
+      return;
+    }
+
+    if (state === "today") {
+      setCap(dateText, "今天", ROW_META);
+      listEl.innerHTML = TODAY_ROWS.map(function (r) {
+        return rowHtml("todo", r[0], r[1], r[2]);
+      }).join("");
+    } else if (state === "done") {
+      var p = PAST[d] || PAST[13];
+      setCap(dateText, statusText(m, d), ROW_META);
+      listEl.innerHTML = [
+        rowHtml("done", "复习", p.review, ROW_MIN[0]),
+        rowHtml("done", "新学", p.learn, ROW_MIN[1]),
+        rowHtml("done", "练习", p.drill, ROW_MIN[2]),
+        rowHtml("done", "实战", p.battle, ROW_MIN[3])
+      ].join("");
+      noteEl.hidden = false;
+      noteEl.textContent = "实战结果：通过 · " + p.result;
+    } else {
+      setCap(dateText, "计划中", ROW_META);
+      listEl.innerHTML = [
+        rowHtml("future", "复习", "巩固之前内容", ROW_MIN[0]),
+        rowHtml("future", "新学", FUTURE_LEARN[m] || FUTURE_LEARN[10], ROW_MIN[1]),
+        rowHtml("future", "练习", "听音与排序", ROW_MIN[2]),
+        rowHtml("future", "实战", "情景对话", ROW_MIN[3])
+      ].join("");
+      noteEl.hidden = false;
+      noteEl.textContent = "会跟着你的进度微调";
+    }
+
+    /* 今天的圆圈：点一下就是做完了 */
+    Array.prototype.forEach.call(listEl.querySelectorAll("button.task-check"), function (btn) {
+      btn.addEventListener("click", function () {
+        var row = btn.closest(".task");
+        var on = row.classList.toggle("done");
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.setAttribute("aria-label", (on ? "取消完成：" : "标记完成：") + row.querySelector(".task-text").textContent);
+      });
+    });
+  }
+
+  /* ---------- 选日期 ---------- */
+  function select(m, d) {
+    Array.prototype.forEach.call(document.querySelectorAll(".cell.is-selected"), function (c) {
+      c.classList.remove("is-selected");
+      c.removeAttribute("aria-pressed");
+    });
+    var cell = document.querySelector('.cell[data-m="' + m + '"][data-d="' + d + '"]');
+    if (cell) {
+      cell.classList.add("is-selected");
+      cell.setAttribute("aria-pressed", "true");
+    }
+    renderPanel(m, d);
+  }
+
+  /* 网格滚到今天附近（高屏滚网格，矮屏整页滚） */
+  function activeScroller() {
+    if (scroller.scrollHeight > scroller.clientHeight + 1) return scroller;
+    var main = document.querySelector(".cal-main");
+    if (main.scrollHeight > main.clientHeight + 1) return main;
+    return scroller;
+  }
+
+  function scrollToToday(smooth) {
+    var cell = document.querySelector(".cell.is-today");
+    if (!cell) return;
+    var box = activeScroller();
+    var r = cell.getBoundingClientRect();
+    var s = box.getBoundingClientRect();
+    var top = box.scrollTop + (r.top - s.top) - box.clientHeight * 0.42;
+    box.scrollTo({ top: Math.max(0, top), behavior: smooth ? "smooth" : "auto" });
+  }
+
+  /* ---------- 入口 ---------- */
+  document.getElementById("backBtn").addEventListener("click", function () { toast("返回 · 概念未展开"); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-toast]"), function (el) {
+    el.addEventListener("click", function () { toast(el.getAttribute("data-toast")); });
+  });
+  document.getElementById("backToday").addEventListener("click", function () {
+    select(TODAY.m, TODAY.d);
+    scrollToToday(true);
+  });
+
+  buildMonths();
+  select(TODAY.m, TODAY.d);
+  scrollToToday(false);
+})();
+</script>
+</body>
+</html>

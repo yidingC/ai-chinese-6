@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>今日任务 · AI Chinese 6.0</title>
+<style>
+  :root{
+    --purple:#6552ff; --purple-deep:#4c35e8; --purple-soft:#eeeaff;
+    --mint:#69d5c5; --mint-soft:#e0f8f2; --success:#1d8f6e;
+    --gold:#ffb35c; --ink:#252244; --muted:#77738f; --line:#e8e6f3; --page:#f7f7fc;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--page)}
+  body{font-family:ui-rounded,"SF Pro Rounded","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer}
+  button:focus-visible{outline:2px solid #cfcaff;outline-offset:2px}
+
+  .app{width:100%;max-width:430px;margin:0 auto;height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;background:var(--page)}
+
+  .status-bar{display:flex;align-items:center;justify-content:space-between;height:30px;padding:6px 20px 0;font-size:12px;font-weight:800;background:#fff}
+  .battery{display:inline-block;width:18px;height:9px;border:1.5px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px}
+  .battery::before{content:"";position:absolute;inset:1.5px;background:currentColor;border-radius:1px}
+
+  /* 顶部四段进度 + 小标牌 */
+  .tf-head{background:#fff;border-bottom:1px solid #f0eff7;padding:8px 16px 10px}
+  .tf-stages{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .tf-stage{display:grid;gap:5px;justify-items:center}
+  .tf-stage i{display:block;width:100%;height:6px;border-radius:999px;background:#e9e6f6;transition:background .3s,box-shadow .3s}
+  .tf-stage span{font-size:11px;font-weight:800;color:#a9a6bf;transition:color .3s}
+  .tf-stage.done i{background:#c9c0ff}
+  .tf-stage.done span{color:#6f68a0}
+  .tf-stage.active i{background:linear-gradient(90deg,#6552ff,#8d7bff);box-shadow:0 3px 8px rgba(101,82,255,.35)}
+  .tf-stage.active span{color:var(--purple-deep)}
+  .tf-tags{display:grid;grid-template-columns:repeat(4,1fr);margin-top:7px;min-height:22px}
+  .tf-tag{grid-row:1;grid-column:1;justify-self:center;white-space:nowrap;background:var(--purple-soft);color:var(--purple-deep);font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;opacity:0;transform:translateY(-2px);transition:opacity .25s,transform .25s}
+  .tf-tag.show{opacity:1;transform:none}
+  .tf-tag.c0{justify-self:start}
+  .tf-tag.c3{justify-self:end}
+
+  /* 屏幕切换 */
+  .flow{position:relative;flex:1;overflow:hidden}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;padding:16px 18px 18px;overflow-y:auto;overscroll-behavior:contain;opacity:0;transform:translateX(28px);visibility:hidden;transition:opacity .3s ease,transform .3s ease,visibility .3s}
+  .screen.active{opacity:1;transform:none;visibility:visible}
+  .screen.leave{opacity:0;transform:translateX(-28px);visibility:visible}
+
+  .cta{margin-top:auto;padding-top:14px}
+  .tf-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;border:0;border-radius:16px;background:linear-gradient(135deg,#6552ff,#4c35e8);color:#fff;font-size:16px;font-weight:800;box-shadow:0 10px 22px rgba(101,82,255,.32);transition:transform .12s,box-shadow .12s}
+  .tf-btn:active{transform:translateY(2px);box-shadow:0 6px 14px rgba(101,82,255,.28)}
+
+  /* 开场 */
+  .intro{display:grid;gap:8px;padding-top:26px}
+  .intro-title{font-size:27px;font-weight:900;margin:0}
+  .intro-sub{color:var(--muted);font-size:13.5px;font-weight:700;margin:0 0 10px}
+  .intro-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 6px 16px rgba(71,57,142,.07)}
+  .intro-ico{width:30px;height:30px;border-radius:10px;background:var(--purple-soft);display:grid;place-items:center;font-size:15px;flex:0 0 auto}
+  .intro-name{font-size:15px;font-weight:800}
+  .intro-item em{margin-left:auto;font-style:normal;color:var(--muted);font-size:12px;font-weight:700}
+
+  /* 快问快答 / 练习 通用 */
+  .q-kicker{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em}
+  .q-phrase{margin:16px 0 0;font-size:22px;font-weight:900;line-height:1.5}
+  .q-ask{color:var(--ink);font-size:14.5px;font-weight:800;margin:14px 0 0}
+  .q-options{display:grid;gap:10px;margin-top:14px}
+  .q-options.chips{grid-template-columns:repeat(3,1fr);gap:8px}
+  .q-opt{background:#fff;border:2px solid #eceaf6;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:700;color:var(--ink);box-shadow:0 6px 14px rgba(71,57,142,.06);transition:border-color .15s,transform .12s,background .2s;user-select:none}
+  .q-opt:active{transform:scale(.985)}
+  .q-opt.chip{text-align:center;padding:14px 8px}
+  .q-opt.correct{border-color:#35c88f;background:#eefbf6;color:#126b51}
+  .q-opt.wrong{border-color:#ff5a67;background:#fff0f1;color:#c02a3a}
+  .q-opt.shake{animation:shake .4s}
+  @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}100%{transform:none}}
+  .q-feedback{margin-top:12px;font-size:13px;font-weight:800;opacity:0;transform:translateY(4px);transition:.22s}
+  .q-feedback.show{opacity:1;transform:none}
+  .q-feedback.ok{color:var(--success)}
+  .q-feedback.bad{color:#c02a3a}
+
+  /* 语音 pill（假播放） */
+  .vp{display:inline-flex;align-items:center;gap:9px;background:#fff;border:2px solid #eceaf6;border-radius:999px;padding:9px 14px;box-shadow:0 6px 14px rgba(71,57,142,.07);cursor:pointer;user-select:none}
+  .vp .p{width:28px;height:28px;border-radius:50%;background:var(--purple-soft);color:var(--purple-deep);display:grid;place-items:center;font-size:11px;flex:0 0 auto;transition:background .15s,color .15s;padding-left:2px}
+  .vp .bars{display:flex;align-items:center;gap:2.5px;height:18px}
+  .vp .bars i{width:3px;border-radius:2px;background:#cfcaff;display:block;transform-origin:center}
+  .vp .t{font-size:11.5px;font-weight:800;color:var(--muted)}
+  .vp.playing .p{background:var(--purple);color:#fff}
+  .vp.playing .bars i{animation:vpPulse .5s ease-in-out infinite alternate}
+  .vp.playing .bars i:nth-child(2n){animation-delay:.12s}
+  .vp.playing .bars i:nth-child(3n){animation-delay:.24s}
+  @keyframes vpPulse{from{transform:scaleY(.45)}to{transform:scaleY(1)}}
+  .vp-mini{padding:7px 11px}
+  .vp-mini .p{width:24px;height:24px}
+
+  /* 复习结算 */
+  .sum-wrap{flex:1;display:grid;place-items:center}
+  .sum-card{background:#fff;border-radius:22px;padding:26px 24px;box-shadow:0 16px 36px rgba(71,57,142,.12);text-align:center;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both;width:100%}
+  .sum-ico{width:52px;height:52px;border-radius:50%;background:#e2f6ee;color:var(--success);display:grid;place-items:center;font-size:24px;font-weight:900;margin:0 auto 12px}
+  .sum-card h2{font-size:19px;font-weight:900;margin:0}
+  .sum-card p{color:var(--muted);font-size:12.5px;font-weight:700;margin:8px 0 0}
+  @keyframes pop{0%{transform:scale(.86);opacity:0}100%{transform:scale(1);opacity:1}}
+
+  /* 视频课 */
+  .vid{background:#17142a;border-radius:20px;overflow:hidden;box-shadow:0 18px 40px rgba(23,20,42,.35);margin-top:14px}
+  .vid-frame{position:relative;aspect-ratio:16/9;display:grid;place-items:center;background:radial-gradient(120% 90% at 50% 18%,#2d2755 0%,#17142a 72%)}
+  .vid-corner{position:absolute;top:10px;left:12px;font-size:10.5px;font-weight:800;color:rgba(255,255,255,.55);letter-spacing:.06em}
+  .vid-play{width:64px;height:64px;border-radius:50%;border:0;background:linear-gradient(135deg,#8d7bff,#6552ff);color:#fff;font-size:22px;display:grid;place-items:center;box-shadow:0 12px 30px rgba(101,82,255,.5);padding-left:5px;transition:opacity .25s,transform .25s}
+  .vid.play .vid-play{opacity:0;transform:scale(.8);pointer-events:none}
+  .vid-card{position:absolute;left:14px;right:14px;background:rgba(255,255,255,.97);border-radius:14px;padding:10px 13px;box-shadow:0 10px 24px rgba(0,0,0,.28);opacity:0;transform:translateY(16px);transition:opacity .4s,transform .4s;pointer-events:none}
+  .vid-card b{font-size:15px;color:var(--purple-deep)}
+  .vid-card small{display:block;margin-top:3px;font-size:11.5px;color:var(--muted);font-weight:700}
+  .vid-card.show{opacity:1;transform:none}
+  #vc1{top:13%}
+  #vc2{bottom:13%}
+  .vid-ctrl{display:flex;align-items:center;gap:10px;padding:10px 14px 12px}
+  .vid-track{flex:1;height:5px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden}
+  .vid-track i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#8d7bff,#b9a8ff)}
+  .vid-time{font-size:11px;font-weight:800;color:rgba(255,255,255,.75);font-variant-numeric:tabular-nums}
+  .vid-src{text-align:center;color:var(--muted);font-size:12px;font-weight:700;margin:10px 0 0}
+  .vid-note{text-align:center;color:#a9a6bf;font-size:11.5px;font-weight:700;margin:6px 0 0}
+
+  /* 跟读 */
+  .spk-card{background:#fff;border-radius:20px;padding:18px;box-shadow:0 10px 26px rgba(71,57,142,.09);text-align:center;margin-top:14px}
+  .spk-sentence{font-size:22px;font-weight:900;margin:0 0 12px;line-height:1.5}
+  .talk-zone{margin-top:18px}
+  .talk{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:58px;border-radius:18px;border:2px solid #ddd6ff;background:#fff;color:var(--purple-deep);font-size:16px;font-weight:800;user-select:none;transition:transform .1s,background .1s,color .1s,border-color .1s}
+  .talk.pressing{background:var(--purple);border-color:var(--purple);color:#fff;transform:scale(.985);box-shadow:0 10px 22px rgba(101,82,255,.35)}
+  .talk-hint{text-align:center;color:#a9a6bf;font-size:11.5px;font-weight:700;margin:10px 0 0;transition:color .2s}
+  .talk-hint.warn{color:#d9822b}
+  .score{margin-top:16px;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 10px 24px rgba(71,57,142,.09);opacity:0;transform:translateY(8px);transition:.3s}
+  .score.show{opacity:1;transform:none}
+  .score-line{display:flex;align-items:baseline;gap:6px}
+  .score-line b{font-size:27px;font-weight:900;color:var(--purple-deep)}
+  .score-line span{font-size:13px;font-weight:800;color:var(--muted)}
+  .score-track{margin-top:10px;height:6px;border-radius:999px;background:#efeCFa;background:#efeafa;overflow:hidden}
+  .score-track i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#6552ff,#8d7bff);transition:width .9s ease .15s}
+  .score.show .score-track i{width:92%}
+
+  /* 拼句子 */
+  .answer-zone{min-height:60px;border:2px dashed #cfc7f5;border-radius:16px;background:#fbfaff;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
+  .ans-ph{color:#b3adc8;font-size:12.5px;font-weight:700}
+  .bank{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .answer-zone .chip,.bank .chip{width:auto}
+
+  /* 实战 · 场景卡 */
+  .scene-screen{padding:14px}
+  .scene{flex:1;display:grid;place-items:center;background:#0e0c18;border-radius:22px;color:#fff;text-align:center;padding:24px}
+  .scene .t1{font-size:13px;font-weight:800;color:rgba(255,255,255,.55);letter-spacing:.1em;margin:0;animation:fadeUp .5s .1s both}
+  .scene .t2{font-size:27px;font-weight:900;margin:10px 0 0;animation:fadeUp .5s .45s both}
+  @keyframes fadeUp{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+
+  /* 实战 · 主管 */
+  .boss-stage{position:relative;border-radius:22px;overflow:hidden;background:linear-gradient(160deg,#2b2550,#1b1733);padding:18px 16px 16px;display:grid;justify-items:center;box-shadow:0 16px 36px rgba(27,23,51,.35);margin-top:14px}
+  .boss-stage::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 52% at 50% 36%,rgba(141,123,255,.42),transparent 70%)}
+  .boss-figure{position:relative;width:150px;height:138px}
+  .boss-figure svg{width:100%;height:100%;display:block}
+  .boss-name{position:relative;margin-top:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12.5px;font-weight:800;padding:5px 12px;border-radius:999px}
+  .boss-voice{display:flex;justify-content:center;margin-top:14px}
+  .demo-line{margin-top:12px}
+  .demo-toggle{width:100%;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:800;text-align:left;padding:4px 2px}
+  .demo-text{max-height:0;overflow:hidden;transition:max-height .28s ease;background:#fff;border-radius:14px;box-shadow:0 6px 16px rgba(71,57,142,.07)}
+  .demo-line.open .demo-text{max-height:170px}
+  .demo-text p{margin:0;padding:12px 14px 4px;font-size:13.5px;font-weight:700;line-height:1.7}
+  .demo-text small{display:block;padding:0 14px 12px;color:#a9a6bf;font-size:11px;font-weight:700}
+
+  /* 实战 · 复盘 */
+  .recap-list{display:grid;gap:10px;margin-top:16px}
+  .recap-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 6px 16px rgba(71,57,142,.07);font-size:15px;font-weight:800;opacity:0;transform:translateY(8px);transition:.3s}
+  .recap-row.show{opacity:1;transform:none}
+  .recap-row.miss{color:#a29cba}
+  .recap-row .mark{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:900}
+  .recap-row.ok .mark{background:#e2f6ee;color:var(--success)}
+  .recap-row.miss .mark{background:#f1f0f7;color:#a29cba}
+  .recap-note{margin:14px 2px 0;color:var(--ink);font-size:13px;font-weight:700;line-height:1.7;opacity:0;transform:translateY(6px);transition:.3s}
+  .recap-note.show{opacity:1;transform:none}
+
+  /* 实战 · 补习 */
+  .study-card{display:flex;align-items:center;gap:12px;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 8px 20px rgba(71,57,142,.08);margin-top:14px}
+  .study-card .txt{flex:1;min-width:0}
+  .study-card .txt b{font-size:16.5px;font-weight:900}
+  .study-card .txt small{display:block;color:var(--muted);margin-top:4px;font-size:12.5px;font-weight:700}
+
+  /* 点亮 */
+  .glow-wrap{flex:1;display:grid;place-items:center;position:relative;overflow:hidden;text-align:center}
+  .halo{position:absolute;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,92,.5) 0%,rgba(141,123,255,.35) 45%,transparent 70%);opacity:0;pointer-events:none}
+  .screen.active .halo{animation:halo 1.7s ease-out .1s forwards}
+  .screen.active .halo.h2{animation-delay:.45s}
+  @keyframes halo{0%{transform:scale(.3);opacity:0}25%{opacity:1}100%{transform:scale(2.4);opacity:0}}
+  .badge-card{position:relative;background:#fff;border-radius:22px;padding:24px 22px;box-shadow:0 18px 40px rgba(71,57,142,.16);opacity:0}
+  .screen.active .badge-card{animation:pop .5s .25s cubic-bezier(.2,1.4,.4,1) forwards}
+  .badge-ico{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#ffd9a3,#ffb35c);display:grid;place-items:center;font-size:26px;margin:0 auto 12px;box-shadow:0 10px 24px rgba(255,179,92,.45)}
+  .badge-card h2{font-size:19px;font-weight:900;margin:0}
+  .badge-card p{color:var(--muted);font-size:12.5px;font-weight:700;margin:9px 0 0}
+
+  /* 结束态 */
+  .end-wrap{flex:1;display:grid;place-items:center}
+  .end-card{background:#fff;border-radius:22px;padding:26px 26px 24px;box-shadow:0 16px 36px rgba(71,57,142,.12);text-align:center;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+  .end-ico{width:54px;height:54px;border-radius:50%;background:#e2f6ee;color:var(--success);display:grid;place-items:center;font-size:25px;font-weight:900;margin:0 auto 12px}
+  .end-card h2{font-size:20px;font-weight:900;margin:0}
+  .end-card p{color:var(--muted);font-size:13px;font-weight:700;margin:8px 0 0}
+</style>
+</head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="bossG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cdc0ff"/><stop offset="1" stop-color="#7a63ff"/>
+    </linearGradient>
+  </defs>
+</svg>
+<div class="app">
+
+  <div class="status-bar"><span>11:20</span><span>5G <span class="battery"></span></span></div>
+
+  <header class="tf-head">
+    <div class="tf-stages">
+      <div class="tf-stage" data-stage="0"><i></i><span>复习</span></div>
+      <div class="tf-stage" data-stage="1"><i></i><span>新学</span></div>
+      <div class="tf-stage" data-stage="2"><i></i><span>练习</span></div>
+      <div class="tf-stage" data-stage="3"><i></i><span>实战</span></div>
+    </div>
+    <div class="tf-tags"><span class="tf-tag" id="tfTag"></span></div>
+  </header>
+
+  <main class="flow">
+
+    <!-- 开场 -->
+    <section class="screen" data-screen="intro">
+      <div class="intro">
+        <h1 class="intro-title">今天的任务</h1>
+        <p class="intro-sub">4 件事 · 约 20 分钟</p>
+        <div class="intro-item"><span class="intro-ico">🔁</span><span class="intro-name">复习 · 快问快答</span><em>约 2 分钟</em></div>
+        <div class="intro-item"><span class="intro-ico">🎬</span><span class="intro-name">新学 · 看视频课</span><em>约 8 分钟</em></div>
+        <div class="intro-item"><span class="intro-ico">🧩</span><span class="intro-name">练习 · 两道题</span><em>约 4 分钟</em></div>
+        <div class="intro-item"><span class="intro-ico">💬</span><span class="intro-name">实战 · 情景对话</span><em>约 5 分钟</em></div>
+      </div>
+      <div class="cta"><button class="tf-btn" data-go="rev1">开始</button></div>
+    </section>
+
+    <!-- 复习 1/3 -->
+    <section class="screen" data-screen="rev1">
+      <div class="q-kicker">快问快答 · 1/3</div>
+      <span class="vp" style="margin-top:16px">
+        <span class="p">&#9654;</span>
+        <span class="bars"><i style="height:40%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:90%"></i><i style="height:45%"></i><i style="height:65%"></i><i style="height:35%"></i><i style="height:55%"></i></span>
+        <span class="t">00:03</span>
+      </span>
+      <p class="q-phrase">「麻烦您再说一遍」</p>
+      <p class="q-ask">这句话是什么意思？</p>
+      <div class="q-options" data-quiz data-correct="0" data-next="rev2" data-review>
+        <button class="q-opt">请对方重复</button>
+        <button class="q-opt">请对方说快点</button>
+        <button class="q-opt">谢谢对方</button>
+      </div>
+      <div class="q-feedback" data-feedback></div>
+    </section>
+
+    <!-- 复习 2/3 -->
+    <section class="screen" data-screen="rev2">
+      <div class="q-kicker">快问快答 · 2/3</div>
+      <span class="vp" style="margin-top:16px">
+        <span class="p">&#9654;</span>
+        <span class="bars"><i style="height:35%"></i><i style="height:70%"></i><i style="height:55%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:60%"></i><i style="height:40%"></i><i style="height:75%"></i></span>
+        <span class="t">00:03</span>
+      </span>
+      <p class="q-phrase">「我没听清」</p>
+      <p class="q-ask">这句话是什么意思？</p>
+      <div class="q-options" data-quiz data-correct="0" data-next="rev3" data-review>
+        <button class="q-opt">没听清楚，想再听一次</button>
+        <button class="q-opt">我已经听明白了</button>
+        <button class="q-opt">我不喜欢这句话</button>
+      </div>
+      <div class="q-feedback" data-feedback></div>
+    </section>
+
+    <!-- 复习 3/3 -->
+    <section class="screen" data-screen="rev3">
+      <div class="q-kicker">快问快答 · 3/3</div>
+      <span class="vp" style="margin-top:16px">
+        <span class="p">&#9654;</span>
+        <span class="bars"><i style="height:55%"></i><i style="height:80%"></i><i style="height:45%"></i><i style="height:90%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:40%"></i><i style="height:60%"></i></span>
+        <span class="t">00:02</span>
+      </span>
+      <p class="q-ask" style="margin-top:18px">听一听，选出你听到的词</p>
+      <div class="q-options chips" data-quiz data-correct="0" data-next="revsum" data-review>
+        <button class="q-opt chip">麻烦</button>
+        <button class="q-opt chip">马上</button>
+        <button class="q-opt chip">面包</button>
+      </div>
+      <div class="q-feedback" data-feedback></div>
+    </section>
+
+    <!-- 复习结算 -->
+    <section class="screen" data-screen="revsum">
+      <div class="sum-wrap">
+        <div class="sum-card">
+          <div class="sum-ico">✓</div>
+          <h2 id="sumText">复习完成 · 3/3</h2>
+          <p>马上进入下一段 · 新学</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 新学 · 视频课 -->
+    <section class="screen" data-screen="video">
+      <div class="q-kicker">新学 · 看一节视频课</div>
+      <div class="vid" id="vid">
+        <div class="vid-frame">
+          <span class="vid-corner">职场中文 · 第 4 课</span>
+          <button class="vid-play" id="vidPlay" aria-label="播放">&#9654;</button>
+          <div class="vid-card" id="vc1"><b>把……一下</b><small>把清单整理一下</small></div>
+          <div class="vid-card" id="vc2"><b>发给</b><small>发给仓库的老陈</small></div>
+        </div>
+        <div class="vid-ctrl">
+          <div class="vid-track"><i id="vidBar"></i></div>
+          <span class="vid-time" id="vidTime">0:00 / 2:14</span>
+        </div>
+      </div>
+      <p class="vid-src">来自你的视频课 · 职场中文 第 4 课</p>
+      <p class="vid-note">看完后跟读重点句</p>
+    </section>
+
+    <!-- 新学 · 跟读 -->
+    <section class="screen" data-screen="speak">
+      <div class="q-kicker">跟读 · 重点句</div>
+      <div class="spk-card">
+        <p class="spk-sentence">把这批货的清单整理一下</p>
+        <span class="vp vp-mini">
+          <span class="p">&#9654;</span>
+          <span class="bars"><i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i></span>
+          <span class="t">听示范</span>
+        </span>
+      </div>
+      <div class="talk-zone">
+        <button class="talk" id="talk">🎙️ 按住说话</button>
+        <p class="talk-hint" id="talkHint">按住不放，说完松手</p>
+      </div>
+      <div class="score" id="score">
+        <div class="score-line"><b>92</b><span>分 · 不错</span></div>
+        <div class="score-track"><i></i></div>
+      </div>
+    </section>
+
+    <!-- 练习 1：听音选词 -->
+    <section class="screen" data-screen="prac1">
+      <div class="q-kicker">练习 · 第 1 题 / 共 2 题</div>
+      <p class="q-ask" style="margin-top:16px">听音选词 · 选出你听到的词</p>
+      <span class="vp" style="margin-top:16px">
+        <span class="p">&#9654;</span>
+        <span class="bars"><i style="height:50%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:75%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i></span>
+        <span class="t">00:03</span>
+      </span>
+      <div class="q-options chips" data-quiz data-correct="2" data-next="prac2">
+        <button class="q-opt chip">发给</button>
+        <button class="q-opt chip">清单</button>
+        <button class="q-opt chip">整理</button>
+      </div>
+      <div class="q-feedback" data-feedback></div>
+    </section>
+
+    <!-- 练习 2：拼句子 -->
+    <section class="screen" data-screen="prac2">
+      <div class="q-kicker">练习 · 第 2 题 / 共 2 题</div>
+      <p class="q-ask" style="margin-top:14px">拼句子 · 按顺序点词块，拼成一句话</p>
+      <div class="answer-zone" id="answerZone"><span class="ans-ph">点下面的词块，放到这里</span></div>
+      <div class="bank" id="bank">
+        <button class="q-opt chip" data-block="整理一下">整理一下</button>
+        <button class="q-opt chip" data-block="把这批货">把这批货</button>
+        <button class="q-opt chip" data-block="的清单">的清单</button>
+      </div>
+      <div class="q-feedback" data-feedback></div>
+    </section>
+
+    <!-- 实战 1：场景卡 -->
+    <section class="screen scene-screen" data-screen="scene">
+      <div class="scene">
+        <div>
+          <p class="t1">上午 9:40 · 工位</p>
+          <p class="t2">主管来了</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 实战 2：主管出场 -->
+    <section class="screen" data-screen="boss1">
+      <div class="q-kicker">实战 · 听一听</div>
+      <div class="boss-stage">
+        <div class="boss-figure">
+          <svg viewBox="0 0 150 132">
+            <circle cx="75" cy="46" r="26" fill="url(#bossG)"/>
+            <circle cx="75" cy="46" r="26" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+            <path d="M20 132c5-32 26-46 55-46s50 14 55 46z" fill="url(#bossG)"/>
+          </svg>
+        </div>
+        <div class="boss-name">陈主管 · 仓库部</div>
+      </div>
+      <div class="boss-voice">
+        <span class="vp">
+          <span class="p">&#9654;</span>
+          <span class="bars"><i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:95%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:60%"></i></span>
+          <span class="t">00:09</span>
+        </span>
+      </div>
+      <div class="demo-line">
+        <button class="demo-toggle">演示台词 ▸</button>
+        <div class="demo-text">
+          <p>这批货的清单你整理一下，下班前发给仓库的老陈，有问题随时来问我。</p>
+          <small>演示时由人念 · 学生屏不显示这句</small>
+        </div>
+      </div>
+      <div class="cta"><button class="tf-btn" data-go="recap1">我复述完了</button></div>
+    </section>
+
+    <!-- 实战 3：第一次复盘 -->
+    <section class="screen" data-screen="recap1">
+      <div class="q-kicker">复盘 · 你听到了什么</div>
+      <div class="recap-list">
+        <div class="recap-row ok"><span>整理清单</span><span class="mark">✓</span></div>
+        <div class="recap-row miss"><span>下班前</span><span class="mark">✗</span></div>
+        <div class="recap-row miss"><span>仓库老陈</span><span class="mark">✗</span></div>
+      </div>
+      <p class="recap-note">主要意思抓到了，两个点没跟上，补一下再试。</p>
+      <div class="cta"><button class="tf-btn" data-go="study">去补一下</button></div>
+    </section>
+
+    <!-- 实战 4：补习 -->
+    <section class="screen" data-screen="study">
+      <div class="q-kicker">补习 · 两个小点</div>
+      <div class="study-card">
+        <div class="txt"><b>下班前</b><small>= 今天收工之前</small></div>
+        <span class="vp vp-mini">
+          <span class="p">&#9654;</span>
+          <span class="bars"><i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i></span>
+        </span>
+      </div>
+      <div class="study-card">
+        <div class="txt"><b>仓库的老陈</b><small>= 名字和部门一起记</small></div>
+        <span class="vp vp-mini">
+          <span class="p">&#9654;</span>
+          <span class="bars"><i style="height:50%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:75%"></i></span>
+        </span>
+      </div>
+      <div class="cta"><button class="tf-btn" data-go="boss2">再试一次</button></div>
+    </section>
+
+    <!-- 实战 5：重试 -->
+    <section class="screen" data-screen="boss2">
+      <div class="q-kicker">实战 · 再听一遍</div>
+      <div class="boss-stage">
+        <div class="boss-figure">
+          <svg viewBox="0 0 150 132">
+            <circle cx="75" cy="46" r="26" fill="url(#bossG)"/>
+            <circle cx="75" cy="46" r="26" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+            <path d="M20 132c5-32 26-46 55-46s50 14 55 46z" fill="url(#bossG)"/>
+          </svg>
+        </div>
+        <div class="boss-name">陈主管 · 仓库部</div>
+      </div>
+      <div class="boss-voice">
+        <span class="vp">
+          <span class="p">&#9654;</span>
+          <span class="bars"><i style="height:50%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:90%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:40%"></i><i style="height:80%"></i><i style="height:60%"></i></span>
+          <span class="t">00:09</span>
+        </span>
+      </div>
+      <div class="demo-line">
+        <button class="demo-toggle">演示台词 ▸</button>
+        <div class="demo-text">
+          <p>这份清单整理好后，今天收工前给仓库的老陈，卡住随时问我。</p>
+          <small>演示时由人念 · 学生屏不显示这句</small>
+        </div>
+      </div>
+      <div class="cta"><button class="tf-btn" data-go="recap2">我复述完了</button></div>
+    </section>
+
+    <!-- 实战 6：三个点全亮 -->
+    <section class="screen" data-screen="recap2">
+      <div class="q-kicker">复盘 · 这次呢</div>
+      <div class="recap-list">
+        <div class="recap-row ok"><span>整理清单</span><span class="mark">✓</span></div>
+        <div class="recap-row ok"><span>下班前</span><span class="mark">✓</span></div>
+        <div class="recap-row ok"><span>仓库老陈</span><span class="mark">✓</span></div>
+      </div>
+      <p class="recap-note">三个点全跟上了！</p>
+    </section>
+
+    <!-- 点亮 -->
+    <section class="screen" data-screen="glow">
+      <div class="glow-wrap">
+        <span class="halo"></span>
+        <span class="halo h2"></span>
+        <div class="badge-card">
+          <div class="badge-ico">✨</div>
+          <h2>已点亮：听懂工作安排</h2>
+          <p>明天为你安排了 3 分钟复习</p>
+        </div>
+      </div>
+      <div class="cta"><button class="tf-btn" data-go="end">回到今天</button></div>
+    </section>
+
+    <!-- 结束态 -->
+    <section class="screen" data-screen="end">
+      <div class="end-wrap">
+        <div class="end-card">
+          <div class="end-ico">✓</div>
+          <h2>今天完成</h2>
+          <p>明天见</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div><script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  /* ---------- 进度与屏幕切换 ---------- */
+  var screens = $$(".screen");
+  var segs = $$(".tf-stage");
+  var tag = $("#tfTag");
+  var STAGE = { intro:-1, rev1:0, rev2:0, rev3:0, revsum:0, video:1, speak:1, prac1:2, prac2:2, scene:3, boss1:3, recap1:3, study:3, boss2:3, recap2:3, glow:3, end:4 };
+  var TAGS = ["\ud83d\udd01 \u4f60\u7684\u590d\u4e60\u5e93", "\ud83c\udfac \u89c6\u9891\u8bfe", "\ud83e\udde9 \u9898\u5e93", "\ud83d\udcac \u60c5\u666f\u5bf9\u8bdd"];
+  var curEl = null;
+  var timers = [];
+  var later = function (fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; };
+  var clearTimers = function () { timers.forEach(clearTimeout); timers = []; };
+
+  function updateHeader(id) {
+    var st = STAGE[id] === undefined ? -1 : STAGE[id];
+    segs.forEach(function (seg, i) {
+      seg.classList.toggle("active", i === st);
+      seg.classList.toggle("done", st > i);
+    });
+    var col = st >= 0 && st <= 3 ? st : 0;
+    tag.className = "tf-tag c" + col;
+    tag.style.gridColumn = String(col + 1);
+    if (st >= 0 && st <= 3) tag.textContent = TAGS[st];
+    else if (st === 4) tag.textContent = "\ud83c\udf89 \u4eca\u65e5\u5b8c\u6210";
+    else tag.textContent = "";
+    void tag.offsetWidth;
+    if (tag.textContent) tag.classList.add("show");
+  }
+
+  function goto(id) {
+    var next = document.querySelector('.screen[data-screen="' + id + '"]');
+    if (!next) return;
+    clearTimers();
+    var prev = curEl;
+    screens.forEach(function (s) {
+      s.classList.remove("leave");
+      s.classList.toggle("active", s === next);
+    });
+    if (prev && prev !== next) {
+      prev.classList.add("leave");
+      setTimeout(function () { prev.classList.remove("leave"); }, 460);
+    }
+    curEl = next;
+    next.scrollTop = 0;
+    updateHeader(id);
+    if (enter[id]) enter[id](next);
+  }
+  window.__tfJump = goto; /* QA 用：直接跳到某屏（可删） */
+
+  /* ---------- 语音 pill：点一下假播放 ---------- */
+  function pulse(el, ms) {
+    if (!el) return;
+    el.classList.add("playing");
+    clearTimeout(el._vpt);
+    el._vpt = setTimeout(function () { el.classList.remove("playing"); }, ms || 1200);
+  }
+  document.addEventListener("click", function (e) {
+    var vp = e.target.closest ? e.target.closest(".vp") : null;
+    if (vp) pulse(vp);
+  });
+
+  /* ---------- 通用按钮：跳到某屏 ---------- */
+  document.addEventListener("click", function (e) {
+    var g = e.target.closest ? e.target.closest("[data-go]") : null;
+    if (g) goto(g.dataset.go);
+  });
+
+  /* ---------- 快问快答 / 听音选词（通用选择题） ---------- */
+  var reviewCorrect = 0;
+  function showFb(fb, text, cls) {
+    if (!fb) return;
+    fb.textContent = text;
+    fb.className = "q-feedback show " + cls;
+  }
+  $$("[data-quiz]").forEach(function (box) {
+    var opts = $$("[data-quiz]").length ? Array.prototype.slice.call(box.querySelectorAll(".q-opt")) : [];
+    var correct = Number(box.dataset.correct || 0);
+    var done = false;
+    opts.forEach(function (o, i) {
+      o.addEventListener("click", function () {
+        if (done) return;
+        done = true;
+        var ok = i === correct;
+        if (box.hasAttribute("data-review")) reviewCorrect += ok ? 1 : 0;
+        var fb = box.closest(".screen").querySelector("[data-feedback]");
+        if (ok) {
+          o.classList.add("correct");
+          showFb(fb, "✓ 对了！", "ok");
+        } else {
+          o.classList.add("wrong", "shake");
+          opts[correct].classList.add("correct");
+          showFb(fb, "正确答案：" + opts[correct].textContent.trim(), "bad");
+        }
+        later(function () { goto(box.dataset.next); }, ok ? 1100 : 1900);
+      });
+    });
+  });
+
+  /* ---------- 拼句子 ---------- */
+  (function () {
+    var zone = $("#answerZone"), bank = $("#bank");
+    var expected = ["把这批货", "的清单", "整理一下"];
+    var checked = false;
+    var ph = zone.querySelector(".ans-ph");
+    function refresh() { ph.style.display = zone.querySelectorAll(".chip").length ? "none" : ""; }
+    bank.addEventListener("click", function (e) {
+      var c = e.target.closest(".chip");
+      if (!c || checked) return;
+      zone.appendChild(c);
+      refresh();
+      if (zone.querySelectorAll(".chip").length === expected.length) later(check, 450);
+    });
+    zone.addEventListener("click", function (e) {
+      var c = e.target.closest(".chip");
+      if (!c || checked) return;
+      bank.appendChild(c);
+      refresh();
+    });
+    function check() {
+      if (checked) return;
+      checked = true;
+      var order = Array.prototype.slice.call(zone.querySelectorAll(".chip")).map(function (c) { return c.dataset.block; });
+      var ok = order.join("|") === expected.join("|");
+      var fb = document.querySelector('.screen[data-screen="prac2"] [data-feedback]');
+      if (ok) {
+        zone.querySelectorAll(".chip").forEach(function (c) { c.classList.add("correct"); });
+        showFb(fb, "很好！「把这批货的清单整理一下」", "ok");
+        later(function () { goto("scene"); }, 1400);
+      } else {
+        zone.querySelectorAll(".chip").forEach(function (c) { c.classList.add("wrong", "shake"); });
+        showFb(fb, "正确答案：把这批货的清单整理一下", "bad");
+        later(function () { goto("scene"); }, 2000);
+      }
+    }
+  })();
+
+  /* ---------- 视频课：8 秒播放 + 浮出重点句卡 ---------- */
+  (function () {
+    var vid = $("#vid"), play = $("#vidPlay"), bar = $("#vidBar"), time = $("#vidTime");
+    var vc1 = $("#vc1"), vc2 = $("#vc2");
+    var playing = false, played = false;
+    var DUR = 8, TOTAL = 134; /* 2:14 */
+    function fmt(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ":" + (s < 10 ? "0" : "") + s; }
+    play.addEventListener("click", function () {
+      if (playing || played) return;
+      playing = true;
+      vid.classList.add("play");
+      bar.style.transition = "width " + DUR + "s linear";
+      void bar.offsetWidth;
+      bar.style.width = "100%";
+      var t0 = performance.now();
+      var tick = function () {
+        var p = Math.min(1, (performance.now() - t0) / (DUR * 1000));
+        time.textContent = fmt(p * TOTAL) + " / 2:14";
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      tick();
+      later(function () { vc1.classList.add("show"); }, 1500);
+      later(function () { vc2.classList.add("show"); }, 4200);
+      later(function () {
+        playing = false;
+        played = true;
+        vid.classList.add("done");
+        later(function () { goto("speak"); }, 900);
+      }, DUR * 1000 + 300);
+    });
+  })();
+
+  /* ---------- 跟读：按住说话 mock ---------- */
+  (function () {
+    var talk = $("#talk"), hint = $("#talkHint"), score = $("#score");
+    var downAt = 0;
+    talk.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      downAt = Date.now();
+      talk.classList.add("pressing");
+      if (talk.setPointerCapture) { try { talk.setPointerCapture(e.pointerId); } catch (err) {} }
+    });
+    var up = function () {
+      if (!downAt) return;
+      var held = Date.now() - downAt;
+      downAt = 0;
+      talk.classList.remove("pressing");
+      if (held < 250) {
+        hint.textContent = "再按久一点，说完再松手";
+        hint.classList.add("warn");
+        setTimeout(function () { hint.textContent = "按住不放，说完松手"; hint.classList.remove("warn"); }, 1600);
+        return;
+      }
+      score.classList.add("show");
+      later(function () { goto("prac1"); }, 1900);
+    };
+    talk.addEventListener("pointerup", up);
+    talk.addEventListener("pointercancel", up);
+  })();
+
+  /* ---------- 演示台词折叠 ---------- */
+  $$(".demo-toggle").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var box = btn.parentElement;
+      box.classList.toggle("open");
+      btn.textContent = box.classList.contains("open") ? "演示台词 ▾" : "演示台词 ▸";
+    });
+  });
+
+  /* ---------- 各屏进入时的自动时序 ---------- */
+  var enter = {
+    rev1: function (s) { pulse(s.querySelector(".vp")); },
+    rev2: function (s) { pulse(s.querySelector(".vp")); },
+    rev3: function (s) { pulse(s.querySelector(".vp")); },
+    prac1: function (s) { pulse(s.querySelector(".vp")); },
+    revsum: function () {
+      var sum = $("#sumText");
+      if (sum) sum.textContent = "复习完成 · " + reviewCorrect + "/3";
+      later(function () { goto("video"); }, 1000);
+    },
+    scene: function () { later(function () { goto("boss1"); }, 2000); },
+    recap1: function (s) {
+      $$(".recap-row").forEach(function (r, i) {
+        if (r.closest(".screen") !== s) return;
+        later(function () { r.classList.add("show"); }, 150 + i * 340);
+      });
+      later(function () { var n = s.querySelector(".recap-note"); if (n) n.classList.add("show"); }, 1350);
+    },
+    recap2: function (s) {
+      $$(".recap-row").forEach(function (r, i) {
+        if (r.closest(".screen") !== s) return;
+        later(function () { r.classList.add("show"); }, 150 + i * 340);
+      });
+      later(function () { var n = s.querySelector(".recap-note"); if (n) n.classList.add("show"); }, 1350);
+      later(function () { goto("glow"); }, 2500);
+    }
+  };
+
+  goto("intro");
+})();
+</script>
+</body>
+</html>
