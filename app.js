@@ -262,4 +262,45 @@
     });
   });
 
+
+  /* —— 换页遮罩（兜底）：没有跨文档视图过渡的浏览器（Firefox / 老 Chromium）——
+     点链接换文档那一帧，浏览器会先露一下白底，看着就是「闪」；这里在跳转前先用
+     页面底色盖住整屏，新页落地再淡出。Chrome / Edge 有视图过渡，这层不出现；
+     引了 shell.js 的页面由公区壳接管，这里跳过。?novt=1 可强制走这条路。 */
+  (function () {
+    var forceVeil = /[?&]novt=1/.test(window.location.search);
+    if (!forceVeil && ('onpagereveal' in window)) return;
+    if (document.querySelector('.shell-screen')) return;
+    var VEIL_KEY = 'ac6.veil';
+    var veil = document.createElement('div');
+    veil.className = 'page-veil';
+    veil.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(veil);
+    var arrived = false;
+    try { arrived = sessionStorage.getItem(VEIL_KEY) === '1'; sessionStorage.removeItem(VEIL_KEY); } catch (e) {}
+    /* 页面里 JS 自己跳的（按钮不在 <a> 里）拦不到，靠落地页自查兜住：
+       同站跳过来的、不是首次打开，就在新页上盖一帧再淡出 */
+    if (!arrived && document.referrer && document.referrer.indexOf(window.location.origin) === 0) arrived = true;
+    if (arrived) {
+      /* 已经在新页：先盖上稳住一帧，再淡出，避免中间露出半张旧页 */
+      veil.classList.add('on');
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { veil.classList.remove('on'); });
+      });
+    }
+    document.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button || 0) !== 0) return;
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+      var url;
+      try { url = new URL(a.getAttribute('href'), window.location.href); } catch (err) { return; }
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+      e.preventDefault();
+      veil.classList.add('on');
+      try { sessionStorage.setItem(VEIL_KEY, '1'); } catch (err) {}
+      setTimeout(function () { window.location.href = url.href; }, 110);
+    }, true);
+  })();
+
 })();

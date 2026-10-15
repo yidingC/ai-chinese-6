@@ -34,6 +34,10 @@
   var keep = window.location.search || '';   /* 切 tab 时把 ?goal= / ?days= / ?date= 带上，演示上下文不丢 */
   var toastTimer = null;
 
+  /* 换页要不要交给浏览器做视图过渡：Chrome / Edge 126+ 支持（onpagereveal）。
+     ?novt=1 可强制关掉，用来检查兜底那条路。 */
+  var useVT = ('onpagereveal' in window) && !/[?&]novt=1/.test(window.location.search);
+
   function showToast(text) {
     var el = screen.querySelector('.toast');
     if (!el) {
@@ -87,6 +91,35 @@
   });
   screen.appendChild(nav);
 
+  /* —— 换页遮罩（兜底）：没有视图过渡的浏览器，点击时先盖一层再导航，落地淡出 ——
+     只拦 tab 之间的跳转；当前页那颗仍由壳接管成「回到顶部」。 */
+  if (!useVT) {
+    var VEIL_KEY = 'ac6.veil';
+    var veil = document.createElement('div');
+    veil.className = 'shell-veil';
+    veil.setAttribute('aria-hidden', 'true');
+    screen.appendChild(veil);
+    var arrived = false;
+    try { arrived = sessionStorage.getItem(VEIL_KEY) === '1'; sessionStorage.removeItem(VEIL_KEY); } catch (e) {}
+    if (arrived) {
+      /* 已经在新页：先盖上稳住一帧，再淡出，避免中间露出半张旧页 */
+      veil.classList.add('on');
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { veil.classList.remove('on'); });
+      });
+    }
+    nav.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a.nv') : null;
+      if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button || 0) !== 0) return;
+      if (a.classList.contains('is-active')) return;
+      e.preventDefault();
+      veil.classList.add('on');
+      try { sessionStorage.setItem(VEIL_KEY, '1'); } catch (err) {}
+      var href = a.href;
+      setTimeout(function () { window.location.href = href; }, 110);
+    }, true);
+  }
+
   /* Home 条 */
   var hbar = document.createElement('div');
   hbar.className = 'shell-hbar';
@@ -106,6 +139,7 @@
      上一次 tab 记在 sessionStorage；直接开链接 / 刷新不动。?vtslow=1 放慢 5 倍，方便录帧；
      系统「减少动态效果」时不动。 */
   try {
+    /* 有视图过渡时，胶囊交给浏览器 morph（见 shell.css），这里不再叠一层 JS 飞行 */
     var STORE = 'ac6.lastTab';
     var lastTab = null;
     try { lastTab = sessionStorage.getItem(STORE); } catch (e) {}
@@ -114,7 +148,7 @@
     var fromIdx = keys.indexOf(lastTab), toIdx = keys.indexOf(current);
     var noMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var slow = /vtslow/.test(window.location.search);
-    if (!noMotion && fromIdx > -1 && toIdx > -1 && fromIdx !== toIdx) {
+    if (!noMotion && !useVT && fromIdx > -1 && toIdx > -1 && fromIdx !== toIdx) {
       var pill = nav.querySelector('.nv.is-active');
       if (pill) {
         var GAP = 11, PAD = 10.5, WACT = 90, WCIR = 46;

@@ -880,3 +880,20 @@ button { font-family: inherit; }
 .deck-arrow svg { width: 12px; height: 12px; }
 .deck-arrow:disabled { opacity: .3; cursor: default; }
 @media (min-width: 700px) { .deck-arrow { display: grid; } }
+
+/* ---------------------------------------------------------------------------
+   切页过渡（一改全改）
+   设置流程这几页也是真页面，点一下 = 一次真导航，浏览器换文档时会先白一帧。
+   Chrome / Edge 的跨文档视图过渡把这次换文档接起来：旧页快照淡出、新页淡入。
+   其它浏览器 / 系统「减少动态效果」下自动退回瞬时切换，行为不变。 */
+@view-transition{navigation:auto}
+::view-transition-old(root),
+::view-transition-new(root){animation-duration:.22s;animation-timing-function:ease;mix-blend-mode:normal}
+
+/* 换页遮罩（兜底，一改全改）
+   没有视图过渡的浏览器（Firefox / 老 Chromium）用它盖住「换文档」那一帧：
+   点链接时淡入盖到页面底色，新页落地后淡出 —— 任何浏览器都不再白闪。
+   Chrome / Edge 有视图过渡，走上面那套，这层不出现。 */
+.page-veil{position:fixed;inset:0;z-index:9999;background:var(--bg,#F5F3FA);
+  opacity:0;pointer-events:none;transition:opacity .18s ease}
+.page-veil.on{opacity:1;transition-duration:.1s}

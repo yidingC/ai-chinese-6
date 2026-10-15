@@ -71,3 +71,23 @@
   max-width:82vw;padding:8px 16px;border-radius:999px;background:rgba(35,32,58,.86);color:#fff;font-size:12.5px;font-weight:800;
   text-align:center;opacity:0;pointer-events:none;transition:.25s;z-index:70}
 .shell-screen .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* 换页遮罩（兜底，一改全改）
+   不支持跨文档视图过渡的浏览器（Firefox / 老 Chromium）用它盖住「换文档」那一帧：
+   点击时淡入盖到屏幕底色，新页落地后淡出 —— 任何浏览器都不再白闪。
+   Chrome / Edge 有视图过渡，走上面那套，这层不出现。 */
+.shell-veil{position:absolute;inset:0;border-radius:inherit;background:var(--shell-bg,#F5F3FA);
+  opacity:0;pointer-events:none;z-index:200;transition:opacity .18s ease}
+.shell-veil.on{opacity:1;transition-duration:.1s}
+
+/* ---------------------------------------------------------------------------
+   切页过渡（一改全改）
+   原型是 8 个真页面，点 tab = 一次真导航，浏览器换文档时会先白一帧，看着就是「闪」。
+   Chrome 的跨文档视图过渡把这次换文档接起来：旧页快照淡出、新页淡入，
+   「今天」这颗胶囊在两边同名（nav-pill），由浏览器直接 morph 过去，不再跳位重画。
+   其它浏览器 / 系统「减少动态效果」下自动退回瞬时切换，行为不变。 */
+@view-transition{navigation:auto}
+.shell-nav .nv.is-active{view-transition-name:nav-pill}
+::view-transition-group(nav-pill){animation-duration:.3s;animation-timing-function:cubic-bezier(.30,1.06,.36,1)}
+::view-transition-old(root),
+::view-transition-new(root){animation-duration:.22s;animation-timing-function:ease;mix-blend-mode:normal}
