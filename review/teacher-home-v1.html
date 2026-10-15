@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 老师页（概念稿）</title>
+<style>
+/* ---------- 老师页（概念稿）：一条「老师带路的对话流」 ----------
+   外壳 / 状态栏 / Home 条 / 悬浮导航都归 shell.css + shell.js */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#E9E8F5}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;color:#17171A}
+svg{display:block}
+button{font:inherit;color:inherit}
+
+/* 消息流 */
+.chat{padding:14px 18px 40px}
+.day-sep{text-align:center;font-size:12px;font-weight:700;color:#A6A3B0;margin:4px 0 10px}
+.msg{display:flex;align-items:flex-start;gap:10px;margin-top:16px;animation:rise .34s cubic-bezier(.22,.61,.36,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ava{flex:none;width:44px;height:44px;border-radius:50%;background:linear-gradient(150deg,#7B68FF 0%,#4C35E8 100%);display:grid;place-items:center;box-shadow:0 7px 16px rgba(76,53,232,.26)}
+.ava svg{width:20px;height:20px}
+.mcol{flex:1;min-width:0;display:grid;gap:9px}
+.bubble{justify-self:start;width:fit-content;max-width:100%;background:#fff;border-radius:5px 18px 18px 18px;padding:10px 12px;box-shadow:0 8px 18px rgba(38,22,120,.07)}
+
+/* 语音条：播放三角 + 波形 + 秒数（点击只有播放动画） */
+.vbar{display:flex;align-items:center;gap:10px;width:100%;min-width:196px;border:0;background:none;padding:2px 0 4px;cursor:pointer;text-align:left}
+.vplay{flex:none;width:26px;height:26px;border-radius:50%;background:#EEEBFF;display:grid;place-items:center;transition:background .18s}
+.vplay svg{width:11px;height:11px;fill:#4C35E8}
+.vbar.playing .vplay{background:#6552FF}
+.vbar.playing .vplay svg{fill:#fff}
+.vbar .ic-pause{display:none}
+.vbar.playing .ic-play{display:none}
+.vbar.playing .ic-pause{display:block}
+.vwaves{flex:1;display:flex;align-items:center;justify-content:space-between;height:22px}
+.vwaves i{width:2.5px;border-radius:2px;background:#D9D5EA;transform-origin:center;transition:background .18s}
+.vbar.playing .vwaves i{background:#6552FF;animation:wv .7s ease-in-out infinite;animation-delay:calc(var(--i) * 40ms)}
+@keyframes wv{50%{transform:scaleY(.35)}}
+.vsec{flex:none;font-size:12px;font-weight:700;color:#A6A3B0;transition:color .18s}
+.vbar.playing .vsec{color:#4C35E8}
+
+.ptext{font-size:14.5px;line-height:1.58;font-weight:500}
+
+/* 任务附件卡：紫渐变圆角，质感照今天页的任务卡 */
+.tcard{border-radius:22px;padding:13px 15px;color:#fff;
+  background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);
+  box-shadow:0 12px 26px rgba(38,22,120,.20);transition:background .35s,box-shadow .35s,color .35s}
+.tc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tc-tag{flex:none;height:26px;padding:0 12px;border-radius:13px;background:#fff;color:#6552FF;font-size:12.5px;font-weight:800;display:flex;align-items:center;transition:color .35s}
+.tc-time{flex:none;height:26px;padding:0 11px 0 9px;border-radius:13px;background:rgba(255,255,255,.28);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:background .35s}
+.tc-time .ring{width:15px;height:15px;border-radius:50%;border:1.8px solid rgba(255,255,255,.92);position:relative;flex:none;transition:border-color .35s}
+.tc-time .ring::after{content:"";position:absolute;left:5.6px;top:2.6px;width:1.8px;height:5.4px;background:rgba(255,255,255,.92);border-radius:1px;transition:background .35s}
+.tc-time .ring::before{content:"";position:absolute;left:5.6px;top:7px;width:4.2px;height:1.8px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center;transition:background .35s}
+.tc-time b{font-size:12px;font-weight:700}
+.tc-title{margin-top:9px;font-size:16.5px;line-height:1.34;font-weight:800;letter-spacing:-.01em}
+.tc-sub{margin-top:3px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.84);transition:color .35s}
+.tc-foot{display:flex;justify-content:flex-end;margin-top:11px}
+.tc-go{height:38px;padding:0 22px;border:0;border-radius:19px;background:#fff;color:#4C35E8;font-size:14px;font-weight:800;letter-spacing:.02em;cursor:pointer;box-shadow:0 6px 14px rgba(16,10,72,.22);display:flex;align-items:center;gap:8px;transition:transform .14s,opacity .2s}
+.tc-go:active{transform:scale(.96)}
+.tc-go .spin{width:13px;height:13px;border-radius:50%;border:2px solid rgba(76,53,232,.22);border-top-color:#4C35E8;animation:spin .7s linear infinite;display:none}
+.tc-go.busy .spin{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 已完成：灰白 + 对勾 */
+.tcard.done{background:#F2F1F7;box-shadow:0 6px 16px rgba(38,22,120,.08);color:#8B8898}
+.tcard.done .tc-tag{color:#A6A3B0}
+.tcard.done .tc-sub{color:#A6A3B0}
+.tcard.done .tc-time{background:rgba(23,23,42,.05)}
+.tcard.done .tc-time .ring{border-color:#C9C5D8}
+.tcard.done .tc-time .ring::after,.tcard.done .tc-time .ring::before{background:#C9C5D8}
+.tc-donechip{height:32px;padding:0 13px;border-radius:16px;background:#fff;color:#0B7B5C;font-size:12.5px;font-weight:800;display:flex;align-items:center;gap:6px}
+.tc-donechip svg{width:12px;height:12px;stroke:#0B7B5C;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* 输入中：三个点 */
+.dots{display:flex;align-items:center;gap:5px;padding:3px 2px}
+.dots i{width:7px;height:7px;border-radius:50%;background:#B9B5C6;animation:dot 1s ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes dot{40%{transform:translateY(-4px);background:#8F8AA8}}
+
+/* 收工卡：白纸质感，照今天页的收工卡 */
+.fin{border-radius:22px;padding:15px;background:linear-gradient(168deg,#FFFEFB 0%,#F6F1E7 100%);box-shadow:0 12px 26px rgba(38,22,120,.14);color:#17171A}
+.fin-h{font-size:16.5px;font-weight:800;letter-spacing:-.01em}
+.fin-h .cheer{color:#4C35E8;font-weight:900}
+.fin-panel{margin-top:10px;border-radius:18px;background:#fff;box-shadow:0 4px 14px rgba(38,22,120,.06);padding:12px 14px}
+.fin-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.fin-name{font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.fin-badge{font-size:12.5px;font-weight:800;color:#B9B5C6;letter-spacing:.02em;transition:color .3s}
+.fin-badge.on{color:#4C35E8}
+.fin-bars{display:flex;gap:7px;margin-top:10px}
+.fin-bars i{flex:1;height:8px;border-radius:4px;background:#EAE7F1;transition:background .3s,box-shadow .3s}
+.fin-bars i.on{background:linear-gradient(90deg,#7B68FF,#4C35E8);box-shadow:0 4px 10px rgba(101,82,255,.28)}
+.fin-bars i.pop{animation:barpop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes barpop{45%{transform:scaleY(1.5)}}
+.fin-next{margin-top:9px;font-size:12.5px;font-weight:600;color:#8B8B95}
+.fin-meta{margin-top:10px;font-size:11.5px;font-weight:700;color:#A6A3B0}
+.fin-slide{position:relative;margin-top:12px;height:48px;border-radius:24px;background:rgba(23,23,42,.055);overflow:hidden}
+.fin-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(101,82,255,.14);transition:width .18s ease-out}
+.fin-slide-label{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#6552FF;letter-spacing:.02em;transition:opacity .15s,color .3s}
+.fin-chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.fin-chev i{width:6px;height:6px;border-right:2px solid rgba(101,82,255,.85);border-top:2px solid rgba(101,82,255,.85);transform:rotate(45deg);border-radius:1px}
+.fin-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;box-shadow:0 5px 12px rgba(101,82,255,.35);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;transition:transform .24s cubic-bezier(.22,1,.36,1)}
+.fin-knob svg{width:19px;height:19px}
+.fin-slide.grabbing{background:rgba(101,82,255,.12)}
+.fin-slide.grabbing .fin-knob,.fin-slide.grabbing .fin-fill,.fin-slide.grabbing .fin-slide-label{transition:none}
+.fin-slide.done{background:rgba(29,143,110,.12)}
+.fin-slide.done .fin-slide-label{color:#0B7B5C}
+.fin-slide.done .fin-chev{display:none}
+
+/* 「问一句」悬浮小胶囊（可选加分，不做真实输入框） */
+.ask{position:absolute;left:50%;transform:translateX(-50%);bottom:120px;z-index:58;height:42px;padding:0 17px;border:0;border-radius:21px;
+  background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  box-shadow:0 10px 22px rgba(20,30,60,.14);display:flex;align-items:center;gap:7px;color:#4C35E8;font-size:13.5px;font-weight:800;cursor:pointer;transition:transform .14s}
+.ask:active{transform:translateX(-50%) scale(.95)}
+.ask svg{width:16px;height:16px;stroke:#4C35E8;fill:none;stroke-width:2;stroke-linecap:round}
+.ask-panel{position:absolute;left:50%;transform:translateX(-50%) translateY(6px);bottom:172px;z-index:58;width:300px;padding:10px;border-radius:18px;
+  background:rgba(255,255,255,.96);box-shadow:0 16px 34px rgba(20,30,60,.18);display:grid;gap:7px;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.ask-panel.open{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.ask-panel .qa{font-size:12.5px;line-height:1.5;font-weight:600;padding:8px 11px;width:fit-content;max-width:100%}
+.ask-panel .q{justify-self:end;background:#6552FF;color:#fff;border-radius:13px 13px 4px 13px;font-weight:700}
+.ask-panel .a{justify-self:start;background:#F4F3F8;color:#17171A;border-radius:13px 13px 13px 4px}
+</style>
+<link rel="stylesheet" href="../shell.css">
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen bg-today">
+  <div class="shell-edge"></div>
+
+  <main class="shell-main" id="main">
+    <div class="chat" id="chat">
+      <p class="day-sep">今天</p>
+    </div>
+  </main>
+
+  <button class="ask" id="ask" type="button" aria-label="问一句（演示）">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.4 9.6v4.8M8.2 7.4v9.2M12 4.8v14.4M15.8 7.4v9.2M19.6 9.6v4.8"/></svg>
+    问一句
+  </button>
+  <div class="ask-panel" id="askPanel" aria-hidden="true">
+    <div class="qa q">老师，「一会儿」是多久？</div>
+    <div class="qa a">几分钟到半小时，看语气。回我们刚才那步。</div>
+  </div>
+</div>
+</div>
+
+<script src="../shell.js"></script>
+<script>
+(function(){
+  /* ============ 演示数据（数字取自 review/文案表-演示版.md） ============ */
+  var MSGS = [
+    { say:'早上好 Alia，第 15 天了。离入职还有 43 天，今天把『听懂工作安排』拿下，你的 10 项能力就准备好 3 项了。先接住昨天的：把清单整理一下，发给老陈。', sec:'00:15',
+      card:{ tag:'复习', title:'把清单整理一下，发给老陈', sub:'昨天学的说法 · 快问快答 3 题', time:'约 2 分钟' } },
+    { say:'不错。不过『一会儿』那题你卡了一下，我记下了，等下练习里再考你一遍。现在学新的：主管派活会先说什么？听陈主管怎么讲。', sec:'00:12',
+      card:{ tag:'新学', title:'听懂工作安排', sub:'谁派的活 · 要做什么 · 什么时候要 · 交给谁', time:'约 8 分钟' } },
+    { say:'记住四个点：谁派的活、要做什么、什么时候要、交给谁。马上就用得上。', sec:'00:07',
+      card:{ tag:'练习', title:'听懂“先、马上、一会儿”', sub:'谁先谁后，听出来 · 5 题', time:'约 4 分钟' } },
+    { say:'5 题对 4。又是时间词，就是这个才要练。现在去会会陈主管，这回他真的给你派活了。', sec:'00:09',
+      card:{ tag:'实战', title:'主管派活，你来接', sub:'跟虚拟主管过一遍', time:'约 5 分钟' } },
+    { say:'过了。你听懂了『周五前交给小张』，还主动回了一句『好的，我今天先做』。这个本事，入职第一天就能用。', sec:'00:10',
+      fin:true }
+  ];
+
+  var WAVE = [7,12,17,9,20,13,8,16,11,19,7,14,18,10,15,8,13,20,9,16,12,7];
+  var SPARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c.9 5.2 3.8 8.1 9 9-5.2.9-8.1 3.8-9 9-.9-5.2-3.8-8.1-9-9 5.2-.9 8.1-3.8 9-9Z" fill="#fff"/></svg>';
+  var PLAY_IC = '<svg viewBox="0 0 24 24" class="ic-play" aria-hidden="true"><path d="M8.4 5.6v12.8L19 12Z"/></svg><svg viewBox="0 0 24 24" class="ic-pause" aria-hidden="true"><rect x="7" y="5.8" width="3.4" height="12.4" rx="1.2"/><rect x="13.6" y="5.8" width="3.4" height="12.4" rx="1.2"/></svg>';
+  var CHECK_SM = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 12.6l4.8 4.8L19.6 7.2"/></svg>';
+  var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg>';
+
+  var main = document.getElementById('main');
+  var chat = document.getElementById('chat');
+  var step = 0;     /* 已出现的消息数 */
+  var busy = false; /* 进行中 / 输入中时不接受新的开始 */
+  var typingEl = null;
+
+  function scrollDown(){
+    requestAnimationFrame(function(){ main.scrollTo({ top: main.scrollHeight, behavior:'smooth' }); });
+  }
+
+  function voiceBar(sec, seed){
+    var bars = '';
+    for (var i = 0; i < WAVE.length; i++){
+      var h = WAVE[(i + seed * 5) % WAVE.length];
+      bars += '<i style="height:' + h + 'px;--i:' + i + '"></i>';
+    }
+    return '<button class="vbar" type="button" aria-label="播放语音（演示）">' +
+      '<span class="vplay">' + PLAY_IC + '</span>' +
+      '<span class="vwaves">' + bars + '</span>' +
+      '<span class="vsec">' + sec + '</span>' +
+      '</button>';
+  }
+
+  function taskCard(c){
+    var el = document.createElement('div');
+    el.className = 'tcard';
+    el.innerHTML =
+      '<div class="tc-top">' +
+        '<span class="tc-tag">' + c.tag + '</span>' +
+        '<span class="tc-time"><span class="ring"></span><b>' + c.time + '</b></span>' +
+      '</div>' +
+      '<h3 class="tc-title">' + c.title + '</h3>' +
+      '<p class="tc-sub">' + c.sub + '</p>' +
+      '<div class="tc-foot"><button class="tc-go" type="button"><span class="spin"></span><span class="lbl">开始</span></button></div>';
+    return el;
+  }
+
+  function finCard(){
+    var el = document.createElement('div');
+    el.className = 'fin';
+    var bars = '';
+    for (var i = 0; i < 5; i++) bars += (i < 4 ? '<i class="on"></i>' : '<i></i>');
+    el.innerHTML =
+      '<h2 class="fin-h"><span class="cheer">真棒！</span>今天 4 件事 · 全部完成</h2>' +
+      '<div class="fin-panel">' +
+        '<div class="fin-row"><span class="fin-name">听懂工作安排</span><span class="fin-badge">4 / 5</span></div>' +
+        '<div class="fin-bars">' + bars + '</div>' +
+        '<p class="fin-next">明天开始：没听懂就问</p>' +
+      '</div>' +
+      '<p class="fin-meta">复习 · 新学 · 练习 · 实战 ｜ 连续 15 天 · 明天见</p>' +
+      '<div class="fin-slide">' +
+        '<span class="fin-fill"></span>' +
+        '<span class="fin-slide-label">滑动完成</span>' +
+        '<span class="fin-chev"><i></i><i></i><i></i></span>' +
+        '<button class="fin-knob" type="button" aria-label="滑动完成">' + ARROW + '</button>' +
+      '</div>';
+    return el;
+  }
+
+  /* 收工卡：约 0.8 秒后第 5 格亮起、计数转 5 / 5（紫色） */
+  function lightFifth(f){
+    f.querySelectorAll('.fin-bars i')[4].classList.add('on','pop');
+    var badge = f.querySelector('.fin-badge');
+    badge.textContent = '5 / 5';
+    badge.classList.add('on');
+  }
+
+  function bindFinSlide(f){
+    var slide = f.querySelector('.fin-slide');
+    var knob = slide.querySelector('.fin-knob');
+    var fill = slide.querySelector('.fin-fill');
+    var label = slide.querySelector('.fin-slide-label');
+    var x0 = 0, x = 0, maxX = 1, dragging = false, doneFlag = false;
+    function apply(px){
+      x = px;
+      knob.style.transform = 'translateX(' + px + 'px)';
+      fill.style.width = (px + 48) + 'px';
+      label.style.opacity = String(Math.max(0, 1 - px / Math.max(1, maxX * 0.55)));
+    }
+    function finish(){
+      if (!doneFlag){ doneFlag = true; slide.classList.add('done'); label.textContent = '已收工 · 明天见'; }
+      label.style.opacity = '1';
+    }
+    knob.addEventListener('pointerdown', function(e){
+      e.stopPropagation(); e.preventDefault();
+      dragging = true; maxX = slide.clientWidth - 48; x0 = e.clientX;
+      slide.classList.add('grabbing');
+      try { knob.setPointerCapture(e.pointerId); } catch(err){}
+    });
+    knob.addEventListener('pointermove', function(e){
+      if (!dragging) return;
+      var px = e.clientX - x0;
+      if (px < 0) px = 0;
+      if (px > maxX) px = maxX;
+      apply(px);
+    });
+    function up(){
+      if (!dragging) return;
+      dragging = false;
+      slide.classList.remove('grabbing');
+      if (x >= maxX * 0.9) finish();
+      apply(0);
+    }
+    knob.addEventListener('pointerup', up);
+    knob.addEventListener('pointercancel', up);
+  }
+
+  function startTask(cardEl){
+    if (busy) return;
+    busy = true;
+    var btn = cardEl.querySelector('.tc-go');
+    btn.classList.add('busy');
+    btn.disabled = true;
+    btn.querySelector('.lbl').textContent = '进行中…';
+    setTimeout(function(){
+      cardEl.classList.add('done');
+      cardEl.querySelector('.tc-foot').innerHTML = '<span class="tc-donechip">' + CHECK_SM + '已完成</span>';
+      setTimeout(nextMessage, 420);
+    }, 1200);
+  }
+
+  function showTyping(){
+    typingEl = document.createElement('div');
+    typingEl.className = 'msg';
+    typingEl.innerHTML = '<span class="ava">' + SPARK + '</span><div class="mcol"><div class="bubble dots"><i></i><i></i><i></i></div></div>';
+    chat.appendChild(typingEl);
+    scrollDown();
+  }
+  function hideTyping(){ if (typingEl){ typingEl.remove(); typingEl = null; } }
+
+  function nextMessage(){
+    showTyping();
+    setTimeout(function(){
+      hideTyping();
+      appendMsg(step);
+      step += 1;
+      busy = false;
+      scrollDown();
+    }, 950);
+  }
+
+  function appendMsg(i){
+    var m = MSGS[i];
+    var row = document.createElement('div');
+    row.className = 'msg';
+    row.innerHTML = '<span class="ava">' + SPARK + '</span><div class="mcol">' +
+      '<div class="bubble">' + voiceBar(m.sec, i) + '<p class="ptext">' + m.say + '</p></div>' +
+      '</div>';
+    chat.appendChild(row);
+    var mcol = row.querySelector('.mcol');
+    if (m.card){
+      var c = taskCard(m.card);
+      mcol.appendChild(c);
+      c.querySelector('.tc-go').addEventListener('click', function(){ startTask(c); });
+    } else if (m.fin){
+      var f = finCard();
+      mcol.appendChild(f);
+      bindFinSlide(f);
+      setTimeout(function(){ lightFifth(f); }, 800);
+    }
+  }
+
+  /* 语音条：点击播放动画（约 1.6 秒后自动停） */
+  chat.addEventListener('click', function(e){
+    var vb = e.target.closest ? e.target.closest('.vbar') : null;
+    if (!vb) return;
+    var on = vb.classList.toggle('playing');
+    clearTimeout(vb._pt);
+    if (on) vb._pt = setTimeout(function(){ vb.classList.remove('playing'); }, 1600);
+  });
+
+  /* 「问一句」小胶囊：点开预置问答，再点收起 */
+  var askBtn = document.getElementById('ask');
+  var askPanel = document.getElementById('askPanel');
+  askBtn.addEventListener('click', function(){
+    var open = askPanel.classList.toggle('open');
+    askPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
+  });
+
+  /* 开场：第一条消息 + 第一张卡 */
+  appendMsg(0);
+  step = 1;
+})();
+</script>
+</body>
+</html>

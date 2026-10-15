@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 课堂页（试验）</title>
+<style>
+/* ---------- 课堂页（试验稿）：数字人开讲 + 讲台／课桌两态 ----------
+   独立试验页：不接主线、不引外部资源；视觉语言沿用 teacher-home v3 / xiaolan。
+   只验证构图与节奏，不验证数字人技术。 */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#F7F7FC}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:#252244;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{display:block}
+
+/* 顶栏（照 teacher-home v3） */
+.tch{position:absolute;left:0;right:0;top:var(--shell-safe-top);height:58px;z-index:45;display:flex;align-items:center;gap:10px;
+  padding:0 16px;background:#F7F7FC;border-bottom:1px solid #f0eff7}
+.tch-ava{flex:none;width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:16px;font-weight:800;display:grid;place-items:center;box-shadow:0 6px 14px rgba(101,82,255,.3)}
+.tch-meta{flex:1;min-width:0;display:grid;line-height:1.15}
+.tch-meta b{font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.tch-meta i{font-style:normal;font-size:11.5px;font-weight:600;color:#77738f;margin-top:2px;display:flex;align-items:center;gap:5px}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:none}
+.tch-more{flex:none;color:#77738f;font-size:19px;font-weight:800;line-height:1;padding:4px 2px}
+
+/* ---------- 讲台 + 课桌 ---------- */
+.room{position:absolute;left:0;right:0;top:105px;bottom:112px;display:flex;flex-direction:column;gap:10px;padding:6px 16px 0}
+.podium{flex:1 1 auto;min-height:0;display:flex}
+
+/* 黑板：深墨蓝底 + 木框感描边 + 粉笔灰 */
+.board{position:relative;flex:1;min-height:0;border-radius:24px;overflow:hidden;
+  background:
+    radial-gradient(180px 80px at 18% 88%, rgba(255,255,255,.055), rgba(255,255,255,0) 70%),
+    radial-gradient(220px 90px at 86% 12%, rgba(255,255,255,.045), rgba(255,255,255,0) 72%),
+    linear-gradient(162deg,#323850 0%,#282D40 55%,#232737 100%);
+  box-shadow:inset 0 0 0 6px #3D4358, inset 0 0 52px rgba(0,0,0,.38), 0 14px 30px rgba(38,30,90,.20)}
+.board::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.015))}
+.b-layer{position:absolute;inset:6px;padding:20px 20px 0;transition:opacity .38s ease,transform .38s ease}
+.board-a{opacity:1;transform:none}
+.st-b .board-a{opacity:0;transform:translateY(-8px);pointer-events:none}
+.board-b{opacity:0;transform:translateY(10px);pointer-events:none}
+.st-b .board-b{opacity:1;transform:none;pointer-events:auto}
+
+/* 粉笔字：宽度揭开 */
+.ink{display:inline-block;white-space:nowrap;clip-path:inset(0 100% 0 0);color:rgba(255,255,255,.94);
+  text-shadow:0 0 12px rgba(255,255,255,.14)}
+.ink.on{animation:chalkWrite .85s cubic-bezier(.42,.05,.2,1) both}
+@keyframes chalkWrite{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+/* 板书 3 条 */
+.chalk{list-style:none;display:grid;gap:18px;padding-top:8px}
+.chalk li{display:flex;align-items:center;gap:12px}
+.pin{flex:none;width:10px;height:10px;border-radius:50%;border:2.5px solid rgba(255,255,255,.78);box-shadow:0 0 8px rgba(255,255,255,.18)}
+.chalk .ink{font-size:20px;font-weight:800;letter-spacing:.03em;line-height:1.2}
+.wk{position:relative;display:inline-block}
+.strike{position:absolute;left:-3px;right:-8px;top:50%;height:2.5px;margin-top:-1.5px;border-radius:2px;background:rgba(255,255,255,.88);
+  transform:rotate(-1.6deg) scaleX(0);transform-origin:left center;transition:transform .5s cubic-bezier(.35,.06,.2,1);pointer-events:none}
+.chalk li.done .strike{transform:rotate(-1.6deg) scaleX(1)}
+
+/* 题干（B 态） */
+.q-quote{display:flex;align-items:center;gap:10px;padding-top:10px;color:rgba(255,255,255,.9)}
+.q-quote svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.85;flex:none}
+.q-quote .ink{font-size:17px;font-weight:700;letter-spacing:.02em}
+.q-ask{margin-top:12px}
+.q-ask .ink{font-size:26px;font-weight:900;letter-spacing:.02em}
+
+/* 数字人：内联 SVG 剪影占位（以后换真图不动版面） */
+.prof{position:absolute;right:12px;bottom:0;width:132px;height:168px;z-index:3;
+  filter:drop-shadow(0 12px 22px rgba(10,6,40,.45));animation:breathe 3.6s ease-in-out infinite;transform-origin:50% 100%}
+.prof svg{width:100%;height:100%}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* 文字记录（空壳） */
+.notes{position:absolute;right:14px;top:14px;z-index:4;height:28px;padding:0 11px;border-radius:14px;
+  border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.13);color:rgba(255,255,255,.92);
+  font-size:11.5px;font-weight:700;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background .15s,transform .12s}
+.notes:active{transform:scale(.95);background:rgba(255,255,255,.22)}
+
+/* 她的讲话：一行字幕（最多两行） */
+.subs{flex:none;min-height:48px;display:flex;align-items:flex-start;gap:9px;padding:9px 12px;border-radius:16px;
+  background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(71,57,142,.08)}
+.s-ava{flex:none;width:22px;height:22px;border-radius:8px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:11px;font-weight:800;display:grid;place-items:center;margin-top:2px}
+.s-txt{font-size:14.5px;line-height:1.5;font-weight:600;color:#2A2740}
+.s-txt.swap{animation:subIn .3s ease}
+@keyframes subIn{from{opacity:0;transform:translateY(3px)}}
+
+/* 课桌：四种桌面按环节切换（本页做①②） */
+.desk{position:relative;flex:none;height:167px;border-radius:26px;transition:height .55s cubic-bezier(.3,.9,.3,1);
+  background:linear-gradient(180deg,#F2F0FC 0%,#E9E6F7 100%);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(120,110,180,.08),0 12px 28px rgba(71,57,142,.10)}
+.st-b .desk{height:223px}
+.desk-a,.desk-b{position:absolute;inset:0;transition:opacity .34s ease,transform .34s ease}
+.desk-a{display:flex;align-items:center;padding:0 16px}
+.st-b .desk-a{opacity:0;transform:translateY(10px);pointer-events:none}
+.desk-b{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px 16px;opacity:0;transform:translateY(-10px);pointer-events:none}
+.st-b .desk-b{opacity:1;transform:none;pointer-events:auto}
+
+/* ① 打字提问（复用 v3 输入区） */
+.input-row{display:flex;align-items:center;gap:8px;width:100%}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:0;flex:0 0 auto;
+  background:#eeeaff;color:#4c35e8;box-shadow:0 6px 16px rgba(76,53,232,.18);transition:transform .12s}
+.icon-btn:active{transform:scale(.93)}
+.icon-btn svg{width:21px;height:21px}
+.field{flex:1;min-width:0;height:42px;border-radius:21px;background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.92);
+  padding:0 15px;color:#252244;font-size:13.5px;outline:none;box-shadow:0 6px 16px rgba(20,30,60,.10);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);transition:border-color .15s,background .15s,box-shadow .15s}
+.field::placeholder{color:#a9a6bf}
+.field:focus{border-color:#cfcaff;background:#fff}
+
+/* ② 选答案 */
+.ghost{height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(101,82,255,.20);background:rgba(255,255,255,.8);
+  color:#4C35E8;font-size:12.5px;font-weight:800;display:inline-flex;align-items:center;gap:7px;
+  box-shadow:0 4px 12px rgba(20,30,60,.06);transition:transform .12s,background .15s}
+.ghost:active{transform:scale(.95);background:#fff}
+.ghost svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.opts{display:grid;gap:8px;width:100%}
+.opt{height:42px;border-radius:21px;border:1px solid rgba(255,255,255,.95);background:#fff;box-shadow:0 6px 16px rgba(20,30,60,.08);
+  font-size:14.5px;font-weight:700;color:#252244;display:flex;align-items:center;justify-content:center;
+  transition:transform .12s,background .2s,border-color .2s,color .2s}
+.opt:active{transform:scale(.98)}
+.opt.ok{background:#E6F7EF;border-color:#9FE0C6;color:#0B7B5C}
+.opt.bad{background:#FDECEF;border-color:#F3BEC9;color:#B3405A}
+
+/* dev 控件：左下角小悬浮，明显标注，不进正式 UI */
+.dev{position:absolute;left:6px;bottom:8px;z-index:130;display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:6px 5px;border-radius:15px;background:rgba(255,255,255,.86);border:1.5px dashed rgba(120,112,160,.5);
+  box-shadow:0 8px 20px rgba(20,30,60,.12)}
+.dev .tag{font-size:8px;font-weight:800;letter-spacing:.08em;color:#8B8898}
+.dev button{width:34px;height:26px;border-radius:9px;border:1px solid rgba(120,112,160,.35);background:#fff;color:#4C35E8;
+  font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:transform .12s,background .15s}
+.dev button:active{transform:scale(.93)}
+.dev button.on{background:#6552FF;border-color:#6552FF;color:#fff}
+.dev .dev-play{height:33px;flex-direction:column;gap:1px;line-height:1}
+.dev .dev-play i{font-style:normal;font-size:7px;font-weight:700;letter-spacing:.02em}
+</style>
+<link rel="stylesheet" href="../shell.css">
+<style>
+  /* 公区壳适配（必须放在 shell.css 之后） */
+  .shell-screen{--shell-bg:#F7F7FC}
+</style>
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen">
+
+  <header class="tch" aria-label="老师">
+    <span class="tch-ava" aria-hidden="true">N</span>
+    <span class="tch-meta"><b>Nancy</b><i><span class="tdot"></span>在线 · 你的中文老师</i></span>
+    <span class="tch-more" aria-hidden="true">⋯</span>
+  </header>
+
+  <div class="room">
+    <section class="podium" aria-label="讲台">
+      <div class="board">
+        <button class="notes" id="notesBtn" type="button" aria-label="文字记录（演示）">文字记录</button>
+
+        <div class="b-layer board-a">
+          <ul class="chalk" id="chalk">
+            <li><i class="pin"></i><span class="wk"><span class="ink">周五前</span><b class="strike"></b></span></li>
+            <li><i class="pin"></i><span class="wk"><span class="ink">交给小张</span><b class="strike"></b></span></li>
+            <li><i class="pin"></i><span class="wk"><span class="ink">好的，我今天先做</span><b class="strike"></b></span></li>
+          </ul>
+        </div>
+
+        <div class="b-layer board-b">
+          <div class="q-quote">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.6v4.8h3.2L12 18.4V5.6L7.2 9.6Z"/><path d="M15.4 9.2a4 4 0 0 1 0 5.6"/><path d="M17.8 6.8a7.4 7.4 0 0 1 0 10.4"/></svg>
+            <span class="ink" id="qQuote"></span>
+          </div>
+          <div class="q-ask"><span class="ink" id="qAsk"></span></div>
+        </div>
+
+        <div class="prof" aria-hidden="true">
+          <svg viewBox="0 0 140 180">
+            <defs>
+              <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#9486FF"/><stop offset="1" stop-color="#5A46EE"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="70" cy="174" rx="54" ry="6" fill="rgba(0,0,0,.26)"/>
+            <circle cx="70" cy="45" r="22" fill="url(#pg)"/>
+            <path d="M70 64c-12.6 0-24.2 4.6-32.8 12.6C27.4 85.8 21.4 98.6 20.2 112.6L19 180h102l-1.2-67.4c-1.2-14-7.2-26.8-17-36.4C94.2 68.6 82.6 64 70 64Z" fill="url(#pg)"/>
+            <path d="M70 64c-6.6 0-12.6 1.4-17.8 3.8 4.4 5.2 10.8 8.4 17.8 8.4s13.4-3.2 17.8-8.4C82.6 65.4 76.6 64 70 64Z" fill="rgba(255,255,255,.28)"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <p class="subs" id="subs"><span class="s-ava" aria-hidden="true">N</span><span class="s-txt" id="subTxt"></span></p>
+
+    <section class="desk" aria-label="课桌">
+      <div class="desk-a">
+        <div class="input-row">
+          <button class="icon-btn" id="micBtn" type="button" aria-label="按住说话（演示）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+          </button>
+          <input class="field" id="field" type="text" placeholder="问 Nancy…" aria-label="问 Nancy">
+        </div>
+      </div>
+      <div class="desk-b">
+        <button class="ghost" id="replay" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.6v4.8h3.2L12 18.4V5.6L7.2 9.6Z"/><path d="M15.4 9.2a4 4 0 0 1 0 5.6"/><path d="M17.8 6.8a7.4 7.4 0 0 1 0 10.4"/></svg>
+          再听一遍
+        </button>
+        <div class="opts" id="opts"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="dev" id="dev" aria-label="开发开关">
+    <span class="tag">DEV</span>
+    <button id="devA" type="button" title="切到课堂态 A">A</button>
+    <button id="devB" type="button" title="切到出题态 B">B</button>
+    <button class="dev-play" id="devPlay" type="button" title="播放整段（自动跑完整循环）" aria-label="播放整段">▶<i>整段</i></button>
+  </div>
+
+</div>
+</div>
+<script src="../shell.js"></script>
+<script>
+(function(){
+  /* ============ 台词（数字取自 review/文案表-演示版.md；本页先演节奏） ============ */
+  var L = {
+    open1:'来，接着昨天。今天就三个词块，钉黑板上。',
+    open2:'听懂『周五前交给小张』，你入职第一天就能用。',
+    wrong:'差不多。但『一会儿』不等于『周五前』，再来。',
+    end:'今天就钉到这儿。',
+    typed:'好问题，我记下了。先接着往下讲。'
+  };
+  /* 三轮：题干→选项（正确在前）→她的评价→回课堂划掉哪条板书 */
+  var RS = [
+    { quote:'『周五前交给小张。』', ask:'你回哪句？',
+      line:'听一句。『周五前交给小张。』你回哪句？',
+      opts:[['好的，我今天先做。',1],['好的，我一会儿交给您。',0],['好的，我周五再来。',0]],
+      right:'对。就回这句，像一个已经上过班的人。', strike:2 },
+    { quote:'『周五前交给小张。』', ask:'什么时候交？',
+      line:'再听一句。『周五前交给小张。』什么时候交？',
+      opts:[['周五前',1],['一会儿',0],['不知道',0]],
+      right:'对，周五前。时间先钉住，活就不会拖。', strike:0 },
+    { quote:'『周五前交给小张。』', ask:'交给谁？',
+      line:'最后一次。『周五前交给小张。』交给谁？',
+      opts:[['小张',1],['老陈',0],['主管',0]],
+      right:'交给小张。三块，全钉住了。', strike:1 }
+  ];
+
+  var root = document.querySelector('.shell-screen');
+  var subTxt = document.getElementById('subTxt');
+  var chalkLis = document.querySelectorAll('#chalk li');
+  var qQuote = document.getElementById('qQuote');
+  var qAsk = document.getElementById('qAsk');
+  var optsEl = document.getElementById('opts');
+  var field = document.getElementById('field');
+  var devA = document.getElementById('devA');
+  var devB = document.getElementById('devB');
+  var devPlay = document.getElementById('devPlay');
+
+  var cur = 0, locked = false, autoMode = false, token = 0;
+
+  function after(ms, fn){ var t = token; setTimeout(function(){ if (t === token) fn(); }, ms); }
+  function cancel(){ token++; }
+  function say(t){ subTxt.textContent = t; subTxt.classList.remove('swap'); void subTxt.offsetWidth; subTxt.classList.add('swap'); }
+  function chalkIn(el){ el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
+  function setB(on){ root.classList.toggle('st-b', !!on); devA.classList.toggle('on', !on); devB.classList.toggle('on', !!on); }
+  function okIndex(r){ for (var i = 0; i < r.opts.length; i++){ if (r.opts[i][1]) return i; } return 0; }
+
+  function resetAll(){
+    cancel(); autoMode = false; locked = false; cur = 0;
+    chalkLis.forEach(function(li){ li.classList.remove('done'); li.querySelector('.ink').classList.remove('on'); });
+    qQuote.classList.remove('on'); qAsk.classList.remove('on');
+    qQuote.textContent = ''; qAsk.textContent = '';
+    optsEl.innerHTML = '';
+    subTxt.textContent = '';
+    setB(false);
+  }
+  function reveal(i){ chalkIn(chalkLis[i].querySelector('.ink')); }
+  function startIntro(){
+    resetAll();
+    after(420, function(){ say(L.open1); });
+    after(1250, function(){ reveal(0); });
+    after(1850, function(){ reveal(1); });
+    after(2450, function(){ reveal(2); });
+    after(4300, function(){ say(L.open2); });
+    after(6700, function(){ askRound(0); });
+  }
+
+  function buildOpts(r){
+    optsEl.innerHTML = '';
+    r.opts.forEach(function(o, k){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'opt'; b.textContent = o[0];
+      b.addEventListener('click', function(){ pick(k); });
+      optsEl.appendChild(b);
+    });
+  }
+  function askRound(i){
+    cur = i; var r = RS[i];
+    qQuote.textContent = r.quote; qAsk.textContent = r.ask;
+    chalkIn(qQuote); chalkIn(qAsk);
+    buildOpts(r);
+    say(r.line);
+    setB(true);
+    if (autoMode) after(1700, function(){ pick(okIndex(r)); });
+  }
+
+  function pick(k){
+    var r = RS[cur]; if (!r || locked) return;
+    var b = optsEl.querySelectorAll('.opt')[k]; if (!b) return;
+    if (r.opts[k][1]){
+      locked = true;
+      b.classList.add('ok');
+      say(r.right);
+      after(1700, function(){
+        setB(false);
+        after(420, function(){ chalkLis[r.strike].classList.add('done'); });
+        if (cur === RS.length - 1){
+          after(1500, function(){ say(L.end); locked = false; autoMode = false; });
+        } else {
+          after(1600, function(){ locked = false; askRound(cur + 1); });
+        }
+      });
+    } else {
+      b.classList.add('bad');
+      say(L.wrong);
+      after(1500, function(){ b.classList.remove('bad'); });
+    }
+  }
+
+  /* dev：A / B 手动切；▶ 自动跑完整循环 */
+  devA.addEventListener('click', function(){ cancel(); autoMode = false; locked = false; setB(false); });
+  devB.addEventListener('click', function(){ cancel(); autoMode = false; locked = false; askRound(cur); });
+  devPlay.addEventListener('click', function(){ startIntro(); autoMode = true; });
+
+  /* 打字提问：回车 → 她应一句（演示） */
+  field.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.keyCode === 13){
+      e.preventDefault();
+      if (field.value.trim() !== ''){ field.value = ''; say(L.typed); }
+    }
+  });
+
+  /* 再听一遍：重播这一题的题干 */
+  document.getElementById('replay').addEventListener('click', function(){
+    var r = RS[cur];
+    if (r && root.classList.contains('st-b')) say(r.line);
+  });
+
+  /* 底部导航本页只展示、不跳转 */
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('.shell-nav a') : null;
+    if (a){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
+  startIntro();
+})();
+</script>
+</body>
+</html>

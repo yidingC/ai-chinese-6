@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 老师页 v3（概念稿）</title>
+<style>
+/* ---------- 老师页 v3（概念稿）：老师是产品外层 ----------
+   常驻名牌（页头）+ 登台开场 + 进出任务的仪式；外壳仍走 shell.css + shell.js
+   视觉语言照小安页（xiaolan.html）复刻：交互、台词、时序未动 */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#F7F7FC}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased;color:#17171A}
+svg{display:block}
+button{font:inherit;color:inherit}
+
+/* 常驻位：她一直在场（视觉照小安页 .chat-nav 重做，身份仍是 Nancy） */
+.tch{position:absolute;left:0;right:0;top:var(--shell-safe-top);height:58px;z-index:45;display:flex;align-items:center;gap:10px;
+  padding:0 16px;background:#F7F7FC;border-bottom:1px solid #f0eff7}
+.tch-ava{flex:none;width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:16px;font-weight:800;display:grid;place-items:center;box-shadow:0 6px 14px rgba(101,82,255,.3)}
+.tch-meta{flex:1;min-width:0;display:grid;line-height:1.15}
+.tch-meta b{font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.tch-meta i{font-style:normal;font-size:11.5px;font-weight:600;color:#77738f;margin-top:2px;display:flex;align-items:center;gap:5px}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:none}
+.tch-more{flex:none;color:#77738f;font-size:19px;font-weight:800;line-height:1;padding:4px 2px}
+/* 消息流从名牌下面开始滚；底部让位输入区（记录从胶囊底下淡出） */
+.shell-screen .shell-main{top:calc(var(--shell-safe-top) + 58px);bottom:calc(85px + var(--composer-h,68px));padding-bottom:14px;
+  -webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 14px),transparent);
+  mask-image:linear-gradient(180deg,#000 calc(100% - 14px),transparent)}
+
+/* 消息流 */
+.chat{padding:14px 18px 20px}
+.day-sep{text-align:center;font-size:12px;font-weight:700;color:#A6A3B0;margin:4px 0 10px}
+.msg{display:flex;align-items:flex-start;gap:10px;margin-top:16px;animation:rise .34s cubic-bezier(.22,.61,.36,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ava{flex:none;width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:14px;font-weight:800;display:grid;place-items:center;box-shadow:0 6px 12px rgba(101,82,255,.25)}
+.mcol{flex:1;min-width:0;display:grid;gap:9px}
+.bubble{justify-self:start;width:fit-content;max-width:288px;background:#fff;border-radius:16px;border-top-left-radius:6px;padding:10px 13px;box-shadow:0 6px 18px rgba(71,57,142,.08)}
+/* 我的话：紫色气泡（右上角收尾 6px），照小安页「我的话」 */
+.bubble.me-bubble{justify-self:end;background:linear-gradient(135deg,#6552ff,#4c35e8);color:#fff;border-top-left-radius:16px;border-top-right-radius:6px;box-shadow:0 8px 18px rgba(101,82,255,.3)}
+.bubble.me-bubble .vplay{background:rgba(255,255,255,.22)}
+.bubble.me-bubble .vplay svg{fill:#fff}
+.bubble.me-bubble .vwaves i{background:rgba(255,255,255,.65)}
+.bubble.me-bubble .vsec{color:rgba(255,255,255,.85)}
+.bubble.me-bubble .vbar.playing .vplay{background:#fff}
+.bubble.me-bubble .vbar.playing .vplay svg{fill:#4C35E8}
+.bubble.me-bubble .vbar.playing .vwaves i{background:#fff}
+.bubble.me-bubble .vbar.playing .vsec{color:#fff}
+
+/* 语音条：播放三角 + 波形 + 秒数（点击只有播放动画） */
+.vbar{display:flex;align-items:center;gap:10px;width:100%;min-width:196px;border:0;background:none;padding:2px 0 4px;cursor:pointer;text-align:left}
+.vplay{flex:none;width:26px;height:26px;border-radius:50%;background:#EEEBFF;display:grid;place-items:center;transition:background .18s}
+.vplay svg{width:11px;height:11px;fill:#4C35E8}
+.vbar.playing .vplay{background:#6552FF}
+.vbar.playing .vplay svg{fill:#fff}
+.vbar .ic-pause{display:none}
+.vbar.playing .ic-play{display:none}
+.vbar.playing .ic-pause{display:block}
+.vwaves{flex:1;display:flex;align-items:center;justify-content:space-between;height:22px}
+.vwaves i{width:2.5px;border-radius:2px;background:#cfcaff;transform-origin:center;transition:background .18s}
+.vbar.playing .vwaves i{background:#6552FF;animation:wv .7s ease-in-out infinite;animation-delay:calc(var(--i) * 40ms)}
+@keyframes wv{50%{transform:scaleY(.35)}}
+.vsec{flex:none;font-size:11px;font-weight:700;color:#77738f;transition:color .18s}
+.vbar.playing .vsec{color:#4C35E8}
+.ptext{font-size:14.5px;line-height:1.58;font-weight:500}
+
+/* 任务附件卡：紫渐变圆角，质感照今天页的任务卡 */
+.tcard{border-radius:22px;padding:13px 15px;color:#fff;
+  background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);
+  box-shadow:0 12px 26px rgba(71,57,142,.12);transition:background .35s,box-shadow .35s,color .35s}
+.tc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tc-tag{flex:none;height:26px;padding:0 12px;border-radius:13px;background:#fff;color:#6552FF;font-size:12.5px;font-weight:800;display:flex;align-items:center;transition:color .35s}
+.tc-time{flex:none;height:26px;padding:0 11px 0 9px;border-radius:13px;background:rgba(255,255,255,.28);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:background .35s}
+.tc-time .ring{width:15px;height:15px;border-radius:50%;border:1.8px solid rgba(255,255,255,.92);position:relative;flex:none;transition:border-color .35s}
+.tc-time .ring::after{content:"";position:absolute;left:5.6px;top:2.6px;width:1.8px;height:5.4px;background:rgba(255,255,255,.92);border-radius:1px;transition:background .35s}
+.tc-time .ring::before{content:"";position:absolute;left:5.6px;top:7px;width:4.2px;height:1.8px;background:rgba(255,255,255,.92);border-radius:1px;transform:rotate(28deg);transform-origin:left center;transition:background .35s}
+.tc-time b{font-size:12px;font-weight:700}
+.tc-title{margin-top:9px;font-size:16.5px;line-height:1.34;font-weight:800;letter-spacing:-.01em}
+.tc-sub{margin-top:3px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.84);transition:color .35s}
+.tc-foot{display:flex;justify-content:flex-end;margin-top:11px}
+.tc-go{height:38px;padding:0 22px;border:0;border-radius:19px;background:#fff;color:#4C35E8;font-size:14px;font-weight:800;letter-spacing:.02em;cursor:pointer;box-shadow:0 6px 14px rgba(16,10,72,.22);transition:transform .14s,opacity .2s}
+.tc-go:active{transform:scale(.96)}
+.tc-go:disabled{opacity:.55;cursor:default}
+/* 完成态：灰白 + 绿勾 +「过了」 */
+.tcard.done{background:#F2F1F7;box-shadow:0 6px 16px rgba(71,57,142,.08);color:#8B8898}
+.tcard.done .tc-tag{color:#A6A3B0}
+.tcard.done .tc-sub{color:#A6A3B0}
+.tcard.done .tc-time{background:rgba(23,23,42,.05)}
+.tcard.done .tc-time .ring{border-color:#C9C5D8}
+.tcard.done .tc-time .ring::after,.tcard.done .tc-time .ring::before{background:#C9C5D8}
+.tc-donechip{height:32px;padding:0 13px;border-radius:16px;background:#fff;color:#0B7B5C;font-size:12.5px;font-weight:800;display:flex;align-items:center;gap:6px}
+.tc-donechip svg{width:12px;height:12px;stroke:#0B7B5C;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* 加压验证：按住说话（样式跟卡片同一套） */
+.hold{display:flex;align-items:center;gap:11px;width:100%;border:0;padding:11px 13px;border-radius:20px;cursor:grab;
+  background:linear-gradient(168deg,#6E5BFF 0%,#6552FF 52%,#5C49F7 100%);box-shadow:0 12px 26px rgba(71,57,142,.12);
+  touch-action:none;-webkit-user-select:none;user-select:none;transition:opacity .3s,transform .3s,height .3s,padding .3s}
+.hold .mic{flex:none;width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.hold .mic svg{width:20px;height:20px;stroke:#4C35E8;fill:none;stroke-width:1.9;stroke-linecap:round}
+.hold .lbl{flex:1;text-align:left;color:#fff;font-size:14.5px;font-weight:800;letter-spacing:.01em}
+.hold .waves{display:none;flex:1;align-items:center;justify-content:space-between;height:20px}
+.hold .waves i{width:2.5px;border-radius:2px;background:rgba(255,255,255,.85);transform-origin:center;animation:hwv .7s ease-in-out infinite;animation-delay:calc(var(--i) * 45ms)}
+@keyframes hwv{50%{transform:scaleY(.4)}}
+.hold.holding{cursor:grabbing}
+.hold.holding .lbl{flex:0 0 auto}
+.hold.holding .waves{display:flex}
+.hold.holding .mic{animation:mpulse 1s ease-in-out infinite}
+@keyframes mpulse{50%{transform:scale(1.07);box-shadow:0 0 0 8px rgba(255,255,255,.16)}}
+.hold.retry .lbl{font-size:13px;color:#FFE9C9}
+.hold.gone{height:0!important;padding-top:0;padding-bottom:0;opacity:0;transform:translateY(6px);overflow:hidden;pointer-events:none;box-shadow:none}
+
+/* 输入中：三个点 */
+.dots{display:flex;align-items:center;gap:5px;padding:3px 2px}
+.dots i{width:7px;height:7px;border-radius:50%;background:#B9B5C6;animation:dot 1s ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes dot{40%{transform:translateY(-4px);background:#8F8AA8}}
+
+/* 收工卡：白纸质感，照今天页的收工卡 */
+.fin{border-radius:22px;padding:15px;background:linear-gradient(168deg,#FFFEFB 0%,#F6F1E7 100%);box-shadow:0 12px 26px rgba(71,57,142,.12);color:#17171A}
+.fin-h{font-size:16.5px;font-weight:800;letter-spacing:-.01em}
+.fin-h .cheer{color:#4C35E8;font-weight:900}
+.fin-panel{margin-top:10px;border-radius:18px;background:#fff;box-shadow:0 4px 14px rgba(71,57,142,.08);padding:12px 14px}
+.fin-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.fin-name{font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.fin-badge{font-size:12.5px;font-weight:800;color:#B9B5C6;letter-spacing:.02em;transition:color .3s}
+.fin-badge.on{color:#4C35E8}
+.fin-bars{display:flex;gap:7px;margin-top:10px}
+.fin-bars i{flex:1;height:8px;border-radius:4px;background:#EAE7F1;transition:background .3s,box-shadow .3s}
+.fin-bars i.on{background:linear-gradient(90deg,#7B68FF,#4C35E8);box-shadow:0 4px 10px rgba(101,82,255,.28)}
+.fin-bars i.pop{animation:barpop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes barpop{45%{transform:scaleY(1.5)}}
+.fin-next{margin-top:9px;font-size:12.5px;font-weight:600;color:#8B8B95}
+.fin-meta{margin-top:10px;font-size:11.5px;font-weight:700;color:#A6A3B0}
+.fin-slide{position:relative;margin-top:12px;height:48px;border-radius:24px;background:rgba(23,23,42,.055);overflow:hidden}
+.fin-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:24px;background:rgba(101,82,255,.14);transition:width .18s ease-out}
+.fin-slide-label{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#6552FF;letter-spacing:.02em;transition:opacity .15s,color .3s}
+.fin-chev{position:absolute;right:14px;top:19.5px;display:flex;gap:2.5px}
+.fin-chev i{width:6px;height:6px;border-right:2px solid rgba(101,82,255,.85);border-top:2px solid rgba(101,82,255,.85);transform:rotate(45deg);border-radius:1px}
+.fin-knob{position:absolute;left:3px;top:3px;width:42px;height:42px;border:0;border-radius:50%;background:#6552FF;color:#fff;box-shadow:0 5px 12px rgba(101,82,255,.35);display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;transition:transform .24s cubic-bezier(.22,1,.36,1)}
+.fin-knob svg{width:19px;height:19px}
+.fin-slide.grabbing{background:rgba(101,82,255,.12)}
+.fin-slide.grabbing .fin-knob,.fin-slide.grabbing .fin-fill,.fin-slide.grabbing .fin-slide-label{transition:none}
+.fin-slide.done{background:rgba(29,143,110,.12)}
+.fin-slide.done .fin-slide-label{color:#0B7B5C}
+.fin-slide.done .fin-chev{display:none}
+
+/* 系统胶囊（照小安页 .sys-pill）：收工卡出现后播报 */
+.sys{display:flex;justify-content:center;margin:16px 0 4px}
+.sys-pill{background:#e0f8f2;color:#1d8f6e;font-size:11.5px;font-weight:700;padding:7px 13px;border-radius:999px;box-shadow:0 4px 12px rgba(105,213,197,.25);line-height:1.45;text-align:center;max-width:100%}
+
+/* 底部输入区（照小安页 composer）：悬浮在导航上方 */
+.chat-bottom{position:absolute;left:0;right:0;bottom:0;padding-bottom:115px;background:transparent;z-index:30}
+.composer{background:transparent;padding:10px 16px 16px}
+.input-row{display:flex;align-items:center;gap:8px}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:0;flex:0 0 auto;background:#eeeaff;color:#4c35e8;box-shadow:0 6px 16px rgba(76,53,232,.18);cursor:pointer;transition:transform .12s}
+.icon-btn:active{transform:scale(.93)}
+.icon-btn svg{width:21px;height:21px}
+.field{flex:1;min-width:0;height:42px;border-radius:21px;background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.92);padding:0 15px;color:#252244;font-size:13.5px;outline:none;cursor:pointer;box-shadow:0 6px 16px rgba(20,30,60,.10);-webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);transition:border-color .15s,background .15s,box-shadow .15s}
+.field::placeholder{color:#a9a6bf}
+.field:disabled{background:rgba(238,236,248,.75);border-color:rgba(238,236,248,.9);box-shadow:none;cursor:default;color:#a9a6bf}
+
+/* 定场白：点「开始」后中央浮现一句，约 0.9 秒 */
+.cue{position:absolute;inset:0;z-index:190;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.cue.show{opacity:1}
+.cue span{background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:13px 22px;border-radius:999px;
+  box-shadow:0 16px 34px rgba(71,57,142,.16);font-size:15px;font-weight:800;color:#23203A;transform:translateY(6px);transition:transform .22s ease}
+.cue.show span{transform:none}
+
+/* 任务屏：覆盖整个手机屏（含导航），走个过场 */
+.task{position:absolute;inset:0;z-index:200;background:linear-gradient(180deg,#F7F6FA 0%,#EFEFF4 100%);opacity:0;pointer-events:none;transition:opacity .28s ease}
+.task.show{opacity:1;pointer-events:auto}
+.task-in{height:100%;display:grid;grid-template-rows:auto auto 1fr auto;gap:12px;padding:64px 20px 38px}
+.task-kicker{font-size:12px;font-weight:800;letter-spacing:.06em;color:#8B8B95}
+.task-title{margin:0;font-size:23px;line-height:1.24;font-weight:800;letter-spacing:-.01em}
+.task-ph{display:grid;align-content:center;gap:10px;min-height:0;overflow:hidden}
+.task-done{height:52px;border:0;border-radius:18px;background:linear-gradient(135deg,#6552FF,#4A3AE0);color:#fff;font-size:16px;font-weight:800;
+  letter-spacing:.02em;box-shadow:0 12px 24px rgba(76,53,232,.28);cursor:pointer;transition:transform .14s}
+.task-done:active{transform:translateY(1px) scale(.995)}
+/* 假内容占位 */
+.ph-card{background:#fff;border-radius:20px;padding:16px;box-shadow:0 10px 24px rgba(71,57,142,.08);display:grid;gap:10px}
+.ph-stem{height:14px;width:64%;border-radius:7px;background:#E7E4F2}
+.ph-opt{height:52px;border-radius:16px;border:2px solid #EAE7F4;background:#fff;display:flex;align-items:center;gap:10px;padding:0 14px}
+.ph-opt i{width:18px;height:18px;border-radius:50%;background:#EDEAFE;flex:none}
+.ph-opt b{height:11px;border-radius:6px;background:#E7E4F2;flex:1;max-width:62%}
+.ph-video{position:relative;border-radius:20px;background:linear-gradient(150deg,#2A2450,#1B1830);aspect-ratio:16/9;display:grid;place-items:center;box-shadow:0 14px 30px rgba(24,18,80,.22)}
+.ph-video .pp{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.75);display:grid;place-items:center}
+.ph-video .pp svg{width:20px;height:20px;fill:#fff}
+.ph-cap{height:12px;width:52%;border-radius:6px;background:#E7E4F2;justify-self:center}
+.ph-audio{display:flex;align-items:center;gap:10px;background:#fff;border-radius:18px;padding:12px 14px;box-shadow:0 10px 24px rgba(71,57,142,.08)}
+.ph-audio .ap{width:34px;height:34px;border-radius:50%;background:#EEEBFF;display:grid;place-items:center;flex:none}
+.ph-audio .ap svg{width:12px;height:12px;fill:#4C35E8}
+.ph-audio .aw{flex:1;display:flex;align-items:center;justify-content:space-between;height:20px}
+.ph-audio .aw i{width:2.5px;border-radius:2px;background:#D9D5EA}
+.ph-scene{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:16/9;background:#1B1830;box-shadow:0 14px 30px rgba(24,18,80,.22)}
+.ph-scene img{width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block}
+.ph-scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,14,60,0) 42%,rgba(20,14,60,.55))}
+.ph-plate{position:absolute;left:12px;bottom:12px;z-index:2;background:rgba(23,20,45,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  color:#fff;font-size:12.5px;font-weight:800;padding:6px 11px;border-radius:999px}
+.ph-bub{height:44px;border-radius:16px;background:#fff;box-shadow:0 10px 24px rgba(71,57,142,.08);display:flex;align-items:center;padding:0 14px}
+.ph-bub b{height:11px;width:58%;border-radius:6px;background:#E7E4F2}
+</style>
+<link rel="stylesheet" href="../shell.css">
+<style>
+  /* 公区壳适配（必须放在 shell.css 之后）：底色照小安页；输入区高度参与消息区让位 */
+  .shell-screen{--shell-bg:#F7F7FC;--composer-h:68px}
+</style>
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen">
+
+  <header class="tch" aria-label="老师">
+    <span class="tch-ava" aria-hidden="true">N</span>
+    <span class="tch-meta"><b>Nancy</b><i><span class="tdot"></span>在线 · 你的中文老师</i></span>
+    <span class="tch-more" aria-hidden="true">⋯</span>
+  </header>
+
+  <main class="shell-main" id="main">
+    <div class="chat" id="chat">
+      <p class="day-sep">今天</p>
+    </div>
+  </main>
+
+  <div class="chat-bottom">
+    <footer class="composer" aria-label="输入区">
+      <div class="input-row">
+        <button class="icon-btn" id="micBtn" type="button" aria-label="按住说话（演示）">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+        </button>
+        <input class="field" id="field" type="text" placeholder="问 Nancy…" readonly aria-label="问 Nancy（演示）">
+      </div>
+    </footer>
+  </div>
+
+  <div class="cue" id="cue" aria-hidden="true"><span>去吧，我在这儿等你。</span></div>
+
+  <div class="task" id="task" aria-hidden="true">
+    <div class="task-in">
+      <p class="task-kicker" id="taskKicker"></p>
+      <h2 class="task-title" id="taskTitle"></h2>
+      <div class="task-ph" id="taskPh"></div>
+      <button class="task-done" id="taskDone" type="button">做完了</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="../shell.js"></script>
+<script>
+(function(){
+  /* ============ 演示数据（数字取自 review/文案表-演示版.md；台词为 v2 定稿） ============ */
+  var CARDS = [
+    { tag:'复习', title:'把清单整理一下，发给老陈', sub:'昨天学的说法 · 快问快答 3 题', time:'约 2 分钟' },
+    { tag:'新学', title:'听懂工作安排', sub:'谁派的活 · 要做什么 · 什么时候要 · 交给谁', time:'约 8 分钟' },
+    { tag:'练习', title:'听懂“先、马上、一会儿”', sub:'谁先谁后，听出来 · 5 题', time:'约 4 分钟' },
+    { tag:'实战', title:'主管派活，你来接', sub:'跟虚拟主管过一遍', time:'约 5 分钟' }
+  ];
+  var SCREENS = [
+    { kicker:'复习 · 快问快答', title:'把清单整理一下，发给老陈', kind:'quiz' },
+    { kicker:'新学 · 主管派活', title:'听懂工作安排', kind:'video' },
+    { kicker:'练习 · 先、马上、一会儿', title:'听懂“先、马上、一会儿”', kind:'listen' },
+    { kicker:'实战 · 主管派活你来接', title:'主管派活，你来接', kind:'scene' }
+  ];
+  var SCRIPT = [
+    { say:'下午好 Alia。今天第 15 天，离入职还有 43 天。今天把『听懂工作安排』拿下，你的 10 项能力就准备好 3 项了。先接住昨天，我们开始。', sec:'00:13', beat:900 },
+    { say:'昨天那句『把清单整理一下，发给老陈』，今天再过一遍就翻篇。', sec:'00:06', card:0 },
+    { say:'利落。『一会儿』那题你停了半拍，我记下了，等下练习里我盯着它。', sec:'00:07', done:0 },
+    { say:'来，今天的正题。主管派活，听起来简单，其实三句话里：两句在交代时间，一句在交代人。漏一样，活就干错。去听陈主管怎么讲。', sec:'00:12', card:1 },
+    { say:'四个点你抓住了：谁派的活、要做什么、什么时候要、交给谁。接下来看真语速里你接不接得住。', sec:'00:09', done:1, card:2 },
+    { say:'5 题对 4，又是『一会儿』。不是词不认识，是语速一快你就丢。', sec:'00:06' },
+    { say:'不过说实话，我不确定你是听出来的，还是猜出来的。不用选项，跟我说一遍：『好的，我一会儿交给您。』', sec:'00:10', hold:true },
+    { say:'停了半拍，但抓住了。这回算你会了。', sec:'00:04', done:2 },
+    { say:'现在去会会陈主管。这回他真的给你派活，用你刚学的：抓时间和人，不漏。', sec:'00:08', card:3 },
+    { say:'过了。你听懂了『周五前交给小张』，还主动回了一句『好的，我今天先做』。这个本事，入职第一天就能用。', sec:'00:10', done:3 },
+    { say:'还有，明天我给你调了一道：时间词连着两天卡你，新学先停一次，补一小节『没听懂就问』。别慌，来得及。', sec:'00:10', fin:true }
+  ];
+
+  var WAVE = [7,12,17,9,20,13,8,16,11,19,7,14,18,10,15,8,13,20,9,16,12,7];
+  var PLAY_IC = '<svg viewBox="0 0 24 24" class="ic-play" aria-hidden="true"><path d="M8.4 5.6v12.8L19 12Z"/></svg><svg viewBox="0 0 24 24" class="ic-pause" aria-hidden="true"><rect x="7" y="5.8" width="3.4" height="12.4" rx="1.2"/><rect x="13.6" y="5.8" width="3.4" height="12.4" rx="1.2"/></svg>';
+  var PLAY_TRI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 5.6v12.8L19 12Z"/></svg>';
+  var CHECK_SM = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 12.6l4.8 4.8L19.6 7.2"/></svg>';
+  var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.6 12h14.2"/><path d="M13.6 6.8 18.8 12l-5.2 5.2"/></svg>';
+  var MIC_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.6" width="6" height="10.4" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.8v2.6"/></svg>';
+
+  var main = document.getElementById('main');
+  var chat = document.getElementById('chat');
+  var cue = document.getElementById('cue');
+  var taskEl = document.getElementById('task');
+  var taskKicker = document.getElementById('taskKicker');
+  var taskTitle = document.getElementById('taskTitle');
+  var taskPh = document.getElementById('taskPh');
+  var taskDoneBtn = document.getElementById('taskDone');
+
+  var busy = false;
+  var typingEl = null;
+  var pendingNext = null;
+  var cardEls = [];
+
+  function scrollDown(){
+    requestAnimationFrame(function(){ main.scrollTo({ top: main.scrollHeight, behavior:'smooth' }); });
+  }
+
+  function wavesMarkup(n, step){
+    var out = '';
+    for (var i = 0; i < n; i++) out += '<i style="height:' + WAVE[(i * (step || 1)) % WAVE.length] + 'px;--i:' + i + '"></i>';
+    return out;
+  }
+
+  function voiceBar(sec, seed){
+    return '<button class="vbar" type="button" aria-label="播放语音（演示）">' +
+      '<span class="vplay">' + PLAY_IC + '</span>' +
+      '<span class="vwaves">' + wavesMarkup(WAVE.length, seed % 5 + 1) + '</span>' +
+      '<span class="vsec">' + sec + '</span>' +
+      '</button>';
+  }
+
+  function taskCardEl(c){
+    var el = document.createElement('div');
+    el.className = 'tcard';
+    el.innerHTML =
+      '<div class="tc-top">' +
+        '<span class="tc-tag">' + c.tag + '</span>' +
+        '<span class="tc-time"><span class="ring"></span><b>' + c.time + '</b></span>' +
+      '</div>' +
+      '<h3 class="tc-title">' + c.title + '</h3>' +
+      '<p class="tc-sub">' + c.sub + '</p>' +
+      '<div class="tc-foot"><button class="tc-go" type="button">开始</button></div>';
+    return el;
+  }
+
+  function finCard(){
+    var el = document.createElement('div');
+    el.className = 'fin';
+    var bars = '';
+    for (var i = 0; i < 5; i++) bars += (i < 4 ? '<i class="on"></i>' : '<i></i>');
+    el.innerHTML =
+      '<h2 class="fin-h"><span class="cheer">真棒！</span>今天 4 件事 · 全部完成</h2>' +
+      '<div class="fin-panel">' +
+        '<div class="fin-row"><span class="fin-name">听懂工作安排</span><span class="fin-badge">4 / 5</span></div>' +
+        '<div class="fin-bars">' + bars + '</div>' +
+        '<p class="fin-next">明天开始：没听懂就问</p>' +
+      '</div>' +
+      '<p class="fin-meta">复习 · 新学 · 练习 · 实战 ｜ 连续 15 天 · 明天见</p>' +
+      '<div class="fin-slide">' +
+        '<span class="fin-fill"></span>' +
+        '<span class="fin-slide-label">滑动完成</span>' +
+        '<span class="fin-chev"><i></i><i></i><i></i></span>' +
+        '<button class="fin-knob" type="button" aria-label="滑动完成">' + ARROW + '</button>' +
+      '</div>';
+    return el;
+  }
+
+  function lightFifth(f){
+    f.querySelectorAll('.fin-bars i')[4].classList.add('on','pop');
+    var badge = f.querySelector('.fin-badge');
+    badge.textContent = '5 / 5';
+    badge.classList.add('on');
+  }
+
+  function bindFinSlide(f){
+    var slide = f.querySelector('.fin-slide');
+    var knob = slide.querySelector('.fin-knob');
+    var fill = slide.querySelector('.fin-fill');
+    var label = slide.querySelector('.fin-slide-label');
+    var x0 = 0, x = 0, maxX = 1, dragging = false, doneFlag = false;
+    function apply(px){
+      x = px;
+      knob.style.transform = 'translateX(' + px + 'px)';
+      fill.style.width = (px + 48) + 'px';
+      label.style.opacity = String(Math.max(0, 1 - px / Math.max(1, maxX * 0.55)));
+    }
+    function finish(){
+      if (!doneFlag){ doneFlag = true; slide.classList.add('done'); label.textContent = '已收工 · 明天见'; }
+      label.style.opacity = '1';
+    }
+    knob.addEventListener('pointerdown', function(e){
+      e.stopPropagation(); e.preventDefault();
+      dragging = true; maxX = slide.clientWidth - 48; x0 = e.clientX;
+      slide.classList.add('grabbing');
+      try { knob.setPointerCapture(e.pointerId); } catch(err){}
+    });
+    knob.addEventListener('pointermove', function(e){
+      if (!dragging) return;
+      var px = e.clientX - x0;
+      if (px < 0) px = 0;
+      if (px > maxX) px = maxX;
+      apply(px);
+    });
+    function up(){
+      if (!dragging) return;
+      dragging = false;
+      slide.classList.remove('grabbing');
+      if (x >= maxX * 0.9) finish();
+      apply(0);
+    }
+    knob.addEventListener('pointerup', up);
+    knob.addEventListener('pointercancel', up);
+  }
+
+  function markDone(idx){
+    var el = cardEls[idx];
+    if (!el || el.classList.contains('done')) return;
+    el.classList.add('done');
+    el.querySelector('.tc-foot').innerHTML = '<span class="tc-donechip">' + CHECK_SM + '过了</span>';
+  }
+
+  /* ---------- 任务屏（四个过场，不接真实题目） ---------- */
+  function placeholder(kind){
+    if (kind === 'quiz'){
+      return '<div class="ph-card"><div class="ph-stem"></div>' +
+        '<div class="ph-opt"><i></i><b></b></div><div class="ph-opt"><i></i><b></b></div><div class="ph-opt"><i></i><b></b></div></div>';
+    }
+    if (kind === 'video'){
+      return '<div class="ph-video"><span class="pp">' + PLAY_TRI + '</span></div><div class="ph-cap"></div>';
+    }
+    if (kind === 'listen'){
+      return '<div class="ph-audio"><span class="ap">' + PLAY_TRI + '</span><span class="aw">' + wavesMarkup(20, 3) + '</span></div>' +
+        '<div class="ph-opt"><i></i><b></b></div><div class="ph-opt"><i></i><b></b></div><div class="ph-opt"><i></i><b></b></div>';
+    }
+    return '<div class="ph-scene"><img src="../assets/supervisor-chen.png" alt=""><span class="ph-plate">陈主管 · 仓库部</span></div>' +
+      '<div class="ph-bub"><b></b></div>';
+  }
+  function openTask(idx){
+    var s = SCREENS[idx];
+    taskKicker.textContent = s.kicker;
+    taskTitle.textContent = s.title;
+    taskPh.innerHTML = placeholder(s.kind);
+    taskEl.classList.add('show');
+    taskEl.setAttribute('aria-hidden', 'false');
+  }
+  taskDoneBtn.addEventListener('click', function(){
+    taskEl.classList.remove('show');
+    taskEl.setAttribute('aria-hidden', 'true');
+    setTimeout(function(){
+      busy = false;
+      if (pendingNext !== null){ var n = pendingNext; pendingNext = null; runStep(n); }
+    }, 340);
+  });
+
+  /* 卡：点「开始」→ 定场白 → 任务屏 */
+  function startCard(idx, next){
+    if (busy) return;
+    busy = true;
+    var el = cardEls[idx];
+    if (el){ var b = el.querySelector('.tc-go'); if (b) b.disabled = true; }
+    pendingNext = next;
+    cue.classList.add('show');
+    setTimeout(function(){ cue.classList.remove('show'); }, 720);
+    setTimeout(function(){ openTask(idx); }, 980);
+  }
+
+  /* 加压验证：按住说话 */
+  function makeHold(next){
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'hold';
+    el.innerHTML = '<span class="mic">' + MIC_IC + '</span><span class="lbl">按住说话</span><span class="waves">' + wavesMarkup(16, 2) + '</span>';
+    var t0 = 0;
+    el.addEventListener('pointerdown', function(e){
+      e.preventDefault(); e.stopPropagation();
+      el.classList.add('holding');
+      el.querySelector('.lbl').textContent = '她在听…';
+      t0 = Date.now();
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    function up(){
+      if (!el.classList.contains('holding')) return;
+      el.classList.remove('holding');
+      var lbl = el.querySelector('.lbl');
+      if (Date.now() - t0 >= 800){
+        el.style.height = el.offsetHeight + 'px';
+        void el.offsetWidth;
+        el.classList.add('gone');
+        setTimeout(function(){ el.remove(); }, 320);
+        myVoiceRow();
+        runStep(next);
+      } else {
+        el.classList.add('retry');
+        lbl.textContent = '别急，太快了，再来一次。';
+        setTimeout(function(){ el.classList.remove('retry'); lbl.textContent = '按住说话'; }, 1700);
+      }
+    }
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+    return el;
+  }
+
+  function showTyping(){
+    typingEl = document.createElement('div');
+    typingEl.className = 'msg';
+    typingEl.innerHTML = '<span class="ava" aria-hidden="true">N</span><div class="mcol"><div class="bubble dots"><i></i><i></i><i></i></div></div>';
+    chat.appendChild(typingEl);
+    scrollDown();
+  }
+  function hideTyping(){ if (typingEl){ typingEl.remove(); typingEl = null; } }
+
+  function appendScriptMsg(i){
+    var s = SCRIPT[i];
+    var row = document.createElement('div');
+    row.className = 'msg';
+    row.innerHTML = '<span class="ava" aria-hidden="true">N</span><div class="mcol">' +
+      '<div class="bubble">' + voiceBar(s.sec, i) + '<p class="ptext">' + s.say + '</p></div>' +
+      '</div>';
+    chat.appendChild(row);
+    var mcol = row.querySelector('.mcol');
+    if (s.done !== undefined) markDone(s.done);
+    if (s.card !== undefined){
+      var el = taskCardEl(CARDS[s.card]);
+      cardEls[s.card] = el;
+      el.querySelector('.tc-go').addEventListener('click', function(){ startCard(s.card, i + 1); });
+      mcol.appendChild(el);
+    }
+    if (s.hold) mcol.appendChild(makeHold(i + 1));
+    if (s.fin){
+      var f = finCard();
+      mcol.appendChild(f);
+      bindFinSlide(f);
+      setTimeout(function(){ lightFifth(f); }, 800);
+      setTimeout(function(){
+        var sys = document.createElement('div');
+        sys.className = 'sys';
+        sys.innerHTML = '<div class="sys-pill">🔥 连续 15 天 ｜ 听懂工作安排 5/5 · 明天见</div>';
+        chat.appendChild(sys);
+        scrollDown();
+      }, 1250);
+    }
+    if (s.card === undefined && !s.hold){
+      setTimeout(function(){ runStep(i + 1); }, s.beat || 620);
+    }
+    scrollDown();
+  }
+
+  function runStep(i){
+    if (i >= SCRIPT.length) return;
+    if (i === 0){ setTimeout(function(){ appendScriptMsg(0); }, 420); return; }
+    showTyping();
+    setTimeout(function(){ hideTyping(); appendScriptMsg(i); }, 720);
+  }
+
+  /* 语音条：点击播放动画（约 1.6 秒后自动停） */
+  chat.addEventListener('click', function(e){
+    var vb = e.target.closest ? e.target.closest('.vbar') : null;
+    if (!vb) return;
+    var on = vb.classList.toggle('playing');
+    clearTimeout(vb._pt);
+    if (on) vb._pt = setTimeout(function(){ vb.classList.remove('playing'); }, 1600);
+  });
+
+  /* 我的话（紫色气泡，右对齐） */
+  function myRow(html){
+    var row = document.createElement('div');
+    row.className = 'msg me';
+    row.innerHTML = '<div class="mcol"><div class="bubble me-bubble">' + html + '</div></div>';
+    chat.appendChild(row);
+    scrollDown();
+    return row;
+  }
+  /* 她的话（白气泡，不带语音条） */
+  function herRow(text){
+    var row = document.createElement('div');
+    row.className = 'msg';
+    row.innerHTML = '<span class="ava" aria-hidden="true">N</span><div class="mcol"><div class="bubble"><p class="ptext">' + text + '</p></div></div>';
+    chat.appendChild(row);
+    scrollDown();
+    return row;
+  }
+  /* 我的语音气泡：按住说话成功后出现在流里 */
+  function myVoiceRow(){
+    return myRow('<button class="vbar" type="button" aria-label="你刚才说的（演示）">' +
+      '<span class="vplay">' + PLAY_IC + '</span>' +
+      '<span class="vwaves">' + wavesMarkup(16, 2) + '</span>' +
+      '<span class="vsec">0:03</span></button>' +
+      '<p class="ptext">好的，我一会儿交给您。</p>');
+  }
+
+  /* 底部输入区：点「问 Nancy…」在流里插一问一答（整场只插一次，插过置灰） */
+  var field = document.getElementById('field');
+  var askedOnce = false;
+  field.addEventListener('click', function(){
+    if (askedOnce) return;
+    askedOnce = true;
+    field.disabled = true;
+    myRow('<p class="ptext">老师，「一会儿」是多久？</p>');
+    var dots = document.createElement('div');
+    dots.className = 'msg';
+    dots.innerHTML = '<span class="ava" aria-hidden="true">N</span><div class="mcol"><div class="bubble dots"><i></i><i></i><i></i></div></div>';
+    chat.appendChild(dots);
+    scrollDown();
+    setTimeout(function(){
+      dots.remove();
+      herRow('几分钟到半小时，看语气。回我们刚才那步。');
+    }, 900);
+  });
+
+  /* 登台：名牌先落，她再开口 */
+  runStep(0);
+})();
+</script>
+</body>
+</html>

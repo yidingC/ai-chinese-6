@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 课堂页 v2（试验）</title>
+<style>
+/* ---------- 课堂页 v2（试验稿）：数字人开讲 —— 场景在上 / 消息在中 / 输入下移 ----------
+   独立试验页：不接主线、不引外部资源；视觉语言沿用 teacher-home v3 / xiaolan。
+   v1（teacher-class.html）保留不动。立绘为真图 ../assets/nancy-teacher-bust.png，底部出血。 */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#F7F7FC}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:#252244;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{display:block}
+
+/* ================= 场景区（通栏满宽，从状态栏下直到消息区；底图层独立，方便以后换场景图） ================= */
+.scene{position:absolute;left:0;right:0;top:var(--shell-safe-top);height:var(--scene-h);overflow:hidden;z-index:20;
+  box-shadow:0 14px 30px rgba(38,30,90,.16);transition:height .5s cubic-bezier(.3,.9,.3,1)}
+.scene-main{position:absolute;inset:0;transition:opacity .3s ease .18s}
+.scene-collapsed .scene-main{opacity:0;pointer-events:none;transition:opacity .2s ease}
+
+/* 底图层：深色板质感（以后换场景图只动这一层） */
+.scene-bg{position:absolute;inset:0;
+  background:
+    radial-gradient(180px 80px at 18% 88%, rgba(255,255,255,.055), rgba(255,255,255,0) 70%),
+    radial-gradient(220px 90px at 86% 12%, rgba(255,255,255,.045), rgba(255,255,255,0) 72%),
+    linear-gradient(162deg,#323850 0%,#282D40 55%,#232737 100%)}
+.scene-bg::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 92% at 50% 28%, rgba(0,0,0,0) 52%, rgba(0,0,0,.30) 100%)}
+
+/* 板书 3 条（左侧；粉笔书写 + 划掉机制同 v1） */
+.chalk{position:absolute;left:20px;top:52px;list-style:none;display:grid;gap:17px;z-index:2}
+.chalk li{display:flex;align-items:center;gap:12px}
+.pin{flex:none;width:10px;height:10px;border-radius:50%;border:2.5px solid rgba(255,255,255,.78);box-shadow:0 0 8px rgba(255,255,255,.18)}
+.ink{display:inline-block;white-space:nowrap;clip-path:inset(0 100% 0 0);color:rgba(255,255,255,.94);
+  text-shadow:0 0 12px rgba(255,255,255,.14)}
+.ink.on{animation:chalkWrite .85s cubic-bezier(.42,.05,.2,1) both}
+@keyframes chalkWrite{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.chalk .ink{font-size:18px;font-weight:800;letter-spacing:.03em;line-height:1.2}
+.wk{position:relative;display:inline-block}
+.strike{position:absolute;left:-3px;right:-8px;top:50%;height:2.5px;margin-top:-1.5px;border-radius:2px;background:rgba(255,255,255,.88);
+  transform:rotate(-1.6deg) scaleX(0);transform-origin:left center;transition:transform .5s cubic-bezier(.35,.06,.2,1);pointer-events:none}
+.chalk li.done .strike{transform:rotate(-1.6deg) scaleX(1)}
+
+/* 数字人立绘：右侧、底部锚定、可出血；只加轻微投影 + 极轻呼吸 */
+.nancy{position:absolute;right:-8px;bottom:0;height:88%;z-index:1;pointer-events:none;
+  -webkit-user-drag:none;user-select:none;
+  filter:drop-shadow(0 14px 26px rgba(8,5,36,.42));
+  animation:breath 6s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes breath{0%,100%{transform:scale(1)}50%{transform:scale(1.015)}}
+
+/* 悬浮胶囊：左上（小头像 + Nancy · 在线 + 绿点）、右上（文字记录 + 收起） */
+.pill{position:absolute;top:12px;z-index:3;height:30px;display:flex;align-items:center;border-radius:15px;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);color:rgba(255,255,255,.95);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:11.5px;font-weight:700;letter-spacing:.01em}
+.pill-l{left:12px;padding:0 11px 0 6px;gap:7px}
+.mini-ava{width:20px;height:20px;border-radius:7px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:10px;font-weight:800;display:grid;place-items:center;box-shadow:0 3px 8px rgba(76,53,232,.35)}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:none}
+.pill-r{right:12px;display:flex;gap:8px;background:none;border:0;padding:0;height:auto;border-radius:0;backdrop-filter:none;-webkit-backdrop-filter:none}
+.pill-btn{height:30px;display:flex;align-items:center;gap:6px;padding:0 11px;border-radius:15px;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);color:rgba(255,255,255,.95);
+  font-size:11.5px;font-weight:700;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:background .15s,transform .12s}
+.pill-btn:active{transform:scale(.95);background:rgba(255,255,255,.26)}
+.pill-btn.ic{width:30px;padding:0;justify-content:center}
+.pill-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+
+/* 收起后的 64px 小条 */
+.scene-mini{position:absolute;left:0;right:0;top:0;height:64px;z-index:4;display:flex;align-items:center;gap:9px;
+  padding:0 16px;opacity:0;pointer-events:none;transition:opacity .26s ease}
+.scene-collapsed .scene-mini{opacity:1;pointer-events:auto;transition:opacity .3s ease .16s}
+.scene-mini .mini-ava{width:28px;height:28px;border-radius:9px;font-size:12px}
+.scene-mini b{font-size:14px;font-weight:800;color:#fff}
+.scene-mini .on-txt{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.78)}
+.scene-mini .grow{flex:1}
+.exp-btn{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.16);color:rgba(255,255,255,.95);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:background .15s,transform .12s}
+.exp-btn:active{transform:scale(.93);background:rgba(255,255,255,.26)}
+.exp-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+
+/* ================= 消息区（中部，可滚动；收起时顺势变高） ================= */
+.msgs{position:absolute;left:0;right:0;top:calc(var(--shell-safe-top) + var(--scene-h));bottom:171px;z-index:10;
+  overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:10px 16px 10px;
+  transition:top .5s cubic-bezier(.3,.9,.3,1)}
+.msgs::-webkit-scrollbar{display:none}
+.msg{display:flex;align-items:flex-start;gap:10px;margin-top:14px;animation:rise .34s cubic-bezier(.22,.61,.36,1) both}
+.msg:first-child{margin-top:2px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ava{flex:none;width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:14px;font-weight:800;display:grid;place-items:center;box-shadow:0 6px 12px rgba(101,82,255,.25)}
+.bubble{width:fit-content;max-width:288px;background:#fff;border-radius:16px;border-top-left-radius:6px;
+  padding:10px 13px;box-shadow:0 6px 18px rgba(71,57,142,.08);font-size:14.5px;line-height:1.56;font-weight:600;color:#2A2740}
+.msg.mine{justify-content:flex-end}
+.bubble.me{background:linear-gradient(135deg,#6552ff,#4c35e8);color:#fff;border-top-left-radius:16px;border-top-right-radius:6px;
+  box-shadow:0 8px 18px rgba(101,82,255,.3)}
+
+/* 题卡：她发到消息流里的白卡（再听一遍 + 题干两行 + 3 个选项） */
+.qcard{width:288px;background:#fff;border-radius:16px;border-top-left-radius:6px;padding:10px 12px 10px;
+  box-shadow:0 6px 18px rgba(71,57,142,.08)}
+.replay{height:28px;padding:0 12px;border-radius:15px;border:1px solid rgba(101,82,255,.2);background:#fff;
+  color:#4c35e8;font-size:11.5px;font-weight:800;display:inline-flex;align-items:center;gap:6px;
+  box-shadow:0 4px 12px rgba(20,30,60,.06);transition:transform .12s,background .15s}
+.replay:active{transform:scale(.95);background:#f6f4ff}
+.replay svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.q-quote{display:flex;align-items:center;gap:8px;margin-top:8px;color:#2A2740;font-size:14.5px;font-weight:700}
+.q-quote svg{width:15px;height:15px;stroke:#4c35e8;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.q-quote.qp{animation:qpulse .66s ease}
+@keyframes qpulse{0%{opacity:1}20%{opacity:.32}42%{opacity:1}62%{opacity:.32}82%{opacity:1}100%{opacity:1}}
+.q-ask{margin-top:3px;font-size:16px;font-weight:800;color:#252244}
+.qopts{display:grid;gap:6px;margin-top:9px}
+.opt{height:37px;border-radius:19px;border:1px solid #ECE9F7;background:#fff;
+  font-size:13.5px;font-weight:700;color:#252244;box-shadow:0 2px 8px rgba(20,30,60,.05);
+  transition:transform .12s,background .2s,border-color .2s,color .2s}
+.opt:active{transform:scale(.98)}
+.opt.ok{background:#E6F7EF;border-color:#9FE0C6;color:#0B7B5C}
+.opt.bad{background:#FDECEF;border-color:#F3BEC9;color:#B3405A}
+.qcard.done .opt{pointer-events:none}
+
+/* ================= 输入行（固定贴导航上方；全程常驻） ================= */
+.composer{position:absolute;left:0;right:0;bottom:121px;z-index:30;display:flex;align-items:center;gap:8px;padding:0 16px}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:0;flex:0 0 auto;
+  background:#eeeaff;color:#4c35e8;box-shadow:0 6px 16px rgba(76,53,232,.18);transition:transform .12s}
+.icon-btn:active{transform:scale(.93)}
+.icon-btn svg{width:21px;height:21px}
+.field{flex:1;min-width:0;height:42px;border-radius:21px;background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.92);
+  padding:0 15px;color:#252244;font-size:13.5px;outline:none;box-shadow:0 6px 16px rgba(20,30,60,.10);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);transition:border-color .15s,background .15s,box-shadow .15s}
+.field::placeholder{color:#a9a6bf}
+.field:focus{border-color:#cfcaff;background:#fff}
+
+/* dev 控件：左下角小悬浮，明显标注，不进正式 UI */
+.dev{position:absolute;left:6px;bottom:8px;z-index:130;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 4px;border-radius:15px;background:rgba(255,255,255,.86);border:1.5px dashed rgba(120,112,160,.5);
+  box-shadow:0 8px 20px rgba(20,30,60,.12)}
+.dev .tag{font-size:8px;font-weight:800;letter-spacing:.08em;color:#8B8898}
+.dev button{width:32px;height:23px;border-radius:9px;border:1px solid rgba(120,112,160,.35);background:#fff;color:#4C35E8;
+  font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:transform .12s,background .15s}
+.dev button:active{transform:scale(.93)}
+.dev button.on{background:#6552FF;border-color:#6552FF;color:#fff}
+.dev .dev-play{height:28px;flex-direction:column;gap:1px;line-height:1}
+.dev .dev-play i{font-style:normal;font-size:7px;font-weight:700;letter-spacing:.02em}
+</style>
+<link rel="stylesheet" href="../shell.css">
+<style>
+  /* 公区壳适配（必须放在 shell.css 之后） */
+  .shell-screen{--shell-bg:#F7F7FC;--scene-h:380px}
+  .shell-screen.scene-collapsed{--scene-h:64px}
+</style>
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen" id="root">
+
+  <section class="scene" aria-label="讲台场景">
+    <div class="scene-bg" aria-hidden="true"></div>
+
+    <div class="scene-main" id="sceneMain">
+      <ul class="chalk" id="chalk">
+        <li><i class="pin"></i><span class="wk"><span class="ink">周五前</span><b class="strike"></b></span></li>
+        <li><i class="pin"></i><span class="wk"><span class="ink">交给小张</span><b class="strike"></b></span></li>
+        <li><i class="pin"></i><span class="wk"><span class="ink">好的，我今天先做</span><b class="strike"></b></span></li>
+      </ul>
+
+      <img class="nancy" src="../assets/nancy-teacher-bust.png" alt="" draggable="false">
+
+      <div class="pill pill-l"><span class="mini-ava" aria-hidden="true">N</span>Nancy · 在线<i class="tdot" aria-hidden="true"></i></div>
+      <div class="pill pill-r">
+        <button class="pill-btn" id="notesBtn" type="button" aria-label="文字记录（演示）">文字记录</button>
+        <button class="pill-btn ic" id="collapseBtn" type="button" aria-label="收起数字人" title="收起">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 9.5 12 14l4.5-4.5"/><path d="M7.5 14.5 12 10l4.5 4.5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="scene-mini" id="sceneMini">
+      <span class="mini-ava" aria-hidden="true">N</span><b>Nancy</b><span class="on-txt">· 在线</span><i class="tdot" aria-hidden="true"></i>
+      <span class="grow"></span>
+      <button class="exp-btn" id="expandBtn" type="button" aria-label="展开数字人" title="展开">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 14 12 9.5 16.5 14"/><path d="M7.5 10 12 14.5 16.5 10"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <div class="msgs" id="msgs" aria-live="polite"></div>
+
+  <div class="composer">
+    <button class="icon-btn" id="micBtn" type="button" aria-label="按住说话（演示）">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+    </button>
+    <input class="field" id="field" type="text" placeholder="问 Nancy…" aria-label="问 Nancy">
+  </div>
+
+  <div class="dev" id="dev" aria-label="开发开关">
+    <span class="tag">DEV</span>
+    <button id="devA" type="button" title="切到课堂态 A">A</button>
+    <button id="devB" type="button" title="切到出题态 B">B</button>
+    <button class="dev-play" id="devPlay" type="button" title="播放整段（自动跑完整循环）" aria-label="播放整段">▶<i>整段</i></button>
+  </div>
+
+</div>
+</div>
+<script src="../shell.js"></script>
+<script>
+(function(){
+  /* ============ 台词（沿用 v1，一字不动；数字标准 = review/文案表-演示版.md） ============ */
+  var L = {
+    open1:'来，接着昨天。今天就三个词块，钉黑板上。',
+    open2:'听懂『周五前交给小张』，你入职第一天就能用。',
+    wrong:'差不多。但『一会儿』不等于『周五前』，再来。',
+    end:'今天就钉到这儿。',
+    typed:'好问题，我记下了。先接着往下讲。'
+  };
+  /* 三轮：题干两行 → 三个选项（正确在前）→ 她的评价 → 回课堂划掉哪条板书 */
+  var RS = [
+    { quote:'『周五前交给小张。』', ask:'你回哪句？',
+      opts:[['好的，我今天先做。',1],['好的，我一会儿交给您。',0],['好的，我周五再来。',0]],
+      right:'对。就回这句，像一个已经上过班的人。', strike:2 },
+    { quote:'『周五前交给小张。』', ask:'什么时候交？',
+      opts:[['周五前',1],['一会儿',0],['不知道',0]],
+      right:'对，周五前。时间先钉住，活就不会拖。', strike:0 },
+    { quote:'『周五前交给小张。』', ask:'交给谁？',
+      opts:[['小张',1],['老陈',0],['主管',0]],
+      right:'交给小张。三块，全钉住了。', strike:1 }
+  ];
+
+  var root = document.getElementById('root');
+  var msgs = document.getElementById('msgs');
+  var chalkLis = document.querySelectorAll('#chalk li');
+  var field = document.getElementById('field');
+  var devA = document.getElementById('devA');
+  var devB = document.getElementById('devB');
+  var devPlay = document.getElementById('devPlay');
+
+  var activeCard = null, cur = 0, locked = false, autoMode = false, completed = false, token = 0;
+
+  function after(ms, fn){ var t = token; setTimeout(function(){ if (t === token) fn(); }, ms); }
+  function cancel(){ token++; }
+  function scrollBottom(){ try { msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }); } catch(e){ msgs.scrollTop = msgs.scrollHeight; } }
+  function setDev(a){ devA.classList.toggle('on', !!a); devB.classList.toggle('on', !a); }
+  function chalkIn(el){ el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
+  function okIndex(r){ for (var i = 0; i < r.opts.length; i++){ if (r.opts[i][1]) return i; } return 0; }
+
+  function addHer(text){
+    var d = document.createElement('div'); d.className = 'msg';
+    var a = document.createElement('span'); a.className = 'ava'; a.textContent = 'N';
+    var b = document.createElement('div'); b.className = 'bubble'; b.textContent = text;
+    d.appendChild(a); d.appendChild(b); msgs.appendChild(d); scrollBottom(); return d;
+  }
+  function addMine(text){
+    var d = document.createElement('div'); d.className = 'msg mine';
+    var b = document.createElement('div'); b.className = 'bubble me'; b.textContent = text;
+    d.appendChild(b); msgs.appendChild(d); scrollBottom(); return d;
+  }
+  function addCard(r){
+    var d = document.createElement('div'); d.className = 'msg';
+    var a = document.createElement('span'); a.className = 'ava'; a.textContent = 'N';
+    var card = document.createElement('div'); card.className = 'qcard';
+    card.innerHTML =
+      '<button class="replay" type="button">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.6v4.8h3.2L12 18.4V5.6L7.2 9.6Z"/><path d="M15.4 9.2a4 4 0 0 1 0 5.6"/><path d="M17.8 6.8a7.4 7.4 0 0 1 0 10.4"/></svg>再听一遍</button>' +
+      '<div class="q-quote"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.6v4.8h3.2L12 18.4V5.6L7.2 9.6Z"/><path d="M15.4 9.2a4 4 0 0 1 0 5.6"/><path d="M17.8 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span class="qtxt"></span></div>' +
+      '<div class="q-ask"></div>' +
+      '<div class="qopts"></div>';
+    card.querySelector('.qtxt').textContent = r.quote;
+    card.querySelector('.q-ask').textContent = r.ask;
+    var box = card.querySelector('.qopts');
+    r.opts.forEach(function(o, k){
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.textContent = o[0];
+      b.addEventListener('click', function(){ pick(k); });
+      box.appendChild(b);
+    });
+    card.querySelector('.replay').addEventListener('click', function(){
+      var q = card.querySelector('.q-quote'); q.classList.remove('qp'); void q.offsetWidth; q.classList.add('qp');
+    });
+    d.appendChild(a); d.appendChild(card); msgs.appendChild(d); scrollBottom();
+    return d;
+  }
+
+  function resetAll(){
+    cancel(); autoMode = false; locked = false; completed = false; cur = 0; activeCard = null;
+    msgs.innerHTML = '';
+    chalkLis.forEach(function(li){ li.classList.remove('done'); li.querySelector('.ink').classList.remove('on'); });
+    setDev(true);
+  }
+  function reveal(i){ chalkIn(chalkLis[i].querySelector('.ink')); }
+
+  function startIntro(){
+    resetAll();
+    after(420,  function(){ addHer(L.open1); });
+    after(1250, function(){ reveal(0); });
+    after(1850, function(){ reveal(1); });
+    after(2450, function(){ reveal(2); });
+    after(4300, function(){ addHer(L.open2); });
+    after(6700, function(){ askRound(0); });
+  }
+  function askRound(i){
+    cur = i; var r = RS[i];
+    activeCard = addCard(r); locked = false; setDev(false);
+    if (autoMode) after(1700, function(){ pick(okIndex(r)); });
+  }
+  function pick(k){
+    if (!activeCard || locked) return;
+    var r = RS[cur]; if (!r) return;
+    var b = activeCard.querySelectorAll('.opt')[k]; if (!b) return;
+    if (r.opts[k][1]){
+      locked = true;
+      activeCard.dataset.done = '1';
+      activeCard.querySelector('.qcard').classList.add('done');
+      b.classList.add('ok');
+      after(900,  function(){ addHer(r.right); });
+      after(2000, function(){ addMine(r.opts[k][0]); });
+      after(2900, function(){ chalkLis[r.strike].classList.add('done'); setDev(true); });
+      after(4400, function(){
+        if (cur === RS.length - 1){ completed = true; addHer(L.end); autoMode = false; }
+        else { askRound(cur + 1); }
+      });
+    } else {
+      b.classList.add('bad');
+      if (!activeCard.dataset.wrong){ activeCard.dataset.wrong = '1'; addHer(L.wrong); }
+      after(1500, function(){ b.classList.remove('bad'); });
+    }
+  }
+
+  /* dev：A / B 手动切；▶ 自动跑完整循环 */
+  devA.addEventListener('click', function(){
+    cancel(); autoMode = false; locked = false;
+    if (activeCard && !activeCard.dataset.done){ activeCard.remove(); activeCard = null; }
+    setDev(true);
+  });
+  devB.addEventListener('click', function(){
+    cancel(); autoMode = false; locked = false;
+    if (activeCard && !activeCard.dataset.done){ activeCard.scrollIntoView({ block: 'center' }); }
+    else if (completed){ resetAll(); completed = false; askRound(0); }
+    else {
+      var next = (activeCard && activeCard.dataset.done) ? cur + 1 : cur;
+      if (next > RS.length - 1) next = 0;
+      askRound(next);
+    }
+    setDev(false);
+  });
+  devPlay.addEventListener('click', function(){ startIntro(); autoMode = true; });
+
+  /* 收起 / 展开数字人 */
+  document.getElementById('collapseBtn').addEventListener('click', function(){ root.classList.add('scene-collapsed'); });
+  document.getElementById('expandBtn').addEventListener('click', function(){ root.classList.remove('scene-collapsed'); });
+
+  /* 打字提问：回车 → 你的紫气泡 → 600ms 后她应一句（演示） */
+  field.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.keyCode === 13){
+      e.preventDefault();
+      var v = field.value.trim();
+      if (v !== ''){ field.value = ''; addMine(v); after(600, function(){ addHer(L.typed); }); }
+    }
+  });
+
+  /* 底部导航本页只展示、不跳转 */
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('.shell-nav a') : null;
+    if (a){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
+  startIntro();
+})();
+</script>
+</body>
+</html>

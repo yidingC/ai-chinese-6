@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小安 · 合体卡 D</title>
+<style>
+  :root{
+    --purple:#6552ff; --purple-deep:#4c35e8; --purple-soft:#eeeaff;
+    --mint:#69d5c5; --mint-soft:#e0f8f2; --success:#1d8f6e;
+    --ink:#252244; --muted:#77738f; --line:#e8e6f3; --paper:#fff; --page:#f7f7fc;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--page)}
+  /* 字体栈：与原型设计系统一致（原用二台的圆体栈，非 Apple 设备上会掉到微软雅黑，数字比其它页宽 5%） */
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  button,input{font-family:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:2px solid #cfcaff;outline-offset:2px}
+
+  /* 页头底色 = 页面底色：状态栏下方不再是一条纯白盖，和别的页对齐 */
+  .chat-nav{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;background:var(--page);border-bottom:1px solid #f0eff7}
+  .chat-avatar{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;box-shadow:0 6px 14px rgba(101,82,255,.3)}
+  .chat-id{flex:1;min-width:0}
+  .chat-name{display:flex;align-items:center;gap:6px;font-size:15.5px;font-weight:800}
+  .spark{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:800;color:#ff6b3d;letter-spacing:.02em}
+  .chat-sub{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:0 0 auto}
+  .nav-more{border:0;background:none;color:var(--muted);font-size:19px;font-weight:800;line-height:1;padding:4px 2px}
+
+  .chat{flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:14px 0 6px}
+  .chat::-webkit-scrollbar{display:none}
+  .day-divider{text-align:center;color:#b4b1c9;font-size:11px;margin-bottom:14px}
+  .row{display:flex;gap:9px;margin:0 16px 13px;align-items:flex-start}
+  .row.ai .avatar{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px;box-shadow:0 6px 12px rgba(101,82,255,.25);flex:0 0 auto}
+  .bubble{max-width:288px;background:#fff;border-radius:16px;border-top-left-radius:6px;padding:10px 13px;font-size:14.5px;line-height:1.6;box-shadow:0 6px 18px rgba(71,57,142,.08)}
+  .row.me{justify-content:flex-end}
+  .row.me .bubble{background:linear-gradient(135deg,#6552ff,#4c35e8);color:#fff;border-radius:16px;border-top-right-radius:6px;box-shadow:0 8px 18px rgba(101,82,255,.3);max-width:270px}
+
+  .voice{display:flex;align-items:center;gap:9px;cursor:pointer}
+  .play{width:26px;height:26px;border-radius:50%;background:var(--purple-soft);color:var(--purple-deep);display:grid;place-items:center;font-size:10px;flex:0 0 auto;transition:background .15s,color .15s}
+  .row.me .play{background:rgba(255,255,255,.22);color:#fff}
+  .bars{display:flex;align-items:center;gap:2.5px;height:20px;flex:1}
+  .bars i{width:2.5px;border-radius:2px;background:#cfcaff;display:block;transform-origin:center}
+  .row.me .bars i{background:rgba(255,255,255,.65)}
+  .dur{font-size:11px;color:var(--muted);flex:0 0 auto}
+  .row.me .dur{color:rgba(255,255,255,.85)}
+  .voice.playing .play{background:var(--purple);color:#fff}
+  .row.me .voice.playing .play{background:#fff;color:var(--purple-deep)}
+  .voice.playing .bars i{animation:barPulse .5s ease-in-out infinite alternate}
+  .voice.playing .bars i:nth-child(2n){animation-delay:.14s}
+  .voice.playing .bars i:nth-child(3n){animation-delay:.28s}
+  @keyframes barPulse{from{transform:scaleY(.5)}to{transform:scaleY(1)}}
+
+  .transcript{margin-top:9px;padding-top:9px;border-top:1px dashed #eceaf6;font-size:13.5px;color:#3a3757}
+  .t-word{color:var(--purple-deep);font-weight:700;border-bottom:1.5px dotted #a99fff;position:relative}
+  .tip{pointer-events:none;position:absolute;left:-6px;bottom:calc(100% + 9px);background:#fff;border:1px solid var(--line);box-shadow:0 10px 24px rgba(71,57,142,.16);border-radius:12px;padding:7px 11px;font-size:11.5px;color:var(--ink);white-space:nowrap;font-weight:700}
+  .tip small{color:var(--muted);font-weight:600;margin-left:2px}
+  .tip::after{content:"";position:absolute;left:12px;top:100%;border:6px solid transparent;border-top-color:#fff;filter:drop-shadow(0 1px 0 #e8e6f3)}
+  .t-foot{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:11px;color:var(--muted)}
+  .t-chip{background:var(--page);border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-weight:700}
+
+  .sys{display:flex;justify-content:center;margin:2px 16px 13px}
+  .sys-pill{background:var(--mint-soft);color:var(--success);font-size:11.5px;font-weight:700;padding:7px 13px;border-radius:999px;box-shadow:0 4px 12px rgba(105,213,197,.25)}
+
+  .photo-bubble{padding:4px}
+  .photo-bubble svg{display:block;width:212px;height:auto;border-radius:12px}
+
+  .composer{background:transparent;padding:10px 16px 16px}
+  .input-row{display:flex;align-items:center;gap:8px}
+  .icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:17px;border:0;flex:0 0 auto;background:var(--purple-soft);color:var(--purple-deep);box-shadow:0 6px 16px rgba(76,53,232,.18);transition:transform .12s}
+  .icon-btn:active{transform:scale(.93)}
+  .icon-btn svg{width:21px;height:21px}
+  .plus svg{transition:transform .22s ease}
+  .plus.open svg{transform:rotate(45deg)}
+  .field{flex:1;min-width:0;height:42px;border-radius:21px;background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.92);padding:0 15px;color:var(--ink);font-size:13.5px;outline:none;box-shadow:0 6px 16px rgba(20,30,60,.10);-webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);transition:border-color .15s,background .15s,box-shadow .15s}
+  .field::placeholder{color:#a9a6bf}
+  .field:focus{border-color:#cfcaff;background:#fff}
+  .talk{flex:1;min-width:0;height:42px;border-radius:21px;background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.92);color:var(--ink);font-size:13.5px;font-weight:700;user-select:none;-webkit-user-select:none;box-shadow:0 6px 16px rgba(20,30,60,.10);-webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);transition:transform .1s,background .1s}
+  .talk.pressing{background:#e4e0f8;transform:scale(.98)}
+
+  .panel{overflow:hidden;max-height:0;transition:max-height .28s ease;background:transparent}
+  .composer.open .panel{max-height:260px}
+  .panel-inner{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;padding:14px 0 0}
+  .func{display:grid;justify-items:center;gap:6px;background:#fff;border:1px solid #eceaf6;border-radius:18px;padding:12px 4px 10px;transition:transform .12s}
+  .func:active{transform:scale(.95)}
+  .func-ico{width:46px;height:46px;border-radius:16px;background:var(--purple-soft);color:var(--purple-deep);display:grid;place-items:center}
+  .func-ico svg{width:24px;height:24px}
+  .func-label{font-size:11.5px;font-weight:700;color:#56517a}
+
+  .toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,12px);background:#2b283f;color:#fff;font-size:12.5px;font-weight:700;padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;box-shadow:0 12px 30px rgba(37,34,68,.35);z-index:60;max-width:82vw;text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+<link rel="stylesheet" href="shell-slide.css">
+<style>
+  /* ---------- 公区壳适配（必须放在 shell.css 之后）----------
+     状态栏 / Home 条 / 悬浮导航 / 桌面手机框都归 shell.css + shell.js；
+     这里只补三件事：页头吸顶、输入行抬到悬浮导航上方、消息列表底部留白。 ---------- */
+  .shell-screen{--shell-bg:#F7F7FC}
+  /* 底部只有控件本身：没有底板层，白胶囊直接浮在页面底色上 */
+  /* —— D 版合体卡：输入行 + 导航合成同一张玻璃卡（底部锚定，展开时整卡向上长） —— */
+  .shell-nav{display:none}  /* 导航并进卡片，藏掉公区壳的悬浮导航（仅本页） */
+  .dock{position:absolute;left:27px;right:27px;bottom:41px;z-index:40;border-radius:34px;
+    background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.12) 45%,rgba(255,255,255,.18));
+    -webkit-backdrop-filter:blur(18px) saturate(1.9);backdrop-filter:blur(18px) saturate(1.9);
+    box-shadow:0 14px 30px rgba(20,30,60,.13)}
+  .dock::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    box-shadow:inset 0 1.5px 1px rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.42),inset 0 -10px 18px rgba(255,255,255,.14)}
+  .dock-inner{position:relative;padding:12px 12px 0}
+  .dock .icon-btn{width:46px;height:46px;box-shadow:0 4px 12px rgba(76,53,232,.16)}
+  .dock .icon-btn svg{width:23px;height:23px}
+  .dock .field,.dock .talk{height:46px;border-radius:23px;background:#fff;border:1px solid #E9E7F4;box-shadow:none;
+    -webkit-backdrop-filter:none;backdrop-filter:none}
+  .dock .field:focus{border-color:#CFCAFF}
+  /* 面板：卡内展开，卡片向上长，导航留在原地；6 张玻璃小卡错峰落位 */
+  .dock .panel{overflow:hidden;max-height:0;background:transparent;transition:max-height .34s cubic-bezier(.3,.9,.35,1)}
+  .dock.open .panel{max-height:230px}
+  .dock .panel-inner{display:grid;grid-template-columns:repeat(3,1fr);gap:9px 10px;padding:12px 0 0}
+  .dock .func{display:grid;justify-items:center;gap:4px;background:rgba(255,255,255,.62);
+    border:1px solid rgba(255,255,255,.9);border-radius:16px;padding:8px 4px 7px;
+    opacity:0;transform:translateY(10px);transition:opacity .22s ease,transform .22s ease}
+  /* 去白卡（定稿）：只留紫块，和输入排圆钮同一套语言 */
+  .dock .func{background:transparent;border-color:transparent;padding:6px 4px 6px}
+  .dock.open .func{opacity:1;transform:none}
+  .dock.open .func:nth-child(1){transition-delay:.05s}
+  .dock.open .func:nth-child(2){transition-delay:.08s}
+  .dock.open .func:nth-child(3){transition-delay:.11s}
+  .dock.open .func:nth-child(4){transition-delay:.14s}
+  .dock.open .func:nth-child(5){transition-delay:.17s}
+  .dock.open .func:nth-child(6){transition-delay:.20s}
+  .dock .func-ico{width:48px;height:48px;border-radius:16px;background:#EEEAFF;color:#4C35E8;display:grid;place-items:center}
+  .dock .func-ico svg{width:24px;height:24px}
+  .dock .func-label{font-size:11.5px;font-weight:700;color:#56517A}
+  .dock-nav{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 10px;margin-top:2px}
+  .dn{width:46px;height:46px;border-radius:50%;background:rgba(93,90,122,.12);border:0;padding:0;color:#6B6B76;
+    display:grid;place-items:center;text-decoration:none;cursor:pointer;font:inherit;
+    transition:width .22s ease,border-radius .22s ease,background .18s ease,color .18s ease,transform .12s ease}
+  .dn:active{transform:scale(.94)}
+  .dn.is-active{width:90px;height:45px;border-radius:22.5px;background:#6552FF;color:#fff;
+    display:flex;align-items:center;justify-content:center;gap:6px;font-size:14.5px;font-weight:800}
+  /* 聊天记录从卡下穿过：卡顶再进 22px，尾端 14px 渐隐 */
+  .shell-main{bottom:calc(49px + var(--dock-h,126px));padding-bottom:14px;
+    -webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 14px),transparent);
+    mask-image:linear-gradient(180deg,#000 calc(100% - 14px),transparent)}
+  /* 滚动容器是公区壳的 .shell-main：消息区自己不再做滚动容器，否则会吃掉滚轮 */
+  .chat{overflow:visible;overscroll-behavior:auto}
+  .chat-nav{position:sticky;top:0;z-index:6}
+  .shell-screen .toast{bottom:calc(53px + var(--dock-h,126px))}
+</style>
+</head>
+<body data-tab="an">
+<div class="shell-stage">
+<div class="shell-screen">
+
+  <div class="shell-main">
+  <header class="chat-nav">
+    <div class="chat-avatar">安</div>
+    <div class="chat-id">
+      <div class="chat-name">小安<span class="spark">🔥 5天</span></div>
+      <div class="chat-sub"><i class="dot"></i>在线 · 去年入职中资公司的朋友</div>
+    </div>
+    <button class="nav-more" id="moreBtn" aria-label="更多">&#8943;</button>
+  </header>
+
+  <main class="chat" id="chat">
+    <div class="day-divider">今天 16:40</div>
+
+    <div class="row ai">
+      <div class="avatar">安</div>
+      <div class="bubble">
+        <div class="voice">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:30%"></i><i style="height:55%"></i><i style="height:80%"></i><i style="height:45%"></i><i style="height:90%"></i><i style="height:60%"></i><i style="height:35%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:40%"></i><i style="height:60%"></i>
+          </span>
+          <span class="dur">0:12</span>
+        </div>
+        <div class="transcript">
+          今天有点<span class="t-word">倒霉<span class="tip">倒霉 · dǎoméi<small>sial</small></span></span> 😭 早上忘带伞，走到半路突然下大雨，鞋子全湿了。
+          <div class="t-foot"><span class="t-chip">0.8&times; 慢速</span><span>点词看拼音</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row me">
+      <div class="bubble">哈哈 我也没带伞！雅加达也下雨 ☔️</div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">安</div>
+      <div class="bubble">我们一样惨 😂 对了，我想问你：印尼语的「伞」怎么说？我要记下来。</div>
+    </div>
+
+    <div class="row me">
+      <div class="bubble">payung！ 说 payung 就行</div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">安</div>
+      <div class="bubble">好！我先自己读一遍，你听听对不对 😅
+        <div class="voice" style="margin-top:8px">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:40%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:90%"></i><i style="height:45%"></i><i style="height:65%"></i><i style="height:35%"></i><i style="height:55%"></i>
+          </span>
+          <span class="dur">0:04</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row me">
+      <div class="bubble">
+        <div class="voice">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:60%"></i><i style="height:90%"></i><i style="height:45%"></i><i style="height:70%"></i><i style="height:95%"></i><i style="height:50%"></i><i style="height:65%"></i>
+          </span>
+          <span class="dur">0:03</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">安</div>
+      <div class="bubble">
+        <div class="voice">
+          <span class="play">&#9654;</span>
+          <span class="bars">
+            <i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:95%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:60%"></i>
+          </span>
+          <span class="dur">0:05</span>
+        </div>
+        <div style="margin-top:8px"><b style="color:var(--purple-deep)">Payung！</b>这次对了吧？你把我教会了 ✓</div>
+      </div>
+    </div>
+
+    <div class="sys">
+      <div class="sys-pill">🔥 火花续到第 5 天 ｜ 你今天说了 6 句中文 · 教会小安 1 个词</div>
+    </div>
+
+    <div class="row ai">
+      <div class="avatar">安</div>
+      <div class="bubble">明天换你教我一道菜？我只会说 nasi goreng，想知道「炒饭」怎么用中文点 😋</div>
+    </div>
+  </main>
+  </div>
+
+  <div class="dock" id="dock">
+  <div class="dock-inner">
+    <div class="input-row">
+      <button class="icon-btn" id="modeBtn" aria-label="切换打字 / 按住说话"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg></button>
+      <input class="field" id="field" type="text" placeholder="跟小安说点什么…">
+      <button class="talk" id="talkBtn" hidden>按住说话</button>
+      <button class="icon-btn" id="emojiBtn" aria-label="表情">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><path d="M8.6 14.1c.9 1.3 2 1.9 3.4 1.9s2.5-.6 3.4-1.9"/><path d="M9.3 9.7h.01M14.7 9.7h.01" stroke-width="2.8"/></svg>
+      </button>
+      <button class="icon-btn plus" id="plusBtn" aria-label="更多功能" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+    <div class="panel" id="panel">
+      <div class="panel-inner">
+        <button class="func" data-func="album"><span class="func-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="4.8" width="17.2" height="14.4" rx="3"/><circle cx="8.9" cy="9.7" r="1.6"/><path d="M4.4 17.1l4.5-4.2 3.4 3.1 3.1-2.7 4.1 3.8"/></svg></span><span class="func-label">相册</span></button>
+        <button class="func" data-toast="拍照讲解 · 概念未展开"><span class="func-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 7.3l1.2-2.1h4.6l1.2 2.1"/><rect x="3.2" y="7.3" width="17.6" height="12" rx="3"/><circle cx="12" cy="13.2" r="3.4"/></svg></span><span class="func-label">拍照</span></button>
+        <button class="func" data-toast="通话 · 概念未展开"><span class="func-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><span class="func-label">打电话</span></button>
+        <button class="func" data-toast="手写笔顺 · 概念未展开"><span class="func-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span><span class="func-label">写个字</span></button>
+        <button class="func" data-toast="位置 · 概念未展开"><span class="func-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span><span class="func-label">发位置</span></button>
+        <button class="func" data-toast="一起看视频 · 概念未展开"><span class="func-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="4.6" width="18.4" height="14.8" rx="3.2"/><path d="M10.2 9.2l4.9 3-4.9 3z"/></svg></span><span class="func-label">一起看</span></button>
+      </div>
+    </div>
+    <nav class="dock-nav" aria-label="底部导航">
+      <a class="dn" href="slide-today.html" aria-label="今天"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.9 11.3 12 4.3l8.1 7"/><path d="M6.3 9.6v9.6h11.4V9.6"/></svg></a>
+      <a class="dn is-active" href="#" aria-current="page" onclick="event.preventDefault()"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><circle cx="9" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="15" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><path d="M8.8 14.6c1.9 1.9 4.5 1.9 6.4 0"/></svg><span>小安</span></a>
+      <a class="dn" href="slide-calendar.html" aria-label="日历"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.6" y="5.2" width="16.8" height="15" rx="3"/><path d="M3.6 9.6h16.8M8.2 3.4v3.4M15.8 3.4v3.4"/></svg></a>
+      <a class="dn" href="slide-me.html" aria-label="我的"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.7"/><path d="M4.8 20.2c1-4.2 3.8-6.4 7.2-6.4s6.2 2.2 7.2 6.4"/></svg></a>
+    </nav>
+  </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+</div>
+<script src="shell-slide.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var chat = $("#chat");
+  /* 公区壳：滚动发生在 .shell-main 上（消息区自己不再滚） */
+  var scroller = document.querySelector(".shell-main") || chat;
+  var dock = $("#dock");
+  var toastEl = $("#toast");
+  var toastTimer = null;
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2000);
+  }
+
+  /* 右上「⋯」与表情钮：概念提示 */
+  $("#moreBtn").addEventListener("click", function () { toast("更多功能 · 概念未展开"); });
+  $("#emojiBtn").addEventListener("click", function () { toast("表情 · 概念未展开"); });
+
+  /* 语音条：点一下假播放（波形动约 1 秒） */
+  var playing = null, playTimer = null;
+  function stopPlay() {
+    if (!playing) return;
+    playing.classList.remove("playing");
+    playing = null;
+    clearTimeout(playTimer);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".voice"), function (v) {
+    v.addEventListener("click", function () {
+      if (playing === v) { stopPlay(); return; }
+      stopPlay();
+      playing = v;
+      v.classList.add("playing");
+      playTimer = setTimeout(stopPlay, 1100);
+    });
+  });
+
+  /* 打字 / 按住说话 切换 */
+  var ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>';
+  var ICON_KB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="6.4" width="18.8" height="11.2" rx="2.6"/><path d="M6.2 10.2h.01M9.6 10.2h.01M13 10.2h.01M16.4 10.2h.01M18.6 10.2h.01"/><path d="M8.4 13.6h7.2"/></svg>';
+  var modeBtn = $("#modeBtn"), field = $("#field"), talkBtn = $("#talkBtn");
+  var voiceMode = false;
+  modeBtn.addEventListener("click", function () {
+    voiceMode = !voiceMode;
+    field.hidden = voiceMode;
+    talkBtn.hidden = !voiceMode;
+    modeBtn.innerHTML = voiceMode ? ICON_KB : ICON_MIC;
+    if (!voiceMode) field.focus();
+  });
+  talkBtn.addEventListener("pointerdown", function (e) {
+    e.preventDefault();
+    talkBtn.classList.add("pressing");
+    if (talkBtn.setPointerCapture) { try { talkBtn.setPointerCapture(e.pointerId); } catch (err) {} }
+  });
+  ["pointerup", "pointercancel"].forEach(function (ev) {
+    talkBtn.addEventListener(ev, function () { talkBtn.classList.remove("pressing"); });
+  });
+
+  /* 加号：底部面板 */
+  var plusBtn = $("#plusBtn");
+  function setPanel(open) {
+    dock.classList.toggle("open", open);
+    plusBtn.classList.toggle("open", open);
+    document.body.classList.toggle("panel-open", open);
+    plusBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  plusBtn.addEventListener("click", function () { setPanel(!dock.classList.contains("open")); });
+
+  /* 相册：插入一条照片消息 + 小安回一句 */
+  var PHOTO = [
+    '<svg viewBox="0 0 236 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="全家一起吃饭的照片">',
+    '<defs><linearGradient id="pb-g" x1="0" y1="0" x2="1" y2="1">',
+    '<stop offset="0" stop-color="#fff4e8"/><stop offset="1" stop-color="#ffe4cf"/></linearGradient></defs>',
+    '<rect width="236" height="172" rx="10" fill="url(#pb-g)"/>',
+    '<ellipse cx="118" cy="156" rx="92" ry="10" fill="#a06a35" opacity=".14"/>',
+    '<circle cx="118" cy="88" r="66" fill="#e9b47c"/>',
+    '<circle cx="118" cy="88" r="66" fill="none" stroke="#d99e60" stroke-width="4"/>',
+    '<circle cx="118" cy="88" r="50" fill="none" stroke="#f3cda2" stroke-width="2" opacity=".8"/>',
+    '<circle cx="118" cy="88" r="23" fill="#fff"/>',
+    '<ellipse cx="118" cy="86" rx="13" ry="8.5" fill="#fbf7ee" stroke="#eee6d6" stroke-width="1.5"/>',
+    '<line x1="150" y1="66" x2="168" y2="112" stroke="#b98a5f" stroke-width="3.4" stroke-linecap="round"/>',
+    '<line x1="157" y1="64" x2="175" y2="110" stroke="#b98a5f" stroke-width="3.4" stroke-linecap="round"/>',
+    '<circle cx="78" cy="57" r="15" fill="#fff"/><circle cx="78" cy="57" r="8" fill="#f4a259"/>',
+    '<circle cx="158" cy="57" r="15" fill="#fff"/><circle cx="158" cy="57" r="8" fill="#8ecf9b"/>',
+    '<circle cx="78" cy="119" r="15" fill="#fff"/><circle cx="78" cy="119" r="8" fill="#ef8f8f"/>',
+    '<circle cx="158" cy="119" r="15" fill="#fff"/><circle cx="158" cy="119" r="8" fill="#f6c35c"/>',
+    '<circle cx="118" cy="38" r="7" fill="#fff" stroke="#eee6d6" stroke-width="1.5"/>',
+    '<circle cx="118" cy="138" r="7" fill="#fff" stroke="#eee6d6" stroke-width="1.5"/>',
+    '<circle cx="64" cy="88" r="11" fill="#fff"/><circle cx="64" cy="88" r="6" fill="#fbf7ee" stroke="#eee6d6" stroke-width="1.5"/>',
+    '<circle cx="172" cy="88" r="11" fill="#fff"/><circle cx="172" cy="88" r="6" fill="#fbf7ee" stroke="#eee6d6" stroke-width="1.5"/>',
+    '<circle cx="30" cy="26" r="3" fill="#ffb35c"/><circle cx="207" cy="30" r="3" fill="#ff8fae"/><circle cx="216" cy="146" r="3" fill="#8ecf9b"/><circle cx="22" cy="146" r="3" fill="#9d8fff"/>',
+    "</svg>"
+  ].join("");
+  var photoSent = false;
+  Array.prototype.forEach.call(document.querySelectorAll(".func"), function (btn) {
+    btn.addEventListener("click", function () {
+      if (btn.dataset.func === "album") { sendPhoto(); return; }
+      toast(btn.dataset.toast);
+    });
+  });
+  function sendPhoto() {
+    setPanel(false);
+    if (photoSent) return;
+    photoSent = true;
+    var row = document.createElement("div");
+    row.className = "row me";
+    row.innerHTML = '<div class="bubble photo-bubble">' + PHOTO + "</div>";
+    chat.appendChild(row);
+    scroller.scrollTop = scroller.scrollHeight;
+    setTimeout(function () {
+      var reply = document.createElement("div");
+      reply.className = "row ai";
+      reply.innerHTML = '<div class="avatar">安</div><div class="bubble">哇，你们家过节呀！用中文可以说：我们全家一起吃饭。跟着我说一遍？</div>';
+      chat.appendChild(reply);
+      scroller.scrollTop = scroller.scrollHeight;
+    }, 700);
+  }
+})();
+</script>
+<script>
+(function () {
+  /* 合体卡实际高度写进 --dock-h：消息列表底部留白、toast 位置都跟着它走 */
+  var screen = document.querySelector(".shell-screen");
+  var dock = document.getElementById("dock");
+  /* 卡片展开/收起时聊天记录跟着等量上移/下移：改高度前后保持「距底距离」不变 */
+  function sync() {
+    var main = document.querySelector(".shell-main");
+    var dist = main ? main.scrollHeight - main.clientHeight - main.scrollTop : null;
+    screen.style.setProperty("--dock-h", dock.offsetHeight + "px");
+    if (main && dist !== null) {
+      var max = main.scrollHeight - main.clientHeight;
+      main.scrollTop = Math.min(max, Math.max(0, max - dist));
+    }
+  }
+  sync();
+  if (window.ResizeObserver) new ResizeObserver(sync).observe(dock);
+  window.addEventListener("resize", sync);
+
+  /* 刷新进来直接停在最新消息（和真实聊天应用一致）：首次布局后把列表拉到底 */
+  var mainEl = document.querySelector(".shell-main");
+  if (mainEl) mainEl.scrollTop = mainEl.scrollHeight;
+
+  /* 滚轮落在聊天列表以外（输入行 / 面板 / 导航）时转给聊天列表，整屏都能滚；
+     落在列表里的交给它自己滚，不重复处理 */
+  screen.addEventListener("wheel", function (e) {
+    var main = document.querySelector(".shell-main");
+    if (!main || main.contains(e.target)) return;
+    main.scrollTop += e.deltaY;
+    e.preventDefault();
+  }, { passive: false });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F5F3FA">
+  <title>AI Chinese 6.0 · 我的</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="shell-slide.css">
+  <style>
+    /* —— 合体卡（同 an-dock 参数）：我的页 = 纯导航卡（无顶行），导航钉在卡底 —— */
+    .shell-nav{display:none}
+    .shell-main{bottom:calc(49px + var(--dock-h,66px));padding-bottom:0}
+    .dock{position:absolute;left:27px;right:27px;bottom:41px;z-index:40;border-radius:34px;
+      background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.12) 45%,rgba(255,255,255,.18));
+      -webkit-backdrop-filter:blur(18px) saturate(1.9);backdrop-filter:blur(18px) saturate(1.9);
+      box-shadow:0 14px 30px rgba(20,30,60,.13)}
+    .dock::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+      box-shadow:inset 0 1.5px 1px rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.42),inset 0 -10px 18px rgba(255,255,255,.14)}
+    .dock-inner{position:relative;padding:0 12px}
+    .dock-nav{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 10px;margin-top:0}
+    .dn{width:46px;height:46px;border-radius:50%;background:rgba(93,90,122,.12);border:0;padding:0;color:#6B6B76;
+      display:grid;place-items:center;text-decoration:none;cursor:pointer;font:inherit;
+      transition:width .22s ease,background .18s ease,color .18s ease,transform .12s ease}
+    .dn:active{transform:scale(.94)}
+    .dn.is-active{width:90px;height:45px;border-radius:22.5px;background:#6552FF;color:#fff;
+      display:flex;align-items:center;justify-content:center;gap:6px;font-size:14.5px;font-weight:800}
+    .dn.is-active svg{width:23px;height:23px}
+    .shell-screen .toast{bottom:calc(53px + var(--dock-h,66px))}
+  </style>
+</head>
+<body data-goal="work" data-tab="me">
+  <div class="shell-stage">
+  <div class="shell-screen">
+    <main class="shell-main"><div class="page-main">
+      <div class="page-head">
+        <h1 class="page-title">我的</h1>
+      </div>
+
+      <section class="profile-card" aria-label="我的资料">
+        <div class="profile-row">
+          <span class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.5"/><path d="M5.2 19.8c1.3-3.6 3.7-5.4 6.8-5.4s5.5 1.8 6.8 5.4"/></svg></span>
+          <div>
+            <p class="profile-name">Rina</p>
+            <p class="profile-sub">正在准备：<span id="meGoal">进入中资企业工作</span></p>
+          </div>
+          <button class="icon-btn" type="button" data-toast="编辑资料 · 概念未展开" aria-label="编辑资料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+        </div>
+        <div class="profile-stats">
+          <div class="stat"><span class="stat-num">36</span><span class="stat-cap">学习天数</span></div>
+          <div class="stat"><span class="stat-num">12</span><span class="stat-cap">连续打卡</span></div>
+          <div class="stat"><span class="stat-num" id="meAbil">2</span><span class="stat-cap">已准备能力</span></div>
+        </div>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">学习足迹</p>
+        <div class="heat-card">
+          <div class="heat-grid" id="heatGrid" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">我的目标</p>
+        <a class="goal-row" id="goalRow" href="../goal-date.html?goal=work">
+          <span class="pr-copy">
+            <span class="pr-title" id="goalTitle">进入中资企业工作</span>
+            <span class="pr-sub" id="goalDate">12 月 10 日 · 还有 58 天</span>
+          </span>
+          <span class="pr-action">修改 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg></span>
+        </a>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">我的路线</p>
+        <a class="goal-row" id="routeRow" href="../route.html?goal=work">
+          <span class="pr-copy">
+            <span class="pr-title">准备路线</span>
+            <span class="pr-sub">你的准备旅程</span>
+          </span>
+          <span class="pr-action"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg></span>
+        </a>
+      </section>
+
+      <section class="profile-sec">
+        <p class="route-cap">我的能力</p>
+        <section class="abil-card" aria-label="我的能力">
+          <p class="abil-cap" id="abilCap">已能应对 <b>2</b> 项</p>
+          <ul class="abil-list" id="abilList"></ul>
+          <p class="abil-sub">在准备中</p>
+          <ul class="abil-list" id="prepList"></ul>
+        </section>
+      </section>
+
+      <section class="settings-card" aria-label="设置">
+        <button class="set-row" type="button" data-toast="设置 · 概念未展开">
+          <span class="set-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M19.3 12a7.3 7.3 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-2-1.2L14.4 3h-4l-.4 2.6a7.4 7.4 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.3 7.3 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z"/></svg></span>
+          <span class="set-label">设置</span>
+          <span class="set-value" aria-hidden="true"></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
+        </button>
+      </section>
+    </div></main>
+
+    <div class="dock" id="dock">
+    <div class="dock-inner">
+      <nav class="dock-nav" aria-label="底部导航">
+        <a class="dn" href="slide-today.html" aria-label="今天"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.9 11.3 12 4.3l8.1 7"/><path d="M6.3 9.6v9.6h11.4V9.6"/></svg></a>
+        <a class="dn" href="slide-an.html" aria-label="小安"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><circle cx="9" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="15" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><path d="M8.8 14.6c1.9 1.9 4.5 1.9 6.4 0"/></svg></a>
+        <a class="dn" href="slide-calendar.html" aria-label="日历"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.6" y="5.2" width="16.8" height="15" rx="3"/><path d="M3.6 9.6h16.8M8.2 3.4v3.4M15.8 3.4v3.4"/></svg></a>
+        <a class="dn is-active" href="#" aria-current="page" onclick="event.preventDefault()"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.7"/><path d="M4.8 20.2c1-4.2 3.8-6.4 7.2-6.4s6.2 2.2 7.2 6.4"/></svg><span>我的</span></a>
+      </nav>
+    </div>
+    </div>
+    <div class="toast" role="status" aria-live="polite"></div>
+  </div>
+  </div>
+
+  <script src="shell-slide.js"></script>
+  <script src="../app.js"></script>
+  <script>
+    (function () {
+      /* ?goal=work|study|hsk：目标 / 路线 / 能力整页跟随；支持 ?days=、?date= 透传 */
+      var GOALS = {
+        work: {
+          page: 'goal-work.html',
+          title: '进入中资企业工作',
+          days: 58,
+          can: ['中文面试', '入职自我介绍'],
+          prep: ['听懂工作安排', '不懂时请求说明', '回复工作消息']
+        },
+        study: {
+          page: 'goal-study.html',
+          title: '前往中国留学',
+          days: 83,
+          can: ['出发前准备', '基础自我介绍', '常见信息填写'],
+          prep: ['机场入境', '前往学校', '办理报到']
+        },
+        hsk: {
+          page: 'goal-hsk.html',
+          title: 'HSK 3 级考试',
+          days: 72,
+          can: ['初始能力诊断'],
+          prep: ['基础知识补齐', '听力专项训练', '阅读与语法训练']
+        }
+      };
+      var params = new URLSearchParams(window.location.search);
+      var rawKey = params.get('goal');
+      var key = GOALS[rawKey] ? rawKey : 'work';
+      var goal = GOALS[key];
+
+      document.body.dataset.goal = key;
+
+      /* 倒计时：优先用链接带来的 ?days= / ?date=，没有就用推荐值兜底 */
+      var days = goal.days;
+      var rawDays = params.get('days');
+      if (rawDays !== null && rawDays.trim() !== '') {
+        var n = Number(rawDays);
+        if (isFinite(n) && n >= 0) days = Math.round(n);
+      }
+      var dateText = '';
+      var rawDate = params.get('date');
+      var dateMatch = rawDate && rawDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (dateMatch) {
+        dateText = Number(dateMatch[2]) + ' 月 ' + Number(dateMatch[3]) + ' 日';
+      } else {
+        var t = new Date();
+        var d = new Date(t.getFullYear(), t.getMonth(), t.getDate() + days);
+        dateText = (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日';
+      }
+
+      document.getElementById('goalTitle').textContent = goal.title;
+      document.getElementById('goalDate').textContent = dateText + '（还有 ' + days + ' 天）';
+      document.getElementById('abilCap').innerHTML = '已能应对 <b>' + goal.can.length + '</b> 项';
+      document.getElementById('meGoal').textContent = goal.title;
+      document.getElementById('meAbil').textContent = goal.can.length;
+
+      var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.3 4.3L19 7"/></svg>';
+      var renderList = function (id, items, kind) {
+        var list = document.getElementById(id);
+        items.forEach(function (name) {
+          var li = document.createElement('li');
+          li.className = 'abil-item ' + kind;
+          li.innerHTML = '<span class="n" aria-hidden="true">' + (kind === 'can' ? CHECK : '') + '</span>' + name;
+          list.appendChild(li);
+        });
+      };
+      renderList('abilList', goal.can, 'can');
+      renderList('prepList', goal.prep, 'todo');
+
+      var q = new URLSearchParams();
+      q.set('goal', key);
+      ['days', 'date'].forEach(function (k) {
+        var v = params.get(k);
+        if (v !== null && v !== '') q.set(k, v);
+      });
+      var tail = q.toString();
+      document.getElementById('goalRow').setAttribute('href', 'goal-date.html?goal=' + key);
+      document.getElementById('routeRow').setAttribute('href', 'route.html?' + tail);
+      /* 底部导航的落点归公区壳（shell.js）管，这页不再改它的 href */
+
+      /* 学习足迹：最近 13 周 × 7 天示意格（固定图案，与旧版截图一致；静态演示、不做交互） */
+      var heatGrid = document.getElementById('heatGrid');
+      if (heatGrid) {
+        var HEAT = ['0100001', '2000001', '0300001', '0002001', '0110101', '1042000', '1201000', '0100000', '0000021', '0302000', '1000124', '3131112', '3400000'];
+        var frag = document.createDocumentFragment();
+        for (var w = 0; w < HEAT.length; w += 1) {
+          for (var d = 0; d < 7; d += 1) {
+            var lv = Number(HEAT[w][d]);
+            var cell = document.createElement('span');
+            cell.className = 'heat-cell' + (lv > 0 ? ' lv' + lv : '');
+            frag.appendChild(cell);
+          }
+        }
+        heatGrid.appendChild(frag);
+      }
+    })();
+  </script>
+<script>
+(function () {
+  var dock = document.getElementById("dock");
+  var screen = document.querySelector(".shell-screen");
+  function sync() { screen.style.setProperty("--dock-h", dock.offsetHeight + "px"); }
+  sync();
+  if (window.ResizeObserver) new ResizeObserver(sync).observe(dock);
+})();
+</script>
+</body>
+</html>
