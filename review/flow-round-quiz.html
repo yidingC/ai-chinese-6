@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>轮内答题 · 流程图</title>
+<style>
+  html,body{margin:0;background:#fff}
+  #art{
+    position:relative;width:1280px;height:616px;background:#fff;overflow:hidden;
+    font-family:"Microsoft YaHei UI Light","Microsoft YaHei UI","PingFang SC",sans-serif;
+    color:#111;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;
+  }
+  .shape{position:absolute;box-sizing:border-box;background:#F3F3F4;border:1px solid #808080}
+  .pill{border-radius:999px}
+  .box{border-radius:6px}
+  .t{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;line-height:1;letter-spacing:0}
+  .t.left{transform:translateY(-50%)}
+  svg{position:absolute;left:0;top:0}
+</style>
+</head>
+<body>
+<div id="art">
+
+  <svg width="1280" height="616" aria-hidden="true">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <path d="M0 0 L10 5 L0 10 Z" fill="#313131"/>
+      </marker>
+    </defs>
+    <g stroke="#313131" stroke-width="1" fill="none">
+      <path d="M284 236.5 H331.5" marker-end="url(#ar)"/>
+      <path d="M498 236.5 H544.5" marker-end="url(#ar)"/>
+      <path d="M758 236.5 H794.5" marker-end="url(#ar)"/>
+      <path d="M1008 236.5 H1047.5" marker-end="url(#ar)"/>
+      <path d="M166 270 V351.5" marker-end="url(#ar)"/>
+      <path d="M166 416 V454.5" marker-end="url(#ar)"/>
+      <path d="M901 308 V391 H415 V269.5" marker-end="url(#ar)"/>
+    </g>
+  </svg>
+
+  <!-- 主链 -->
+  <div class="shape pill" style="left:48px;top:204px;width:236px;height:66px"></div>
+  <div class="t" style="left:166px;top:237px;font-size:18px;letter-spacing:.35px">进入第 1 题（开始计时）</div>
+
+  <div class="shape box" style="left:332px;top:204px;width:166px;height:66px"></div>
+  <div class="t" style="left:415px;top:237px;font-size:18px;letter-spacing:1.25px">作答并提交</div>
+
+  <div class="shape box" style="left:545px;top:204px;width:213px;height:66px"></div>
+  <div class="t" style="left:651.5px;top:227px;font-size:18px">答题反馈</div>
+  <div class="t" style="left:651.5px;top:251.5px;font-size:15px;letter-spacing:1.25px">(对 / 错 + 正确答案)</div>
+
+  <svg style="position:absolute;left:0;top:0" width="1280" height="616" aria-hidden="true">
+    <polygon points="795,236 901,164 1007,236 901,308" fill="#F3F3F4" stroke="#808080" stroke-width="1"/>
+  </svg>
+  <div class="t" style="left:901px;top:237px;font-size:18px">本轮最后一题？</div>
+  <div class="t" style="left:1025.5px;top:220.5px;font-size:15px;color:#333">是</div>
+  <div class="t" style="left:922.5px;top:331px;font-size:15px;color:#333">否</div>
+
+  <div class="shape pill" style="left:1048px;top:204px;width:208px;height:66px"></div>
+  <div class="t" style="left:1152px;top:237px;font-size:18px;letter-spacing:1.2px">轮未完成弹窗</div>
+  <div class="t" style="left:1152px;top:288px;font-size:14.5px;color:#333;letter-spacing:1.2px">两个操作见功能点 4</div>
+
+  <!-- 回环标签 -->
+  <div class="t" style="left:651px;top:374.5px;font-size:14.5px;color:#333;letter-spacing:1.4px">点「知道了」</div>
+
+  <!-- 左列 -->
+  <div class="t" style="left:210.5px;top:299.5px;font-size:14.5px;color:#333;letter-spacing:1.6px">中途退出</div>
+
+  <div class="shape box" style="left:60px;top:352px;width:212px;height:64px"></div>
+  <div class="t" style="left:166px;top:384px;font-size:18px">点左上角返回键</div>
+
+  <div class="shape pill" style="left:48px;top:455px;width:236px;height:65px"></div>
+  <div class="t" style="left:166px;top:487.5px;font-size:18px">回课堂页（不保存）</div>
+
+  <div class="t left" style="left:56px;top:548.5px;font-size:15px;color:#3A3A3A;letter-spacing:.6px">下次进入：从第 1 题、重新计时</div>
+
+  <!-- 标题 -->
+  <div class="t left" style="left:47px;top:47.5px;font-size:16.5px;color:#6E6E78;letter-spacing:1.25px">轮内答题 · 流程图</div>
+</div>
+</body>
+</html>
