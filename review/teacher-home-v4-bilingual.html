@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 学生视角首页 v4 · 双语版</title>
+<link rel="icon" href="data:,">
+<style>
+/* ==========================================================================
+   学生视角首页 v4
+   黑板是唯一内容层；A/B/C 是同一首页的三个状态。
+   素材：assets/nancy-board-point.png / nancy-board-listen.png
+   ========================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0D1612}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#F2F1F8;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+svg{display:block}
+img{display:block}
+[hidden]{display:none!important}
+
+.shell-stage{background:#0B120F}
+.shell-screen{--shell-bg:#101B16;background:#101B16;color:#F2F1F8}
+.shell-screen .shell-st,.shell-screen .shell-si{color:#fff}
+.shell-screen .shell-bat{border-color:rgba(255,255,255,.90)}
+.shell-screen .shell-bat::after{background:rgba(255,255,255,.90)}
+.shell-screen .shell-hbar{background:rgba(255,255,255,.82)}
+.shell-screen .shell-nav{background:rgba(20,24,32,.62);border:1px solid rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);
+  box-shadow:0 16px 40px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.10)}
+.shell-screen .shell-nav .nv{background:rgba(255,255,255,.10);color:rgba(255,255,255,.74)}
+.shell-screen .shell-nav .nv.is-active{background:#6552FF;color:#fff}
+.shell-screen .shell-nav{transition:transform .46s cubic-bezier(.30,.94,.30,1) .12s,opacity .30s ease .12s}
+.shell-screen.nav-hidden .shell-nav{opacity:0;transform:translateY(16px) scale(.985);pointer-events:none}
+
+/* ================= 场景 + 三态交叉淡入 ================= */
+.scene{position:absolute;inset:0;z-index:1;background:#24463A}
+.layer{position:absolute;inset:0;opacity:0;transition:opacity .2s ease;pointer-events:none}
+.layer.on{opacity:1}
+.bg{position:absolute;inset:0;background-repeat:no-repeat;background-size:cover;background-position:100% 50%}
+.bg-a{background-image:url("../assets/nancy-board-point.png")}
+.bg-b{background-image:url("../assets/nancy-board-listen.png")}
+
+.wash{position:absolute;pointer-events:none}
+.wash-a{left:0;top:164px;width:248px;height:316px;
+  background:radial-gradient(62% 54% at 38% 46%,rgba(4,20,14,.42) 0%,rgba(4,20,14,.24) 58%,rgba(4,20,14,0) 82%)}
+.wash-b{left:0;top:158px;width:254px;height:286px;
+  background:radial-gradient(62% 54% at 40% 48%,rgba(4,20,14,.42) 0%,rgba(4,20,14,.23) 58%,rgba(4,20,14,0) 82%)}
+.wash-c{left:0;top:166px;width:258px;height:280px;
+  background:radial-gradient(64% 52% at 40% 45%,rgba(4,20,14,.42) 0%,rgba(4,20,14,.23) 58%,rgba(4,20,14,0) 82%)}
+
+.chalk{position:absolute;z-index:2;color:rgba(246,249,243,.96);
+  font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;
+  text-shadow:0 0 1px rgba(255,255,255,.46),0 1px 2px rgba(0,0,0,.23)}
+.chalk-title{font-size:30px;font-weight:800;letter-spacing:.075em;line-height:1.2;white-space:nowrap}
+.chalk-rule{height:1.7px;width:128px;margin-top:10px;border-radius:2px;transform:rotate(-.8deg);
+  background:linear-gradient(90deg,rgba(242,248,242,.72),rgba(242,248,242,.16));box-shadow:0 1px 0 rgba(255,255,255,.12)}
+.chalk-day{position:absolute;right:23px;top:121px;z-index:3;font-family:"Kaiti SC","STKaiti","KaiTi",sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:.08em;color:rgba(235,244,238,.56);text-shadow:0 1px 2px rgba(0,0,0,.2)}
+
+/* A  复习时间 */
+.chalk-a{left:12px;top:188px;width:226px}
+.chalk-a .yesterday{margin-top:18px;font-size:16px;font-weight:700;letter-spacing:.13em;color:rgba(238,247,241,.66)}
+.chalk-a .bigwords{margin-top:14px}
+.chalk-a .bigword{position:relative;display:block;width:max-content;margin-left:-6px;font-size:46px;font-weight:800;
+  line-height:1.22;letter-spacing:.025em;white-space:nowrap}
+.chalk-a .bigword.circled::after{content:"";position:absolute;left:-11px;right:-12px;top:-6px;bottom:-7px;
+  border:2px solid rgba(242,248,242,.78);border-radius:50%;transform:rotate(-3deg);box-shadow:0 0 4px rgba(240,248,242,.13)}
+.chalk-a .bigword.crossed{color:rgba(241,246,239,.92)}
+.chalk-a .bigword.crossed::after{content:"";position:absolute;left:-8px;right:-8px;top:48%;height:2.3px;border-radius:2px;
+  background:rgba(242,174,105,.93);transform:rotate(-2deg);box-shadow:0 0 6px rgba(242,174,105,.22)}
+
+/* B  今天的安排 */
+.chalk-b{left:18px;top:176px;width:224px}
+.chalk-b .steps{margin-top:24px;list-style:none;display:grid;gap:0;font-size:21px;font-weight:700;line-height:1.5;letter-spacing:-.015em;white-space:nowrap}
+.chalk-b .steps li{position:relative;width:max-content}
+.chalk-b .circle-inline{position:relative;display:inline-block;padding:0 3px}
+.chalk-b .circle-inline::after{content:"";position:absolute;left:-7px;right:-7px;top:-4px;bottom:-5px;
+  border:1.8px solid rgba(242,248,242,.76);border-radius:50%;transform:rotate(-2.4deg)}
+
+/* C  轮到你说了 */
+.chalk-c{left:18px;top:186px;width:240px}
+.chalk-c .quote{margin-top:31px;font-size:24px;font-weight:800;line-height:1.55;letter-spacing:.015em;white-space:nowrap}
+.chalk-c .quote .speaker{font-size:20px;color:rgba(240,247,241,.68);margin-right:2px}
+.chalk-c .answer-line{width:190px;height:1.7px;margin-top:34px;border-radius:2px;transform:rotate(-.6deg);
+  background:linear-gradient(90deg,rgba(241,247,241,.72),rgba(241,247,241,.18));box-shadow:0 1px 0 rgba(255,255,255,.1)}
+
+/* ================= 底部可读性渐变 ================= */
+.veil{position:absolute;left:0;right:0;bottom:0;height:265px;z-index:5;pointer-events:none;
+  background:linear-gradient(180deg,rgba(9,18,14,0) 0%,rgba(9,18,14,.20) 48%,rgba(9,18,14,.42) 100%);
+  transition:opacity .2s ease}
+
+/* ================= 顶部胶囊 ================= */
+.pill{position:absolute;top:57px;z-index:12;height:30px;display:flex;align-items:center;border-radius:15px;
+  background:rgba(14,18,28,.44);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 8px 20px rgba(4,6,18,.26),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  font-size:11px;font-weight:700;letter-spacing:.01em;transition:opacity .2s ease}
+.pill-l{left:14px;padding:0 9px 0 5px;gap:7px;border:1px solid rgba(255,255,255,.15)}
+.pill-l .who-main{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.pill-l .caret{width:12px;height:12px;stroke:rgba(255,255,255,.68);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .18s ease}
+.pill-l[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.mini-ava{width:21px;height:21px;border-radius:7px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:10px;font-weight:800;display:grid;place-items:center;box-shadow:0 3px 8px rgba(76,53,232,.35)}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:none;box-shadow:0 0 7px rgba(53,200,143,.45)}
+.pills-r{position:absolute;right:14px;top:57px;z-index:12;display:flex;gap:8px}
+.pillbtn{height:30px;display:flex;align-items:center;gap:5px;padding:0 11px;border-radius:15px;
+  background:rgba(14,18,28,.44);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 8px 20px rgba(4,6,18,.26),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  font-size:11px;font-weight:700}
+.pillbtn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .25s cubic-bezier(.3,.9,.3,1)}
+.chrome-hidden .pill-l{opacity:0;pointer-events:none}
+.chrome-hidden .pillbtn svg{transform:rotate(180deg)}
+.chrome-hidden .subtitle,.chrome-hidden .voice-dock,.chrome-hidden .type-dock,.chrome-hidden .veil{opacity:0;pointer-events:none}
+
+/* ================= 中英双语 ================= */
+.l-en,.en-line{display:none}
+[data-lang="mixed"] .l-en{display:inline}
+[data-lang="en"] .l-zh{display:none!important}
+[data-lang="en"] .l-en{display:inline}
+[data-lang="mixed"] .en-line,[data-lang="en"] .en-line{display:block}
+.langbtn{justify-content:center;min-width:42px;padding:0 9px;font-size:10px;letter-spacing:.04em}
+.langbtn:focus-visible{outline:2px solid rgba(146,132,255,.92);outline-offset:2px}
+.chalk-title .l-en{display:none;margin-top:4px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:12px;letter-spacing:.05em;line-height:1.2;opacity:.62}
+[data-lang="mixed"] .chalk-title .l-en,[data-lang="en"] .chalk-title .l-en{display:block}
+.bigword-gloss{margin-top:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:10px;font-weight:600;letter-spacing:.03em;line-height:1.35;color:rgba(235,244,238,.58);white-space:nowrap}
+.steps .en-line{margin-top:1px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:9.5px;font-weight:600;letter-spacing:.01em;line-height:1.15;color:rgba(235,244,238,.58);white-space:nowrap}
+.chalk-c .quote-en{display:none;margin-top:9px;font-size:10.5px;font-weight:600;line-height:1.35;letter-spacing:.01em;color:rgba(235,244,238,.63);white-space:nowrap}
+[data-lang="mixed"] .chalk-c .quote-en,[data-lang="en"] .chalk-c .quote-en{display:block}
+.subtitle .sub-en{display:none;margin-top:2px;font-size:10.5px;font-weight:550;line-height:1.28;letter-spacing:.01em;opacity:.82}
+[data-lang="mixed"] .subtitle .sub-en{display:block}
+[data-lang="en"] .subtitle .sub-zh{display:none}
+[data-lang="en"] .subtitle .sub-en{display:block}
+[data-lang="zh"] .subtitle .sub-en{display:none}
+[data-lang="mixed"] .subtitle,[data-lang="en"] .subtitle{white-space:normal;overflow:visible;text-overflow:clip}
+[data-lang="en"] .subtitle .sub-en{font-size:12.8px;font-weight:600;line-height:1.4;opacity:1}
+
+/* 语音状态：中文主句，英文只做辅助 */
+.voice-state .voice-en{display:none;margin-left:5px;font-size:10px;font-weight:600;letter-spacing:.01em;opacity:.66}
+[data-lang="mixed"] .voice-state .voice-en{display:inline}
+[data-lang="en"] .voice-state .voice-zh{display:none}
+[data-lang="en"] .voice-state .voice-en{display:inline;margin-left:0;font-size:11px;opacity:1}
+
+/* 记忆库：中英分层，不把两种语言挤成一行 */
+.memory-head h2 .l-en{display:none;margin-top:3px;font-size:14px;font-weight:800;line-height:1.2;letter-spacing:.01em;color:#6F8E82}
+[data-lang="mixed"] .memory-head h2 .l-en{display:block}
+[data-lang="en"] .memory-head h2 .l-en{display:block;margin-top:0;font-size:28px;letter-spacing:.02em;color:#25231F}
+.memory-head p .l-en{display:none}
+[data-lang="mixed"] .memory-head p .l-en{display:block;margin-top:2px;font-size:10.5px;color:#9A9184}
+[data-lang="en"] .memory-head p .l-en{display:block;font-size:12px;color:#8C8376}
+.memory-section h3 .l-en{display:none}
+[data-lang="mixed"] .memory-section h3 .l-en,[data-lang="en"] .memory-section h3 .l-en{display:inline;opacity:.62}
+.mem-text .l-en,.mem-source .l-en,.memory-foot .l-en{display:none}
+[data-lang="mixed"] .mem-text .l-en{display:block;margin-top:2px;font-size:10.5px;font-weight:550;line-height:1.35;color:#8C8376}
+[data-lang="en"] .mem-text .l-en{display:block;font-size:12.5px;font-weight:550;line-height:1.42;color:#514B42}
+.mem-source .l-en{display:none}
+[data-lang="mixed"] .mem-source .l-en,[data-lang="en"] .mem-source .l-en{display:inline;margin-left:3px;opacity:.72}
+[data-lang="mixed"] .memory-foot .l-en{display:block;margin-top:2px;font-size:9.5px;font-weight:550;line-height:1.35;color:#9A9184}
+[data-lang="en"] .memory-foot .l-en{display:block;font-size:11px;line-height:1.4;color:#8C8376}
+[data-lang="mixed"] .who-main .l-en{margin-left:4px;font-size:10px;font-weight:600;opacity:.68}
+[data-lang="mixed"] .menu-item .l-en{margin-left:5px;font-size:10.5px;font-weight:600;opacity:.6}
+[data-lang="mixed"] .badge .l-en,[data-lang="mixed"] .mem-save .l-en,[data-lang="mixed"] .mem-cancel .l-en{margin-left:3px;opacity:.66}
+[data-lang="mixed"] .memory-section h3 .l-en{margin-left:5px}
+[data-lang="mixed"] .mem-source .l-en{margin-left:4px}
+[data-lang="mixed"] .chalk-day .l-en{margin-left:7px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;
+  font-size:10px;font-weight:600;letter-spacing:.03em;opacity:.82}
+[data-lang="mixed"] .yesterday .l-en{margin-left:7px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;
+  font-size:10px;font-weight:600;letter-spacing:.03em;opacity:.72}
+[data-lang="mixed"] #collapseTx .l-en{margin-left:4px;font-size:9px;font-weight:600;opacity:.62}
+ 
+/* ================= 单行字幕 ================= */
+.subtitle{position:absolute;left:14px;right:14px;bottom:190px;z-index:10;text-align:center;
+  font-size:12.8px;font-weight:600;letter-spacing:.005em;line-height:1.4;color:rgba(255,255,255,.97);
+  text-shadow:0 1px 2px rgba(0,0,0,.52),0 0 16px rgba(0,0,0,.42);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .2s ease}
+.chrome-hidden .subtitle{opacity:0;pointer-events:none}
+
+/* ================= 语音 / 键盘输入条 ================= */
+.voice-dock{position:absolute;left:16px;right:16px;bottom:116px;z-index:11;display:flex;align-items:center;gap:9px;
+  transition:opacity .2s ease,transform .2s ease}
+.voice-state{height:34px;display:flex;align-items:center;padding:0 13px;border-radius:17px;
+  background:rgba(14,18,28,.44);border:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.88);
+  -webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);
+  box-shadow:0 8px 22px rgba(5,8,20,.25),inset 0 1px 0 rgba(255,255,255,.10);
+  font-size:11px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.orb{width:48px;height:48px;border-radius:50%;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.17);
+  background:rgba(18,22,34,.60);color:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
+  box-shadow:0 10px 24px rgba(8,7,28,.30),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .12s ease,background .18s ease,box-shadow .18s ease,color .18s ease}
+.orb:active{transform:scale(.94)}
+.orb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.mic-orb{background:linear-gradient(145deg,#8174ff,#6552ff 58%,#4C35E8);border-color:rgba(255,255,255,.22);
+  box-shadow:0 0 0 7px rgba(101,82,255,.13),0 8px 24px rgba(101,82,255,.42),inset 0 1px 0 rgba(255,255,255,.32)}
+.mic-orb.is-muted{background:rgba(42,47,58,.70);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.55);
+  box-shadow:0 10px 24px rgba(8,7,28,.29),inset 0 1px 0 rgba(255,255,255,.10)}
+.mic-orb .off{display:none}
+.mic-orb.is-muted .on{display:none}
+.mic-orb.is-muted .off{display:block}
+.type-dock{position:absolute;left:16px;right:16px;bottom:116px;z-index:11;display:flex;align-items:center;gap:8px;
+  transition:opacity .2s ease,transform .2s ease}
+.voice-dock.is-hidden,.type-dock.is-hidden{opacity:0;pointer-events:none;transform:translateY(6px)}
+.type-field{flex:1;min-width:0;height:48px;display:flex;align-items:center;padding:0 17px;border-radius:24px;
+  background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.92);color:#25233A;
+  box-shadow:0 6px 18px rgba(10,16,35,.14),inset 0 1px 0 rgba(255,255,255,.94);
+  -webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5)}
+.type-field input{width:100%;border:0;outline:0;background:transparent;font-size:13px;font-weight:600;color:#25233A}
+.type-field input::placeholder{color:#9290A0;font-weight:500}
+
+/* ================= Nancy 菜单 ================= */
+.nancy-menu{position:absolute;left:14px;top:93px;width:220px;z-index:20;padding:7px;border-radius:18px;
+  background:rgba(18,22,32,.86);border:1px solid rgba(255,255,255,.16);color:#fff;
+  -webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);
+  box-shadow:0 18px 42px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.12);
+  transform-origin:14px 0;animation:menuIn .18s ease both}
+@keyframes menuIn{from{opacity:0;transform:translateY(-5px) scale(.97)}to{opacity:1;transform:none}}
+.menu-item{width:100%;height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 11px;border:0;border-radius:12px;
+  background:transparent;text-align:left;font-size:12.5px;font-weight:700;letter-spacing:.01em}
+.menu-item + .menu-item{margin-top:1px}
+.menu-item .badge{font-size:10px;font-weight:700;letter-spacing:.02em;color:rgba(255,255,255,.38)}
+.menu-item:disabled{color:rgba(255,255,255,.36);cursor:not-allowed}
+.menu-item:not(:disabled){background:rgba(101,82,255,.17);color:#fff}
+.menu-item:not(:disabled) .badge{color:#C8BEFF}
+.menu-item:not(:disabled):active{background:rgba(101,82,255,.28)}
+.menu-item:focus-visible{outline:2px solid #AFA4FF;outline-offset:-2px}
+
+/* ================= 记忆库 ================= */
+.memory-layer{position:absolute;inset:0;z-index:80}
+.memory-backdrop{position:absolute;inset:0;background:rgba(6,12,10,.54);
+  -webkit-backdrop-filter:blur(4.5px) saturate(.92);backdrop-filter:blur(4.5px) saturate(.92);
+  animation:fadeIn .18s ease both}
+.memory-sheet{position:absolute;left:50%;top:50%;width:340px;max-height:640px;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;border-radius:24px;overflow:hidden;
+  background:linear-gradient(162deg,#FFFDF7 0%,#FBF6E9 58%,#F6EDDB 100%);
+  border:1px solid rgba(117,90,57,.14);
+  box-shadow:0 30px 70px rgba(4,8,8,.38),0 3px 8px rgba(7,10,9,.16),inset 0 1px 0 rgba(255,255,255,.95);
+  color:#25231F;animation:sheetIn .22s cubic-bezier(.2,.95,.35,1) both}
+.memory-sheet::before{content:"";position:absolute;left:37px;top:0;bottom:0;width:1px;background:rgba(192,88,82,.32);pointer-events:none;z-index:0}
+.memory-sheet::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(180deg,transparent 0,transparent 29px,rgba(71,96,88,.075) 29px,rgba(71,96,88,.075) 30px)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetIn{from{opacity:0;transform:translate(-50%,-48%) scale(.975)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.memory-head{position:relative;z-index:1;padding:24px 24px 13px 53px;flex:none}
+.memory-head h2{font-size:28px;font-weight:900;letter-spacing:.05em;line-height:1.15;color:#25231F}
+.memory-head p{margin-top:6px;font-size:12px;font-weight:600;letter-spacing:.01em;color:#8C8376}
+.memory-close{position:absolute;right:17px;top:17px;width:29px;height:29px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid rgba(70,63,52,.12);background:rgba(255,255,255,.52);color:#777065}
+.memory-close svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.memory-scroll{position:relative;z-index:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:0 24px 9px 53px}
+.memory-scroll::-webkit-scrollbar{display:none}
+.memory-section + .memory-section{margin-top:14px}
+.memory-section h3{font-size:11.5px;font-weight:900;letter-spacing:.12em;color:#6F8E82;margin-bottom:4px}
+.mem-item{position:relative;padding:7px 0 8px;border-bottom:1px dashed rgba(91,82,66,.13)}
+.mem-item:last-child{border-bottom:0}
+.mem-view{padding-right:32px}
+.mem-text{font-size:14px;font-weight:700;line-height:1.45;letter-spacing:.005em;color:#332F29}
+.mem-source{margin-top:3px;font-size:10px;font-weight:600;line-height:1.3;color:#9B9285}
+.mem-edit-btn{position:absolute;right:0;top:7px;width:27px;height:27px;border-radius:9px;border:1px solid rgba(94,79,60,.11);
+  background:rgba(255,255,255,.55);color:#736B5F;display:grid;place-items:center}
+.mem-edit-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mem-editor{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin:2px 0 1px}
+.mem-editor input{min-width:0;height:33px;border-radius:9px;border:1px solid rgba(94,79,60,.20);background:rgba(255,255,255,.68);
+  padding:0 9px;outline:0;font-size:13px;font-weight:600;color:#332F29}
+.mem-editor input:focus{border-color:rgba(101,82,255,.58);box-shadow:0 0 0 3px rgba(101,82,255,.10)}
+.mem-editor button{height:31px;padding:0 9px;border-radius:9px;border:0;font-size:11px;font-weight:800}
+.mem-save{background:#6552FF;color:#fff}
+.mem-cancel{background:rgba(70,63,52,.08);color:#6C655A}
+.memory-foot{position:relative;z-index:1;flex:none;padding:11px 24px 18px 53px;border-top:1px solid rgba(101,91,73,.10);
+  font-size:10.5px;font-weight:600;line-height:1.5;color:#978E80;background:rgba(249,243,230,.62)}
+
+/* ================= DEV：画布外右侧，不参与截图 ================= */
+.dev{position:fixed;left:calc(50% + 218px);top:50%;transform:translateY(-50%);z-index:200;width:136px;
+  padding:12px 11px 11px;border-radius:17px;background:rgba(16,20,28,.91);border:1.5px dashed rgba(170,160,220,.48);
+  box-shadow:0 18px 44px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.dev .tag{display:block;font-size:8px;font-weight:900;letter-spacing:.16em;color:#B9AEFF;margin:0 0 9px 2px}
+.dev button{width:100%;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.055);
+  color:rgba(255,255,255,.82);display:grid;grid-template-columns:25px 1fr;align-items:center;gap:4px;padding:0 8px;
+  font-size:10px;font-weight:800;text-align:left}
+.dev button + button{margin-top:6px}
+.dev button b{font-size:12px;color:#B9AEFF}
+.dev button span{font-size:9px;font-weight:600;color:rgba(255,255,255,.48)}
+.dev button.on{background:#6552FF;border-color:#6552FF;color:#fff;box-shadow:0 6px 16px rgba(76,53,232,.35)}
+.dev button.on b,.dev button.on span{color:#fff}
+.dev .hint{margin:10px 2px 0;font-size:8.5px;line-height:1.55;color:rgba(255,255,255,.37)}
+@media(max-width:720px){.dev{display:none}}
+</style>
+<link rel="stylesheet" href="../shell.css">
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen nav-hidden" id="root" data-lang="mixed">
+
+  <div class="scene" aria-label="Nancy 的黑板">
+    <section class="layer layer-a on" id="layerA" aria-label="复习时间">
+      <div class="bg bg-a" aria-hidden="true"></div>
+      <div class="wash wash-a" aria-hidden="true"></div>
+      <div class="chalk chalk-a">
+        <h1 class="chalk-title"><span class="l-zh">复习时间</span><span class="l-en">Review time</span></h1>
+        <div class="chalk-rule" aria-hidden="true"></div>
+        <p class="yesterday"><span class="l-zh">昨天</span><span class="l-en">Yesterday</span></p>
+        <div class="bigwords">
+          <span class="bigword circled">安排</span>
+          <span class="bigword crossed">安全</span>
+        </div>
+        <div class="bigword-gloss en-line">安排 · arrangement&nbsp;&nbsp; / &nbsp;&nbsp;安全 · safety</div>
+      </div>
+      <span class="chalk-day"><span class="l-zh">第 15 天</span><span class="l-en">Day 15</span></span>
+    </section>
+
+    <section class="layer layer-b" id="layerB" aria-label="今天的安排" aria-hidden="true">
+      <div class="bg bg-b" aria-hidden="true"></div>
+      <div class="wash wash-b" aria-hidden="true"></div>
+      <div class="chalk chalk-b">
+        <h1 class="chalk-title"><span class="l-zh">今天的安排</span><span class="l-en">Today's plan</span></h1>
+        <div class="chalk-rule" aria-hidden="true"></div>
+        <ul class="steps">
+          <li><span class="circle-inline">复习：安排 / 安全</span><span class="en-line">Review: 安排 / 安全</span></li>
+          <li>新学：工作安排的说法<span class="en-line">Learn: talking about work arrangements</span></li>
+          <li>练习：听一遍，选意思<span class="en-line">Practice: listen and choose the meaning</span></li>
+          <li>实战：回主管一句话<span class="en-line">Apply: answer your supervisor in one sentence</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="layer layer-c" id="layerC" aria-label="轮到你说了" aria-hidden="true">
+      <div class="bg bg-b" aria-hidden="true"></div>
+      <div class="wash wash-c" aria-hidden="true"></div>
+      <div class="chalk chalk-c">
+        <h1 class="chalk-title"><span class="l-zh">轮到你说了</span><span class="l-en">Your turn</span></h1>
+        <div class="chalk-rule" aria-hidden="true"></div>
+        <p class="quote"><span class="speaker">主管：</span>明天<br>把安排发给你。<span class="quote-en">Supervisor:<br>I'll send you the schedule tomorrow.</span></p>
+        <div class="answer-line" aria-hidden="true"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="veil" aria-hidden="true"></div>
+
+  <button class="pill pill-l" id="whoBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="nancyMenu">
+    <span class="who-main"><span class="mini-ava" aria-hidden="true">N</span>Nancy  <span class="l-zh">在线</span><span class="l-en">online</span><i class="tdot" aria-hidden="true"></i></span>
+    <svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 9 4.5 4.5L16.5 9"/></svg>
+  </button>
+
+  <div class="pills-r">
+    <button class="pillbtn langbtn" id="langBtn" type="button" aria-label="切换语言">
+      <span id="langTx">中英</span>
+    </button>
+    <button class="pillbtn" id="collapseBtn" type="button" aria-label="收起悬浮控件">
+      <span id="collapseTx"><span class="l-zh" id="collapseZh">收起</span><span class="l-en" id="collapseEn">Collapse</span></span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 9.5 12 14l4.5-4.5"/><path d="M7.5 14.5 12 10l4.5 4.5"/></svg>
+    </button>
+  </div>
+
+  <div class="nancy-menu" id="nancyMenu" role="menu" aria-label="Nancy 菜单" hidden>
+    <button class="menu-item" type="button" role="menuitem" disabled><span class="l-zh">上课记录</span><span class="l-en">Lesson history</span><span class="badge"><span class="l-zh">稍后</span><span class="l-en">Soon</span></span></button>
+    <button class="menu-item" type="button" role="menuitem" disabled><span class="l-zh">课程资料</span><span class="l-en">Course materials</span><span class="badge"><span class="l-zh">稍后</span><span class="l-en">Soon</span></span></button>
+    <button class="menu-item" id="memoryOpen" type="button" role="menuitem"><span class="l-zh">记忆库</span><span class="l-en">Memory</span><span class="badge"><span class="l-zh">可点</span><span class="l-en">Open</span></span></button>
+    <button class="menu-item" type="button" role="menuitem" disabled><span class="l-zh">Nancy 设置</span><span class="l-en">Nancy settings</span><span class="badge"><span class="l-zh">稍后</span><span class="l-en">Soon</span></span></button>
+  </div>
+
+  <p class="subtitle" id="subtitle" aria-live="polite"><span class="sub-zh" id="subtitleZh">昨天你把安排听成了安全。先把这个词拿回来。</span><span class="sub-en" id="subtitleEn">Yesterday you heard 安排 as 安全. Let's get that word back.</span></p>
+
+  <div class="voice-dock" id="voiceDock" aria-label="语音输入">
+    <button class="orb mic-orb" id="micBtn" type="button" aria-label="关闭麦克风" aria-pressed="true">
+      <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+      <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16"/><path d="M9 6.3a3.7 3.7 0 0 1 6 3.2v2.2"/><path d="M5.8 11.4a6.2 6.2 0 0 0 9.4 5.3"/><path d="M12 17.6v3.2"/></svg>
+    </button>
+    <span class="voice-state" id="voiceState" aria-live="polite"><span class="voice-zh" id="voiceZh">我在听。</span><span class="voice-en" id="voiceEn">I'm listening.</span></span>
+    <button class="orb" id="keyModeBtn" type="button" aria-label="改用键盘输入">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="3"/><path d="M6.7 9h.1M10 9h.1M13.3 9h.1M16.6 9h.1M6.7 12.3h.1M10 12.3h.1M13.3 12.3h.1M16.6 12.3h.1M7.2 15.6h9.6"/></svg>
+    </button>
+  </div>
+
+  <div class="type-dock is-hidden" id="typeDock" aria-label="键盘输入">
+    <button class="orb" id="voiceModeBtn" type="button" aria-label="回到语音输入">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+    </button>
+    <label class="type-field">
+      <input id="typeInput" type="text" autocomplete="off" placeholder="输入一句 / Type a sentence" aria-label="输入一句">
+    </label>
+  </div>
+
+  <div class="memory-layer" id="memoryLayer" hidden>
+    <div class="memory-backdrop" data-memory-close></div>
+    <section class="memory-sheet" role="dialog" aria-modal="true" aria-labelledby="memoryTitle" aria-describedby="memorySub">
+      <header class="memory-head">
+        <h2 id="memoryTitle"><span class="l-zh">记忆库</span><span class="l-en">Memory</span></h2>
+        <p id="memorySub"><span class="l-zh">她记得关于你的 6 件事</span><span class="l-en">Six things she remembers about you</span></p>
+        <button class="memory-close" id="memoryClose" type="button" aria-label="关闭记忆库" data-memory-close>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+      <div class="memory-scroll">
+        <section class="memory-section">
+          <h3><span class="l-zh">关于你</span><span class="l-en">About you</span></h3>
+          <div class="mem-item"><div class="mem-view"><p class="mem-text"><span class="l-zh">11 月 26 日入职，还有 43 天。</span><span class="l-en">Starts work on Nov 26 — 43 days to go.</span></p><p class="mem-source"><span class="l-zh">来源：你的目标</span><span class="l-en">From: your goal</span></p></div></div>
+          <div class="mem-item" id="editableMemory">
+            <div class="mem-view" id="memoryView">
+              <p class="mem-text" id="memoryText"><span class="l-zh" id="memoryZh">你不喜欢开口，先多听。</span><span class="l-en" id="memoryEn">You prefer to listen before speaking.</span></p>
+              <p class="mem-source"><span class="l-zh">来源：你上次说的</span><span class="l-en">From: what you told her</span></p>
+            </div>
+            <button class="mem-edit-btn" id="memoryEditBtn" type="button" aria-label="编辑这条记忆">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4.8 16.7-.6 3.1 3.1-.6L18.6 7.9a1.8 1.8 0 0 0 0-2.5 1.8 1.8 0 0 0-2.5 0Z"/><path d="m14.9 6.6 2.5 2.5"/></svg>
+            </button>
+            <div class="mem-editor" id="memoryEditor" hidden>
+              <input id="memoryInput" type="text" value="你不喜欢开口，先多听。" aria-label="修改记忆">
+              <button class="mem-save" id="memorySave" type="button"><span class="l-zh">保存</span><span class="l-en">Save</span></button>
+              <button class="mem-cancel" id="memoryCancel" type="button"><span class="l-zh">取消</span><span class="l-en">Cancel</span></button>
+            </div>
+          </div>
+        </section>
+        <section class="memory-section">
+          <h3><span class="l-zh">学习进度</span><span class="l-en">Progress</span></h3>
+          <div class="mem-item"><div class="mem-view"><p class="mem-text"><span class="l-zh">第 15 天；听懂工作安排 5/5。</span><span class="l-en">Day 15 · understanding work arrangements 5/5.</span></p><p class="mem-source"><span class="l-zh">来源：你的进度</span><span class="l-en">From: your progress</span></p></div></div>
+        </section>
+        <section class="memory-section">
+          <h3><span class="l-zh">你常错</span><span class="l-en">Trouble spots</span></h3>
+          <div class="mem-item"><div class="mem-view"><p class="mem-text"><span class="l-zh">安排 / 安全，最近错了 3 次。</span><span class="l-en">安排 / 安全 — missed 3 times lately.</span></p><p class="mem-source"><span class="l-zh">来源：最近 3 次练习</span><span class="l-en">From: last 3 practices</span></p></div></div>
+          <div class="mem-item"><div class="mem-view"><p class="mem-text"><span class="l-zh">听长句容易丢后半句。</span><span class="l-en">With long sentences, you tend to lose the second half.</span></p><p class="mem-source"><span class="l-zh">来源：最近 2 次练习</span><span class="l-en">From: last 2 practices</span></p></div></div>
+        </section>
+        <section class="memory-section">
+          <h3><span class="l-zh">我打算怎么教</span><span class="l-en">My plan</span></h3>
+          <div class="mem-item"><div class="mem-view"><p class="mem-text"><span class="l-zh">今天先复习安排，再听一遍，最后回主管一句话。</span><span class="l-en">Review 安排, listen again, then answer your supervisor in one sentence.</span></p><p class="mem-source"><span class="l-zh">来源：我安排的</span><span class="l-en">From: my plan</span></p></div></div>
+        </section>
+      </div>
+      <footer class="memory-foot"><span class="l-zh">她只记和学习有关的事。你可以改，也可以让她忘掉。</span><span class="l-en">She only remembers learning. You can edit it — or ask her to forget.</span></footer>
+    </section>
+  </div>
+</div>
+
+<aside class="dev" id="dev" aria-label="开发开关（A/B/C 三态）">
+  <span class="tag">DEV  首页三态</span>
+  <button id="devA" class="on" type="button"><b>A</b><span>复习时间</span></button>
+  <button id="devB" type="button"><b>B</b><span>今天的安排</span></button>
+  <button id="devC" type="button"><b>C</b><span>轮到你说了</span></button>
+  <p class="hint">A / B / C 或 1 / 2 / 3<br>C 态按空格听评价</p>
+</aside>
+</div>
+
+<script src="../shell.js"></script>
+<script>
+(function () {
+  var root = document.getElementById('root');
+  var layers = { a: document.getElementById('layerA'), b: document.getElementById('layerB'), c: document.getElementById('layerC') };
+  var subtitle = document.getElementById('subtitle');
+  var devBtns = { a: document.getElementById('devA'), b: document.getElementById('devB'), c: document.getElementById('devC') };
+  var whoBtn = document.getElementById('whoBtn');
+  var menu = document.getElementById('nancyMenu');
+  var memoryOpen = document.getElementById('memoryOpen');
+  var memoryLayer = document.getElementById('memoryLayer');
+  var memoryClose = document.getElementById('memoryClose');
+  var memoryEditBtn = document.getElementById('memoryEditBtn');
+  var memoryView = document.getElementById('memoryView');
+  var memoryEditor = document.getElementById('memoryEditor');
+  var memoryInput = document.getElementById('memoryInput');
+  var memoryText = document.getElementById('memoryText');
+  var memorySave = document.getElementById('memorySave');
+  var memoryCancel = document.getElementById('memoryCancel');
+  var micBtn = document.getElementById('micBtn');
+  var voiceState = document.getElementById('voiceState');
+  var voiceDock = document.getElementById('voiceDock');
+  var typeDock = document.getElementById('typeDock');
+  var keyModeBtn = document.getElementById('keyModeBtn');
+  var voiceModeBtn = document.getElementById('voiceModeBtn');
+  var typeInput = document.getElementById('typeInput');
+  var collapseBtn = document.getElementById('collapseBtn');
+  var collapseTx = document.getElementById('collapseTx');
+  var collapseZh = document.getElementById('collapseZh');
+  var collapseEn = document.getElementById('collapseEn');
+  var langBtn = document.getElementById('langBtn');
+  var langTx = document.getElementById('langTx');
+  var subtitleZh = document.getElementById('subtitleZh');
+  var subtitleEn = document.getElementById('subtitleEn');
+  var memoryZh = document.getElementById('memoryZh');
+  var memoryEn = document.getElementById('memoryEn');
+  var voiceZh = document.getElementById('voiceZh');
+  var voiceEn = document.getElementById('voiceEn');
+
+  var COPY = {
+    a: { zh: '昨天你把安排听成了安全。先把这个词拿回来。', en: 'Yesterday you heard 安排 as 安全. Let\'s get that word back.' },
+    b: { zh: '今天四步，先复习安排。', en: 'Four steps today. We\'ll start by reviewing 安排.' },
+    c: { zh: '现在回他一句。', en: 'Now answer him in one sentence.' }
+  };
+  var C_REPLY = { zh: '可以。再加一句「我明天下午发您」，更清楚。', en: 'Good. Add “I\'ll send it to you tomorrow afternoon” to be clearer.' };
+  var MEMORY_REPLY = { zh: '记住了。以后先给你 10 秒准备，不催你。', en: 'Got it. I\'ll give you ten seconds to prepare, no rushing.' };
+  var LANG_ORDER = ['zh', 'mixed', 'en'];
+  var LANG_LABELS = { zh: '中文', mixed: '中英', en: 'EN' };
+  var VOICE_COPY = {
+    on: { zh: '我在听。', en: 'I\'m listening.' },
+    off: { zh: '已闭麦。', en: 'Mic off.' }
+  };
+  var state = 'a';
+  var micOn = true;
+  var typing = false;
+  var menuOpen = false;
+  var memoryChanged = false;
+  var lang = 'mixed';
+  var currentCopy = COPY.a;
+
+  function setSubtitle(copy) {
+    currentCopy = copy;
+    subtitleZh.textContent = copy.zh;
+    subtitleEn.textContent = copy.en;
+  }
+
+  function savedLang() {
+    try {
+      var saved = localStorage.getItem('ai-chinese-lang');
+      if (LANG_ORDER.indexOf(saved) > -1) return saved;
+    } catch (err) {}
+    return 'mixed';
+  }
+
+  function initialLang() {
+    try {
+      var fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (LANG_ORDER.indexOf(fromUrl) > -1) return fromUrl;
+    } catch (err) {}
+    return savedLang();
+  }
+
+  function applyLang(next, persist) {
+    lang = next;
+    root.setAttribute('data-lang', next);
+    langTx.textContent = LANG_LABELS[next];
+    langBtn.setAttribute('aria-label', '切换语言 / Change language：' + LANG_LABELS[next]);
+    langBtn.setAttribute('title', '中文 → 中英 → EN（L）');
+    document.documentElement.lang = next === 'en' ? 'en' : 'zh-CN';
+    if (persist) {
+      try { localStorage.setItem('ai-chinese-lang', next); } catch (err) {}
+    }
+    renderVoice();
+    renderCollapse();
+  }
+
+  function cycleLang() {
+    var index = LANG_ORDER.indexOf(lang);
+    applyLang(LANG_ORDER[(index + 1) % LANG_ORDER.length], true);
+  }
+
+  function setMenu(open) {
+    menuOpen = open;
+    menu.hidden = !open;
+    whoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function setState(next) {
+    state = next;
+    Object.keys(layers).forEach(function (key) {
+      var on = key === next;
+      layers[key].classList.toggle('on', on);
+      layers[key].setAttribute('aria-hidden', on ? 'false' : 'true');
+      devBtns[key].classList.toggle('on', on);
+    });
+    setSubtitle(COPY[next]);
+    setMenu(false);
+  }
+
+  Object.keys(devBtns).forEach(function (key) {
+    devBtns[key].addEventListener('click', function () { setState(key); });
+  });
+
+  /* Nancy 菜单 */
+  whoBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    setMenu(!menuOpen);
+  });
+
+  menu.addEventListener('click', function (e) { e.stopPropagation(); });
+
+  memoryOpen.addEventListener('click', function () {
+    setMenu(false);
+    openMemory();
+  });
+
+  function openMemory() {
+    memoryLayer.hidden = false;
+    memoryView.hidden = false;
+    memoryEditor.hidden = true;
+    memoryInput.value = lang === 'en' ? memoryEn.textContent : memoryZh.textContent;
+    setTimeout(function () { memoryClose.focus(); }, 0);
+  }
+
+  function closeMemory() {
+    memoryLayer.hidden = true;
+    if (memoryChanged) setSubtitle(MEMORY_REPLY);
+    else setSubtitle(COPY[state]);
+    whoBtn.focus();
+  }
+
+  document.querySelectorAll('[data-memory-close]').forEach(function (el) {
+    el.addEventListener('click', closeMemory);
+  });
+  memoryClose.addEventListener('click', closeMemory);
+
+  memoryEditBtn.addEventListener('click', function () {
+    memoryView.hidden = true;
+    memoryEditBtn.hidden = true;
+    memoryEditor.hidden = false;
+    memoryInput.value = lang === 'en' ? memoryEn.textContent : memoryZh.textContent;
+    memoryInput.focus();
+    memoryInput.select();
+  });
+
+  function cancelMemoryEdit() {
+    memoryEditor.hidden = true;
+    memoryView.hidden = false;
+    memoryEditBtn.hidden = false;
+    memoryInput.value = lang === 'en' ? memoryEn.textContent : memoryZh.textContent;
+    memoryEditBtn.focus();
+  }
+
+  function saveMemoryEdit() {
+    var next = memoryInput.value.trim();
+    if (!next) { memoryInput.focus(); return; }
+    memoryZh.textContent = next;
+    memoryEn.textContent = next;
+    memoryChanged = true;
+    cancelMemoryEdit();
+  }
+
+  memoryCancel.addEventListener('click', cancelMemoryEdit);
+  memorySave.addEventListener('click', saveMemoryEdit);
+  memoryInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveMemoryEdit(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelMemoryEdit(); }
+  });
+
+  /* 语音 / 键盘。只做状态，不申请麦克风权限。 */
+  function renderVoice() {
+    micBtn.classList.toggle('is-muted', !micOn);
+    micBtn.setAttribute('aria-pressed', micOn ? 'true' : 'false');
+    micBtn.setAttribute('aria-label', micOn ? '关闭麦克风 / Turn mic off' : '打开麦克风 / Turn mic on');
+    var copy = micOn ? VOICE_COPY.on : VOICE_COPY.off;
+    voiceZh.textContent = copy.zh;
+    voiceEn.textContent = copy.en;
+  }
+
+  function renderCollapse() {
+    var hidden = root.classList.contains('chrome-hidden');
+    collapseZh.textContent = hidden ? '展开' : '收起';
+    collapseEn.textContent = hidden ? 'Expand' : 'Collapse';
+    collapseBtn.setAttribute('aria-label', hidden ? '展开悬浮控件 / Show controls' : '收起悬浮控件 / Hide controls');
+  }
+
+  micBtn.addEventListener('click', function () {
+    micOn = !micOn;
+    renderVoice();
+  });
+
+  function openTyping() {
+    typing = true;
+    micOn = false;
+    renderVoice();
+    voiceDock.classList.add('is-hidden');
+    typeDock.classList.remove('is-hidden');
+    setTimeout(function () { typeInput.focus(); }, 0);
+  }
+
+  function closeTyping() {
+    typing = false;
+    micOn = true;
+    renderVoice();
+    typeDock.classList.add('is-hidden');
+    voiceDock.classList.remove('is-hidden');
+    micBtn.focus();
+  }
+
+  keyModeBtn.addEventListener('click', openTyping);
+  voiceModeBtn.addEventListener('click', closeTyping);
+
+  /* 收起悬浮控件，只留黑板 */
+  collapseBtn.addEventListener('click', function () {
+    root.classList.toggle('chrome-hidden');
+    renderCollapse();
+    root.classList.add('nav-hidden');
+    setMenu(false);
+  });
+
+  langBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    cycleLang();
+  });
+
+  /* 点画面空白：先关菜单；再点才让导航浮出 */
+  var SKIP = '.dev,.shell-nav,.pill,.pills-r,.nancy-menu,.subtitle,.voice-dock,.type-dock,.memory-layer';
+  root.addEventListener('click', function (e) {
+    var t = e.target;
+    if (menuOpen) {
+      if (t && t.closest && (t.closest('.nancy-menu') || t.closest('#whoBtn'))) return;
+      setMenu(false);
+      return;
+    }
+    if (t && t.closest && t.closest(SKIP)) return;
+    if (memoryLayer.hidden) root.classList.toggle('nav-hidden');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !memoryLayer.hidden) {
+      e.preventDefault();
+      closeMemory();
+      return;
+    }
+    if (!memoryLayer.hidden) return;
+    var active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+    var key = (e.key || '').toLowerCase();
+    if (key === 'l') { cycleLang(); return; }
+    if (key === 'a' || key === '1') setState('a');
+    if (key === 'b' || key === '2') setState('b');
+    if (key === 'c' || key === '3') setState('c');
+    if (e.code === 'Space' && state === 'c') {
+      e.preventDefault();
+      setSubtitle(C_REPLY);
+    }
+  });
+
+  /* 导航只展示，不跳转（试验页） */
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('.shell-nav a') : null;
+    if (a) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
+  applyLang(initialLang(), false);
+  setState('a');
+  root.classList.add('nav-hidden');
+})();
+</script>
+</body>
+</html>
+
+
