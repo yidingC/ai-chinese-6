@@ -27,8 +27,9 @@ body.immersive .stage{border-radius:46px;box-shadow:0 28px 78px rgba(0,0,0,.58),
 body.shot .dev{display:none!important}
 body.shot,body.shot *{cursor:none!important}
 
-.bg{position:absolute;inset:0;z-index:0;background-image:url("../assets/nancy-board-landscape.png");
-  background-repeat:no-repeat;background-size:cover;background-position:50% 50%}
+.teacher-layer{position:absolute;right:47px;bottom:0;height:363px;width:auto;z-index:3;pointer-events:none;user-select:none;filter:drop-shadow(-10px 14px 18px rgba(4,16,12,.18))}
+.bg{position:absolute;inset:0;z-index:0;background-image:url("../assets/nancy/nancy-board-clean.png?v=20261022");
+  background-repeat:no-repeat;background-size:cover;background-position:center calc(100% + 22px)}
 .board-wash{position:absolute;left:16px;top:64px;width:648px;height:194px;z-index:1;pointer-events:none;
   background:radial-gradient(72% 74% at 38% 45%,rgba(4,20,14,.32) 0%,rgba(4,20,14,.20) 60%,rgba(4,20,14,0) 100%)}
 .task-wash{position:absolute;left:18px;right:188px;top:184px;height:98px;z-index:15;pointer-events:none;
@@ -47,21 +48,82 @@ body.shot,body.shot *{cursor:none!important}
 .rule{height:1.5px;border-radius:2px;transform:rotate(-.5deg);
   background:linear-gradient(90deg,rgba(245,250,245,.63),rgba(245,250,245,.08));box-shadow:0 1px 0 rgba(255,255,255,.08)}
 
-/* D1  生词卡 */
-.d1-card{display:block;position:absolute;left:0;top:0;width:420px;height:174px;border:1.4px solid rgba(245,249,244,.38);border-radius:18px;
-  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.008));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 26px rgba(0,10,7,.08);text-align:left;padding:8px 18px 10px;
-  transform:rotate(-.35deg);transition:background .16s ease,border-color .16s ease}
-.d1-card:hover{background:rgba(255,255,255,.055);border-color:rgba(245,249,244,.52)}
-.d1-word-line{display:flex;align-items:flex-end;gap:14px;height:62px}
-.d1-word{font-size:52px;font-weight:800;line-height:1;letter-spacing:.03em}
-.d1-word-py{font-size:12px;font-weight:800;color:rgba(238,246,240,.68);padding-bottom:8px}
-.d1-pos{display:block;margin-top:1px;font-size:20px;font-weight:800;letter-spacing:.03em;color:rgba(242,249,243,.86)}
-.d1-eg{display:block;margin-top:13px;font-size:32px;font-weight:800;line-height:1.15;letter-spacing:.02em;white-space:nowrap}
-.d1-egp{display:block;margin-top:3px}
-.d1-ege{display:block;margin-top:1px}
-.d1-progress{position:absolute;right:18px;bottom:10px;font-size:20px;font-weight:800;letter-spacing:.03em;color:rgba(240,247,241,.66)}
-.d1-tip{position:absolute;left:456px;top:146px;font-size:20px;font-weight:700;color:rgba(240,247,241,.48);transform:rotate(-2deg)}
+/* D1  同一块黑板的三帧：待机 / 复习 / 新课 */
+.d1-card{display:block;position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;
+  background:transparent;box-shadow:none;text-align:left;padding:0;transform:none;text-shadow:inherit}
+.d1-card:hover,.d1-card:focus,.d1-card:focus-visible{background:transparent;outline:none}
+.d1-card{cursor:default}
+.stage.d1-clean .board-wash,.stage.d1-clean .task-wash{display:none}
+.stage.d1-clean .subtitle{bottom:42px}
+.d1-board{--chalk-kai:"STKaiti","Kaiti SC","KaiTi","Microsoft YaHei",sans-serif;
+  position:relative;display:block;height:100%;letter-spacing:0}
+.d1-date-row{display:flex;align-items:center;height:27px;padding-top:1px;padding-left:34px}
+.d1-date{display:block;font-family:var(--chalk-kai);font-size:22px;font-weight:400;line-height:26px;
+  letter-spacing:.035em;color:rgba(247,250,245,.86);white-space:nowrap;transform:rotate(-.45deg);transform-origin:left center;
+  text-shadow:0 0 1.3px rgba(255,255,255,.34),0 1px 1px rgba(0,0,0,.16)}
+.d1-review-layout{position:absolute;left:245px;top:37px;display:block;width:272px;transform:rotate(-.12deg)}
+.d1-review-label{position:relative;display:block;width:max-content;height:18px;font-family:var(--chalk-kai);
+  font-size:14.5px;font-weight:400;line-height:18px;letter-spacing:.045em;color:rgba(241,248,242,.56);
+  text-shadow:0 0 1.3px rgba(255,255,255,.34),0 1px 1px rgba(0,0,0,.16)}
+.d1-review-label::after{content:"";position:absolute;left:0;right:1px;bottom:-1px;height:1.4px;transform:rotate(-1deg);
+  background:linear-gradient(90deg,rgba(245,250,245,.38),rgba(245,250,245,.03))}
+.d1-review-row{display:flex;align-items:flex-start;gap:15px;margin-top:5px}
+.d1-unit{display:inline-flex;flex:0 0 auto;flex-direction:column;align-items:center}
+.d1-char{display:inline-block;font-weight:400;letter-spacing:.025em;white-space:nowrap}
+.d1-review-row .d1-char{height:39px;font-size:36px;line-height:39px}
+.d1-pinyin{display:block;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-weight:700;
+  letter-spacing:.015em;color:rgba(235,244,238,.64);white-space:nowrap}
+.d1-review-row .d1-pinyin{height:13px;font-size:9.5px;line-height:13px}
+.d1-target .d1-char{position:relative}
+.d1-target .d1-char::after{content:"";position:absolute;left:-5px;right:-5px;top:-5px;bottom:-6px;opacity:0;
+  border:1.8px solid rgba(245,249,244,.80);border-radius:52% 47% 55% 46% / 44% 59% 41% 56%;
+  transform:rotate(-4deg);box-shadow:0 0 3px rgba(255,255,255,.08);transition:opacity .12s ease}
+.d1-target .d1-char::before{content:"";position:absolute;left:-2px;right:-8px;top:-2px;bottom:-8px;opacity:0;
+  border:1px solid rgba(245,249,244,.30);border-radius:51% 46% 54% 47% / 45% 58% 42% 55%;transform:rotate(2deg);
+  transition:opacity .12s ease}
+.stage.board-review .d1-target .d1-char::before{opacity:1}
+.stage.board-review .d1-target .d1-char::after{opacity:1}
+.d1-review-row .d1-unit:nth-child(1){transform:translateY(1px) rotate(-1.1deg)}
+.d1-review-row .d1-unit:nth-child(2){transform:translateY(-1px) rotate(.5deg)}
+.d1-review-row .d1-unit:nth-child(3){transform:translateY(1.6px) rotate(-.4deg)}
+.d1-review-row .d1-unit:nth-child(4){transform:translateY(-.5px) rotate(.8deg)}
+.d1-review-row .d1-unit:nth-child(5){transform:translateY(1.2px) rotate(-.6deg)}
+.d1-last{display:block;margin-top:9px;font-family:var(--chalk-kai);font-size:16px;font-weight:400;line-height:19px;
+  letter-spacing:.025em;color:rgba(238,246,240,.64);text-align:left;white-space:nowrap;
+  text-shadow:0 0 1.3px rgba(255,255,255,.32),0 1px 1px rgba(0,0,0,.16)}
+.d1-new-layout{display:none;position:absolute;left:34px;top:34px;grid-template-columns:142px 1px 288px;column-gap:18px;
+  width:467px;height:145px;transform:rotate(-.10deg)}
+.stage.board-new .d1-review-layout{display:none}
+.stage.board-new .d1-new-layout{display:grid}
+.d1-review-rail{display:block;min-width:0;padding-top:1px}
+.d1-mini-label{display:block;height:16px;font-family:var(--chalk-kai);font-size:12.5px;font-weight:400;line-height:16px;
+  letter-spacing:.045em;color:rgba(241,248,242,.40)}
+.d1-mini-row{display:flex;align-items:flex-start;gap:4px;margin-top:6px}
+.d1-mini-row .d1-char{height:23px;font-size:20px;line-height:23px;color:rgba(241,248,242,.43)}
+.d1-mini-row .d1-pinyin{height:10px;font-size:8px;line-height:10px;color:rgba(235,244,238,.27)}
+.d1-mini-last{display:block;margin-top:9px;font-family:var(--chalk-kai);font-size:11.5px;font-weight:400;line-height:14px;
+  letter-spacing:.02em;color:rgba(238,246,240,.38);white-space:nowrap}
+.d1-new-divider{display:block;height:120px;margin-top:3px;transform:rotate(.45deg);border-radius:2px;
+  background:linear-gradient(180deg,rgba(245,250,245,0) 0%,rgba(245,250,245,.17) 18%,rgba(245,250,245,.23) 78%,rgba(245,250,245,0) 100%)}
+.d1-new-content{display:block;min-width:0;padding-top:0}
+.d1-today-heading{position:relative;display:block;width:max-content;height:25px;font-family:var(--chalk-kai);
+  font-size:22.5px;font-weight:400;line-height:25px;letter-spacing:.02em;color:rgba(246,227,180,.95);white-space:nowrap;
+  text-shadow:0 0 1.4px rgba(255,243,207,.30),0 1px 1px rgba(0,0,0,.15)}
+.d1-today-heading::after{content:"";position:absolute;left:1px;right:3px;bottom:-4px;height:1.8px;border-radius:2px;
+  transform:rotate(-.65deg);background:linear-gradient(90deg,rgba(246,227,180,.60),rgba(246,227,180,.10))}
+.d1-food-grid{display:grid;grid-template-columns:repeat(3,72px);column-gap:7px;row-gap:3px;margin-top:7px}
+.d1-food-unit{display:inline-flex;flex-direction:column;align-items:flex-start;min-width:0}
+.d1-food-unit .d1-char{height:24px;font-size:22px;line-height:24px;color:rgba(247,250,245,.94)}
+.d1-food-unit .d1-pinyin{height:11px;font-size:8.5px;line-height:11px;color:rgba(235,244,238,.56)}
+.d1-food-unit:nth-child(1){transform:translateY(1px) rotate(-.8deg)}
+.d1-food-unit:nth-child(2){transform:translateY(-.5px) rotate(.55deg)}
+.d1-food-unit:nth-child(3){transform:translateY(.7px) rotate(-.35deg)}
+.d1-food-unit:nth-child(4){transform:translateY(-.5px) rotate(.6deg)}
+.d1-food-unit:nth-child(5){transform:translateY(1px) rotate(-.55deg)}
+.d1-food-unit:nth-child(6){transform:translateY(-.3px) rotate(.4deg)}
+.d1-sentence{display:block;margin-top:8px;font-family:var(--chalk-kai);font-size:20.5px;font-weight:400;line-height:24px;
+  letter-spacing:.005em;color:rgba(250,252,247,.95);white-space:nowrap;
+  text-shadow:0 0 1.3px rgba(255,255,255,.32),0 1px 1px rgba(0,0,0,.15)}
 
 /* D2  八词三组 */
 .d2-head{position:relative;z-index:2}
@@ -186,9 +248,9 @@ body.shot,body.shot *{cursor:none!important}
 .mini-ava{width:21px;height:21px;border-radius:7px;display:grid;place-items:center;flex:none;color:#fff;font-size:10px;font-weight:900;
   background:linear-gradient(135deg,#6552ff,#9d8fff);box-shadow:0 3px 8px rgba(76,53,232,.36)}
 .tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;flex:none;box-shadow:0 0 7px rgba(53,200,143,.38)}
-.collapse{right:16px;gap:5px;padding:0 11px;border:1px solid rgba(255,255,255,.17)}
-.collapse svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s ease}
-.nav{position:absolute;right:8px;top:82px;z-index:21;width:56px;padding:6px;border-radius:23px;display:flex;flex-direction:column;align-items:center;gap:6px;
+.collapse{right:14px;top:10px;width:34px;height:34px;justify-content:center;gap:0;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.17)}
+.collapse svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s ease}
+.nav{position:absolute;left:4px;right:auto;top:50%;transform:translateY(-50%);z-index:21;width:56px;padding:6px;border-radius:23px;display:flex;flex-direction:column;align-items:center;gap:6px;
   background:rgba(10,18,16,.54);border:1px solid rgba(255,255,255,.16);box-shadow:0 12px 26px rgba(1,7,5,.27),inset 0 1px 0 rgba(255,255,255,.12);
   -webkit-backdrop-filter:blur(18px) saturate(1.45);backdrop-filter:blur(18px) saturate(1.45);transition:opacity .2s ease,transform .25s ease}
 .nav-item{width:42px;height:42px;border:0;border-radius:16px;background:transparent;display:grid;place-items:center;color:rgba(255,255,255,.74);
@@ -199,7 +261,7 @@ body.shot,body.shot *{cursor:none!important}
 .subtitle{position:absolute;left:24px;right:80px;bottom:82px;z-index:14;text-align:center;font-size:18px;font-weight:400;letter-spacing:.02em;
   line-height:1.35;color:rgba(255,255,255,.97);text-shadow:0 2px 3px rgba(0,0,0,.56),0 0 18px rgba(0,0,0,.34);
   white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:opacity .18s ease}
-.voice-dock{position:absolute;left:24px;bottom:16px;z-index:16;display:flex;align-items:center;gap:9px;transition:opacity .18s ease,transform .18s ease}
+.voice-dock{position:absolute;left:auto;right:18px;bottom:16px;z-index:16;display:flex;align-items:center;gap:9px;transition:opacity .18s ease,transform .18s ease}
 .talk{height:50px;border-radius:25px;padding:0 16px 0 6px;display:flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.20);color:#fff;
   background:rgba(12,18,17,.63);box-shadow:0 12px 28px rgba(2,7,5,.30),inset 0 1px 0 rgba(255,255,255,.17);
   -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);transition:transform .12s ease}
@@ -217,11 +279,42 @@ body.shot,body.shot *{cursor:none!important}
 .chrome-hidden .brand,.chrome-hidden .nav,.chrome-hidden .voice-dock{opacity:0!important;pointer-events:none;transform:translateX(5px)}
 .chrome-hidden .collapse svg{transform:rotate(180deg)}
 
+/* 横屏 UI 重排：左导航、右下语音、右上全屏、右侧玻璃键盘 */
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.collapse #collapseTx{display:none}
+.chrome-hidden .nav{transform:translate(5px,-50%)}
+.stage.keyboard-open .voice-dock,.stage.keyboard-open .collapse{opacity:0!important;pointer-events:none;transform:translateX(8px)}
+.kbd-drawer{position:absolute;right:12px;top:50px;z-index:25;width:326px;height:260px;display:flex;flex-direction:column;padding:14px;border-radius:24px;
+  color:#f7fffb;background:linear-gradient(180deg,rgba(22,48,39,.26),rgba(7,26,20,.20));border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 18px 44px rgba(1,8,5,.26),inset 0 1px 0 rgba(255,255,255,.14);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);
+  opacity:0;visibility:hidden;transform:translateX(calc(100% + 20px));transition:transform .2s ease,opacity .18s ease,visibility 0s linear .2s;pointer-events:none;overflow:hidden}
+.kbd-drawer::before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.58),transparent)}
+.stage.keyboard-open .kbd-drawer{opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto;transition:transform .2s ease,opacity .18s ease}
+.kbd-head{position:relative;z-index:1;display:flex;align-items:center;gap:8px;height:38px;flex:none}
+.kbd-close,.kbd-send{width:36px;height:36px;flex:none;display:grid;place-items:center;border-radius:50%;background:rgba(244,255,250,.09);
+  border:1px solid rgba(255,255,255,.16);color:#effff8;box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+.kbd-close{width:30px;height:30px;color:rgba(244,255,249,.76)}
+.kbd-close svg,.kbd-send svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kbd-input{min-width:0;flex:1;height:38px;border-radius:13px;padding:0 12px;border:1px solid rgba(255,255,255,.16);outline:none;color:#fff;
+  background:rgba(247,255,251,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.10);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.kbd-input::placeholder{color:rgba(240,255,249,.42)}
+.kbd-input:focus{border-color:rgba(255,255,255,.28);background:rgba(247,255,251,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 0 0 2px rgba(220,255,240,.05)}
+.kbd-keys{position:relative;z-index:1;flex:1;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:5px;margin-top:11px}
+.kkey{min-width:0;border-radius:9px;border:1px solid rgba(255,255,255,.105);background:rgba(244,255,250,.07);color:rgba(248,255,252,.90);
+  font:700 11px/1 "Segoe UI",sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:background .12s ease,transform .1s ease}
+.kkey:active{background:rgba(244,255,250,.15);transform:scale(.96)}
+.kkey.span2{grid-column:span 2}.kkey.space{grid-column:span 4}.kkey.ret{grid-column:span 3}
+
 /* DEV 在画布外 */
 .dev{flex:none;display:flex;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 20px);align-items:center;gap:5px;padding:6px 8px;border-radius:13px;background:rgba(15,18,22,.88);
   border:1.5px dashed rgba(173,164,222,.58);box-shadow:0 8px 22px rgba(0,0,0,.30);
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:opacity .12s}
 .dev .tag{font-size:8px;font-weight:900;letter-spacing:.14em;color:#bcb2ff;margin:0 4px 0 2px}
+.dev-lang{display:flex;align-items:center;gap:4px;padding-right:7px;margin-right:2px;border-right:1px solid rgba(255,255,255,.13)}
+.dev-lang .lang-tag{font-size:7.5px;font-weight:800;letter-spacing:.08em;color:rgba(255,255,255,.38);margin-right:1px}
+.dev-lang button.on{background:#6552ff;border-color:#6552ff;color:#fff}
 .dev button{height:27px;min-width:27px;padding:0 7px;border-radius:8px;border:1px solid rgba(255,255,255,.17);
   background:rgba(255,255,255,.06);color:rgba(255,255,255,.82);font-size:9px;font-weight:800;line-height:1;white-space:nowrap}
 .dev button.on{background:#6552ff;border-color:#6552ff;color:#fff;box-shadow:0 4px 12px rgba(76,53,232,.34)}
@@ -230,20 +323,8 @@ body.immersive .dev{position:fixed;left:50%;bottom:8px;transform:translateX(-50%
 
 
 /* 中英单语压测：语言切换与英文排版 */
-body:not(.lang-en) #d1Ege{display:none}
-.lang-switch{position:absolute;right:136px;top:9px;z-index:24;display:flex;align-items:center;gap:2px;height:30px;padding:3px;border-radius:15px;
-  background:rgba(10,18,15,.50);border:1px solid rgba(255,255,255,.18);box-shadow:0 8px 20px rgba(1,8,5,.24),inset 0 1px 0 rgba(255,255,255,.14);
-  -webkit-backdrop-filter:blur(14px) saturate(1.55);backdrop-filter:blur(14px) saturate(1.55)}
-.lang-switch button{height:22px;min-width:31px;padding:0 7px;border:0;border-radius:11px;background:transparent;color:rgba(255,255,255,.62);
-  font-size:10.5px;font-weight:900;letter-spacing:.02em;line-height:1;transition:background .16s ease,color .16s ease,box-shadow .16s ease}
-.lang-switch button.on{background:#6552ff;color:#fff;box-shadow:0 4px 11px rgba(76,53,232,.34),inset 0 1px 0 rgba(255,255,255,.24)}
 body.lang-en .board{font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;letter-spacing:-.005em}
 body.lang-en .chalk-title{font-size:22px;letter-spacing:-.015em;line-height:1.15;white-space:normal}
-body.lang-en .d1-card{width:500px;height:180px}
-body.lang-en .d1-pos{margin-top:2px;font-size:16px;font-weight:700;letter-spacing:0}
-body.lang-en .d1-eg{margin-top:9px;font-size:29px;line-height:1.12;letter-spacing:0}
-body.lang-en .d1-ege{display:block;margin-top:2px;font-size:14px;line-height:1.15;font-weight:600;color:rgba(233,242,236,.68)}
-body.lang-en .d1-progress{font-size:16px;font-weight:800;letter-spacing:0}
 body.lang-en .d2-head{font-size:22px}
 body.lang-en .d2-groups{grid-template-columns:178px 212px 144px;gap:22px;margin-top:13px}
 body.lang-en .d2-group h3{font-size:16px;font-weight:800;letter-spacing:.01em;margin-bottom:4px;color:rgba(240,248,242,.72)}
@@ -282,17 +363,59 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   <div class="bg" aria-hidden="true"></div>
   <div class="board-wash" aria-hidden="true"></div>
   <div class="task-wash" aria-hidden="true"></div>
+  <img class="teacher-layer" src="../assets/nancy/nancy-teacher-clean.png?v=20261022" data-pose="book" alt="" aria-hidden="true">
 
   <!-- D1 · 生词卡 -->
   <section class="density-layer on" id="d1" aria-label="D1 生词卡">
     <div class="board">
-      <button class="d1-card" id="d1Card" type="button" aria-label="点，换一个例句">
-        <span class="d1-word-line"><span class="d1-word" id="d1Z">点</span><span class="d1-word-py" id="d1P">diǎn</span></span>
-        <span class="d1-pos" id="d1Pos">量词 &middot; 钟点</span>
-        <span class="d1-eg" id="d1Eg">现在八点。</span>
-        <span class="d1-egp py" id="d1Egp">xiànzài bā diǎn.</span>
-        <span class="d1-ege en" id="d1Ege"></span>
-        <span class="d1-progress" id="d1Progress">生词 1 / 8</span>
+      <button class="d1-card" id="d1Card" type="button" aria-label="课堂黑板：待机">
+        <span class="d1-board">
+          <span class="d1-date-row">
+            <span class="d1-date" id="d1Date">10月22日 周四</span>
+          </span>
+          <span class="d1-review-layout">
+            <span class="d1-review-label">复习</span>
+            <span class="d1-review-row" aria-label="热，累，冷，渴，饿">
+              <span class="d1-unit"><span class="d1-char">热</span><span class="d1-pinyin">rè</span></span>
+              <span class="d1-unit"><span class="d1-char">累</span><span class="d1-pinyin">lèi</span></span>
+              <span class="d1-unit"><span class="d1-char">冷</span><span class="d1-pinyin">lěng</span></span>
+              <span class="d1-unit d1-target"><span class="d1-char">渴</span><span class="d1-pinyin">kě</span></span>
+              <span class="d1-unit d1-hungry"><span class="d1-char">饿</span><span class="d1-pinyin">è</span></span>
+            </span>
+            <span class="d1-last">上次：二杯可乐 ×</span>
+          </span>
+          <span class="d1-new-layout">
+            <span class="d1-review-rail">
+              <span class="d1-mini-label">复习</span>
+              <span class="d1-mini-row" aria-label="热，累，冷，渴，饿">
+                <span class="d1-unit"><span class="d1-char">热</span><span class="d1-pinyin">rè</span></span>
+                <span class="d1-unit"><span class="d1-char">累</span><span class="d1-pinyin">lèi</span></span>
+                <span class="d1-unit"><span class="d1-char">冷</span><span class="d1-pinyin">lěng</span></span>
+                <span class="d1-unit"><span class="d1-char">渴</span><span class="d1-pinyin">kě</span></span>
+                <span class="d1-unit"><span class="d1-char">饿</span><span class="d1-pinyin">è</span></span>
+              </span>
+              <span class="d1-mini-last">上次：二杯可乐 ×</span>
+            </span>
+            <span class="d1-new-divider" aria-hidden="true"></span>
+            <span class="d1-new-content">
+              <span class="d1-today-heading">今天：去餐厅点单</span>
+              <span class="d1-food-grid" aria-label="可乐，咖啡，奶茶，汉堡，包子，面包">
+                <span class="d1-food-unit"><span class="d1-char">可乐</span><span class="d1-pinyin">kělè</span></span>
+                <span class="d1-food-unit"><span class="d1-char">咖啡</span><span class="d1-pinyin">kāfēi</span></span>
+                <span class="d1-food-unit"><span class="d1-char">奶茶</span><span class="d1-pinyin">nǎichá</span></span>
+                <span class="d1-food-unit"><span class="d1-char">汉堡</span><span class="d1-pinyin">hànbǎo</span></span>
+                <span class="d1-food-unit"><span class="d1-char">包子</span><span class="d1-pinyin">bāozi</span></span>
+                <span class="d1-food-unit"><span class="d1-char">面包</span><span class="d1-pinyin">miànbāo</span></span>
+              </span>
+              <span class="d1-sentence">您要什么？我要两杯可乐。</span>
+            </span>
+          </span>
+          <span class="demo-new-board" aria-hidden="true">
+            <span class="demo-new-title">今天：去餐厅点单</span>
+            <span class="demo-new-line demo-new-question">您要什么？</span>
+            <span class="demo-new-line demo-new-answer">我要两杯可乐。</span>
+          </span>
+        </span>
       </button>
     </div>
   </section>
@@ -414,14 +537,10 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   <div class="brand" id="brand"><span class="mini-ava" aria-hidden="true">N</span><span id="brandName">Nancy</span><span class="brand-sep">&middot;</span><span id="brandState">在线</span><i class="tdot" aria-hidden="true"></i></div>
 
-  <div class="lang-switch" id="langSwitch" role="group" aria-label="语言 / Language">
-    <button type="button" data-lang="zh" class="on" aria-pressed="true">中</button>
-    <button type="button" data-lang="en" aria-pressed="false">EN</button>
-  </div>
 
   <button class="collapse" id="collapseBtn" type="button" aria-label="收起悬浮控件">
-    <span id="collapseTx">收起</span>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 9.5 12 14l4.5-4.5"/><path d="M7.5 14.5 12 10l4.5 4.5"/></svg>
+    <span id="collapseTx" class="visually-hidden">收起</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3H3v5.5M15.5 3H21v5.5M8.5 21H3v-5.5M15.5 21H21v-5.5"/></svg>
   </button>
 
   <nav class="nav" aria-label="页面导航（横屏）">
@@ -431,7 +550,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     <button class="nav-item" type="button" aria-label="我的"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.7"/><path d="M4.6 20.2c.7-4.1 3.4-6.2 7.4-6.2s6.7 2.1 7.4 6.2"/></svg></button>
   </nav>
 
-  <p class="subtitle" id="subtitle" aria-live="polite">点，钟点。现在八点。</p>
+  <p class="subtitle" id="subtitle" aria-live="polite"></p>
 
   <div class="voice-dock" id="voiceDock">
     <button class="talk" id="talk" type="button" aria-label="点一下闭麦" aria-pressed="true">
@@ -440,10 +559,25 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
       </span>
       <span class="talk-tx" id="talkTx">我在听 &middot; 点一下闭麦</span>
     </button>
-    <button class="keybtn" type="button" aria-label="键盘输入">
+    <button class="keybtn" id="keyBtn" type="button" aria-label="键盘输入" aria-expanded="false" aria-controls="kbdDrawer">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="3"/><path d="M6.7 9h.1M10 9h.1M13.3 9h.1M16.6 9h.1M6.7 12.3h.1M10 12.3h.1M13.3 12.3h.1M16.6 12.3h.1M7.2 15.6h9.6"/></svg>
     </button>
   </div>
+
+
+  <section class="kbd-drawer" id="kbdDrawer" aria-hidden="true" aria-label="键盘输入">
+    <div class="kbd-head">
+      <button class="kbd-close" id="kbdClose" type="button" aria-label="关闭键盘"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <input class="kbd-input" id="kbdInput" type="text" autocomplete="off" placeholder="Aa" aria-label="输入">
+      <button class="kbd-send" id="kbdSend" type="button" aria-label="发送"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="kbd-keys" id="kbdKeys">
+      <button type="button" class="kkey" data-key="1">1</button><button type="button" class="kkey" data-key="2">2</button><button type="button" class="kkey" data-key="3">3</button><button type="button" class="kkey" data-key="4">4</button><button type="button" class="kkey" data-key="5">5</button><button type="button" class="kkey" data-key="6">6</button><button type="button" class="kkey" data-key="7">7</button><button type="button" class="kkey" data-key="8">8</button><button type="button" class="kkey" data-key="9">9</button><button type="button" class="kkey" data-key="0">0</button>
+      <button type="button" class="kkey" data-key="q">Q</button><button type="button" class="kkey" data-key="w">W</button><button type="button" class="kkey" data-key="e">E</button><button type="button" class="kkey" data-key="r">R</button><button type="button" class="kkey" data-key="t">T</button><button type="button" class="kkey" data-key="y">Y</button><button type="button" class="kkey" data-key="u">U</button><button type="button" class="kkey" data-key="i">I</button><button type="button" class="kkey" data-key="o">O</button><button type="button" class="kkey" data-key="p">P</button>
+      <button type="button" class="kkey" data-key="a">A</button><button type="button" class="kkey" data-key="s">S</button><button type="button" class="kkey" data-key="d">D</button><button type="button" class="kkey" data-key="f">F</button><button type="button" class="kkey" data-key="g">G</button><button type="button" class="kkey" data-key="h">H</button><button type="button" class="kkey" data-key="j">J</button><button type="button" class="kkey" data-key="k">K</button><button type="button" class="kkey" data-key="l">L</button><button type="button" class="kkey" data-key="backspace">⌫</button>
+      <button type="button" class="kkey span2">123</button><button type="button" class="kkey" data-key=".">.</button><button type="button" class="kkey space" data-key=" ">space</button><button type="button" class="kkey ret" data-key="enter">↵</button>
+    </div>
+  </section>
 
   <section class="practice practice-d4" id="practiceD4" aria-label="听力题">
     <div class="practice-head">
@@ -470,6 +604,13 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
 <aside class="dev" id="dev" aria-label="密度状态切换">
   <span class="tag">DEV</span>
+  <button type="button" id="demoNext">下一句</button>
+  <button type="button" id="demoReset">重置</button>
+  <span class="dev-lang" role="group" aria-label="语言切换">
+    <span class="lang-tag">语言</span>
+    <button type="button" data-lang="zh" class="on" aria-pressed="true">中文</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+  </span>
   <button type="button" data-state="d1" class="on">D1 生词卡</button>
   <button type="button" data-state="d2">D2 八词三组</button>
   <button type="button" data-state="d3">D3 语法对照</button>
@@ -499,7 +640,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     d7: document.getElementById('d7')
   };
   var devButtons = Array.prototype.slice.call(document.querySelectorAll('.dev [data-state]'));
-  var langButtons = Array.prototype.slice.call(document.querySelectorAll('.lang-switch [data-lang]'));
+  var langButtons = Array.prototype.slice.call(document.querySelectorAll('.dev [data-lang]'));
   var practiceD4 = document.getElementById('practiceD4');
   var practiceD6 = document.getElementById('practiceD6');
   var q4 = document.getElementById('q4');
@@ -514,15 +655,15 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   var talkTx = document.getElementById('talkTx');
   var collapseBtn = document.getElementById('collapseBtn');
   var collapseTx = document.getElementById('collapseTx');
+  var keyBtn = document.getElementById('keyBtn');
+  var kbdDrawer = document.getElementById('kbdDrawer');
+  var kbdInput = document.getElementById('kbdInput');
+  var kbdClose = document.getElementById('kbdClose');
+  var kbdSend = document.getElementById('kbdSend');
+  var kbdKeys = document.getElementById('kbdKeys');
+  var keyboardOpen = false;
   var brandState = document.getElementById('brandState');
   var d1Card = document.getElementById('d1Card');
-  var d1Z = document.getElementById('d1Z');
-  var d1P = document.getElementById('d1P');
-  var d1Pos = document.getElementById('d1Pos');
-  var d1Eg = document.getElementById('d1Eg');
-  var d1Egp = document.getElementById('d1Egp');
-  var d1Ege = document.getElementById('d1Ege');
-  var d1Progress = document.getElementById('d1Progress');
   var d2Title = document.getElementById('d2Title');
   var d2G1 = document.getElementById('d2G1');
   var d2G2 = document.getElementById('d2G2');
@@ -669,7 +810,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   var LANG = 'zh';
   var currentState = 'd1';
-  var d1Index = 0;
+  var boardMode = 'standby';
   var pickedWord = null;
   var locked4 = false;
   var answer4 = null;
@@ -690,15 +831,19 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   }
 
   function applyD1() {
-    var item = t().d1[d1Index];
-    d1Z.textContent = item.z;
-    d1P.textContent = item.p;
-    d1Pos.textContent = item.pos;
-    d1Eg.textContent = item.eg;
-    d1Egp.textContent = item.egp;
-    d1Ege.textContent = item.ege;
-    d1Progress.textContent = item.progress;
-    d1Card.setAttribute('aria-label', LANG === 'en' ? 'Tap for another example' : '点，换一个例句');
+    var labels = {
+      standby: '课堂黑板，待机：10月22日周四，复习热、累、冷、渴、饿，上次二杯可乐用错量词',
+      review: '课堂黑板，复习：圈出渴',
+      new: '课堂黑板，新课：去餐厅点单，可乐、咖啡、奶茶、汉堡、包子、面包，您要什么，我要两杯可乐'
+    };
+    d1Card.setAttribute('aria-label', labels[boardMode]);
+  }
+
+  function setBoardMode(next) {
+    boardMode = next === 'review' || next === 'new' ? next : 'standby';
+    stage.classList.toggle('board-review', boardMode === 'review');
+    stage.classList.toggle('board-new', boardMode === 'new');
+    applyD1();
   }
 
   function applyD2() {
@@ -775,7 +920,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   function updateSubtitle() {
     var copy = t();
     if (currentState === 'd1') {
-      subtitle.textContent = copy.d1[d1Index].sub;
+      subtitle.textContent = '我在听。你来了就先看看这儿。';
     } else if (currentState === 'd2') {
       subtitle.textContent = pickedWord ? copy.d2.words[pickedWord].sub : copy.d2.sub;
     } else if (currentState === 'd3') {
@@ -847,6 +992,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   function setState(next) {
     currentState = next;
+    stage.classList.toggle('d1-clean', next === 'd1');
     Object.keys(layers).forEach(function (key) {
       var on = key === next;
       layers[key].classList.toggle('on', on);
@@ -874,6 +1020,13 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   document.addEventListener('keydown', function (e) {
     var key = (e.key || '').toLowerCase();
+    if (keyboardOpen) {
+      if (key === 'escape') {
+        e.preventDefault();
+        setKeyboardOpen(false);
+      }
+      return;
+    }
     if (key === 's') {
       e.preventDefault();
       body.classList.toggle('shot');
@@ -888,12 +1041,6 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
       e.preventDefault();
       setState('d' + key);
     }
-  });
-
-  d1Card.addEventListener('click', function () {
-    d1Index = (d1Index + 1) % t().d1.length;
-    applyD1();
-    updateSubtitle();
   });
 
   lexButtons.forEach(function (btn) {
@@ -986,6 +1133,52 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     applyChrome();
   });
 
+  function setKeyboardOpen(open) {
+    keyboardOpen = !!open;
+    stage.classList.toggle('keyboard-open', keyboardOpen);
+    kbdDrawer.setAttribute('aria-hidden', keyboardOpen ? 'false' : 'true');
+    keyBtn.setAttribute('aria-expanded', keyboardOpen ? 'true' : 'false');
+    if (keyboardOpen) {
+      window.setTimeout(function () { kbdInput.focus(); }, 210);
+    } else {
+      kbdInput.blur();
+    }
+  }
+
+  function closeKeyboard() {
+    setKeyboardOpen(false);
+  }
+
+  keyBtn.addEventListener('click', function () { setKeyboardOpen(true); });
+  kbdClose.addEventListener('click', closeKeyboard);
+  kbdSend.addEventListener('click', function () {
+    kbdInput.value = '';
+    closeKeyboard();
+  });
+  kbdInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      kbdInput.value = '';
+      closeKeyboard();
+    }
+  });
+  kbdKeys.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-key]');
+    if (!btn) return;
+    var key = btn.getAttribute('data-key');
+    if (key === 'enter') {
+      kbdInput.value = '';
+      closeKeyboard();
+      return;
+    }
+    if (key === 'backspace') {
+      kbdInput.value = kbdInput.value.slice(0, -1);
+    } else {
+      kbdInput.value += key;
+    }
+    kbdInput.focus();
+  });
+
   navItems.forEach(function (item) {
     item.addEventListener('click', function (e) { e.preventDefault(); });
   });
@@ -1008,6 +1201,196 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   fit();
   setState('d1');
   setLanguage(initialLang);
+  setBoardMode(params.get('board'));
+})();
+</script>
+
+<style>
+/* ==========================================================================
+   十拍课堂演示：手动推进，仅覆盖 D1 的展示状态
+   ========================================================================== */
+.stage.classroom-demo{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.stage.classroom-demo *{-webkit-tap-highlight-color:transparent}
+.stage.classroom-demo .d1-card:focus,
+.stage.classroom-demo .d1-card:focus-visible{outline:none}
+
+/* 人物硬切：脚底对齐，可见头高一致 */
+.stage.classroom-demo .teacher-layer{right:47px;bottom:0;width:auto;height:363px;transition:none!important}
+.stage.classroom-demo .teacher-layer[data-pose="book"]{right:-6px;height:344px}
+.stage.classroom-demo .teacher-layer[data-pose="point"]{right:47px;height:363px}
+.stage.classroom-demo .teacher-layer[data-pose="side"]{right:47px;height:362px}
+
+/* 待机 / 复习共用左半板，右半块留空 */
+.stage.classroom-demo.board-new .d1-review-layout,
+.stage.classroom-demo .d1-review-layout{display:block;left:34px;top:43px;width:300px;transform:rotate(-.1deg)}
+.stage.classroom-demo.board-new .d1-new-layout,
+.stage.classroom-demo .d1-new-layout{display:none!important}
+.stage.classroom-demo .d1-review-label{display:none}
+.stage.classroom-demo .d1-review-row{gap:16px;margin-top:0;transition:opacity .2s ease}
+.stage.classroom-demo .d1-date{transition:opacity .2s ease,color .2s ease}
+.stage.classroom-demo .d1-last{position:relative;margin-top:12px;transition:opacity .2s ease,color .2s ease}
+.stage.classroom-demo .d1-last::after{content:"";position:absolute;left:-3px;bottom:-4px;width:174px;height:3px;border-radius:50%;
+  background:linear-gradient(90deg,rgba(250,252,247,.9),rgba(250,252,247,.48) 78%,rgba(250,252,247,0));
+  transform:rotate(-.7deg);opacity:0;transition:opacity .2s ease;pointer-events:none}
+.stage.classroom-demo.demo-hl-last .d1-last{color:rgba(249,252,247,.92)}
+.stage.classroom-demo.demo-hl-last .d1-last::after{opacity:1}
+
+/* 粉笔圈：默认隐藏，按拍淡入 */
+.stage.classroom-demo .d1-target .d1-char::after,
+.stage.classroom-demo .d1-hungry .d1-char::after{content:"";position:absolute;left:-5px;right:-5px;top:-5px;bottom:-6px;opacity:0;
+  border:1.8px solid rgba(245,249,244,.82);border-radius:52% 47% 55% 46% / 44% 59% 41% 56%;
+  transform:rotate(-4deg);box-shadow:0 0 3px rgba(255,255,255,.08);transition:opacity .2s ease;pointer-events:none}
+.stage.classroom-demo .d1-hungry .d1-char{position:relative}
+.stage.classroom-demo.demo-ring-ke .d1-target .d1-char::after,
+.stage.classroom-demo.demo-ring-e .d1-hungry .d1-char::after{opacity:1}
+
+/* 第 9 拍：左五词变暗，右半板淡入新课 */
+.stage.classroom-demo .demo-new-board{position:absolute;left:305px;top:22px;display:block;width:280px;
+  opacity:0;visibility:hidden;transform:rotate(-.1deg);transition:opacity .2s ease,visibility 0s linear .2s;pointer-events:none}
+.stage.classroom-demo.demo-board-new .demo-new-board{opacity:1;visibility:visible;transition:opacity .2s ease}
+.stage.classroom-demo.demo-board-new .d1-review-row{opacity:.42}
+.stage.classroom-demo.demo-board-new .d1-last{opacity:.34}
+.stage.classroom-demo.demo-board-new .d1-date{opacity:.74}
+.stage.classroom-demo .demo-new-title{display:block;font-size:20px;font-weight:800;line-height:25px;letter-spacing:.035em;
+  color:rgba(249,252,247,.96);white-space:nowrap}
+.stage.classroom-demo .demo-new-line{display:block;font-size:18px;font-weight:700;line-height:24px;letter-spacing:.02em;
+  color:rgba(244,250,245,.88);white-space:nowrap}
+.stage.classroom-demo .demo-new-question{margin-top:14px}
+.stage.classroom-demo .demo-new-answer{margin-top:5px;font-size:19px;color:rgba(249,252,247,.96)}
+
+/* 字幕避开左侧导航与右下语音区 */
+.stage.classroom-demo.d1-clean .subtitle{left:76px;right:214px;bottom:34px;font-size:18px;line-height:1.38;
+  opacity:1;transition:none;display:block;overflow:visible;-webkit-line-clamp:unset}
+</style>
+
+<style id="d1-visual-polish">
+/* D1 视觉层：只改粉笔字气质，不接管演示节拍。 */
+.stage.classroom-demo .demo-new-board{top:21px;transform:rotate(-.18deg)}
+.stage.classroom-demo .demo-new-title{position:relative;display:block;width:max-content;height:25px;
+  font-family:var(--chalk-kai);font-size:22.5px;font-weight:400;line-height:25px;letter-spacing:.03em;
+  color:rgba(246,227,180,.95);text-shadow:0 0 1.4px rgba(255,243,207,.30),0 1px 1px rgba(0,0,0,.15)}
+.stage.classroom-demo .demo-new-title::after{content:"";position:absolute;left:1px;right:3px;bottom:-3px;height:1.8px;
+  border-radius:2px;transform:rotate(-.65deg);
+  background:linear-gradient(90deg,rgba(246,227,180,.60),rgba(246,227,180,.10))}
+.stage.classroom-demo .demo-new-line{font-family:var(--chalk-kai);font-weight:400;font-size:20.5px;line-height:24px;
+  letter-spacing:.005em;color:rgba(250,252,247,.94);
+  text-shadow:0 0 1.3px rgba(255,255,255,.32),0 1px 1px rgba(0,0,0,.15)}
+.stage.classroom-demo .demo-new-question{margin-top:13px;transform:rotate(-.35deg);transform-origin:left center}
+.stage.classroom-demo .demo-new-answer{margin-top:4px;font-size:21px;color:rgba(250,252,247,.97);
+  transform:rotate(.18deg);transform-origin:left center}
+.stage.classroom-demo .d1-target .d1-char::before,
+.stage.classroom-demo .d1-hungry .d1-char::before{content:"";position:absolute;left:-2px;right:-8px;top:-2px;bottom:-8px;opacity:0;
+  border:1px solid rgba(245,249,244,.30);border-radius:51% 46% 54% 47% / 45% 58% 42% 55%;transform:rotate(2deg);
+  transition:opacity .2s ease;pointer-events:none}
+.stage.classroom-demo.demo-ring-ke .d1-target .d1-char::before,
+.stage.classroom-demo.demo-ring-e .d1-hungry .d1-char::before{opacity:1}
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  var stage = document.getElementById('stage');
+  if (!stage) return;
+
+  var subtitle = document.getElementById('subtitle');
+  var teacher = stage.querySelector('.teacher-layer');
+  var d1 = document.getElementById('d1');
+  var nextButton = document.getElementById('demoNext');
+  var resetButton = document.getElementById('demoReset');
+  var lastBeat = 9;
+  var beat = -1;
+
+  /* 台词只存在这里；板书文字全部在 HTML/CSS。 */
+  var subtitles = [
+    '我在听。你来了，就先看看这儿。',
+    '下午好。先别急着开新课——上次那个“二杯可乐”，你还记得吗？',
+    '我们用两分钟，把旧的捡回来。好不好？',
+    '先说“二杯”——现在应该怎么说？',
+    '对，两杯。量词前面，我们说“两”。',
+    '那“渴”呢？渴的时候，你会怎么说？',
+    '对，我渴了。“饿”也一样——我饿了。',
+    '旧的都回来了。要不要开始今天的新课？',
+    '那我们把今天写上去。',
+    '今天只有一件事：去餐厅，点一杯你真正想喝的东西。'
+  ];
+
+  var poses = ['book', 'book', 'book', 'point', 'point', 'point', 'point', 'book', 'side', 'point'];
+  var poseSources = {
+    book: '../assets/nancy/nancy-teacher-clean.png?v=20261022',
+    point: '../assets/nancy/nancy-teacher-clean-point.png?v=20261022',
+    side: '../assets/nancy/nancy-teacher-clean-point-v2.png?v=20261022'
+  };
+
+  Object.keys(poseSources).forEach(function (key) {
+    var image = new Image();
+    image.src = poseSources[key];
+  });
+
+  function setPose(nextPose) {
+    if (!teacher || teacher.dataset.pose === nextPose) return;
+    teacher.dataset.pose = nextPose;
+    teacher.src = poseSources[nextPose];
+  }
+
+  function fadeSubtitle(text) {
+    subtitle.textContent = text;
+    if (!subtitle.animate || typeof subtitle.getAnimations !== 'function') return;
+    subtitle.getAnimations().forEach(function (animation) { animation.cancel(); });
+    subtitle.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 180, easing: 'cubic-bezier(.2,.7,.3,1)' }
+    );
+  }
+
+  function renderBeat(nextBeat, animateSubtitle) {
+    beat = Math.max(0, Math.min(lastBeat, nextBeat));
+    for (var i = 0; i <= lastBeat; i += 1) stage.classList.remove('demo-beat-' + i);
+    stage.classList.add('demo-beat-' + beat);
+    stage.dataset.demoBeat = String(beat);
+
+    stage.classList.toggle('demo-hl-last', beat >= 3 && beat <= 6);
+    stage.classList.toggle('demo-ring-ke', beat >= 5 && beat <= 6);
+    stage.classList.toggle('demo-ring-e', beat === 6);
+    stage.classList.toggle('demo-board-new', beat === 9);
+
+    setPose(poses[beat]);
+    if (animateSubtitle) {
+      fadeSubtitle(subtitles[beat]);
+    } else {
+      subtitle.textContent = subtitles[beat];
+    }
+  }
+
+  function nextBeat() {
+    if (beat >= lastBeat) return;
+    renderBeat(beat + 1, true);
+  }
+
+  function resetBeat() {
+    var d1Button = document.querySelector('.dev [data-state="d1"]');
+    if (d1Button && d1 && !d1.classList.contains('on')) d1Button.click();
+    renderBeat(0, true);
+  }
+
+  stage.classList.add('classroom-demo');
+
+  stage.addEventListener('click', function (event) {
+    if (stage.classList.contains('keyboard-open')) return;
+    var target = event.target;
+    if (!target || !target.closest) return;
+    if (target.closest('.nav,.voice-dock,.talk,.keybtn,.collapse,.brand,.kbd-drawer,.dev,input,textarea')) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (document.activeElement && stage.contains(document.activeElement)) document.activeElement.blur();
+    nextBeat();
+  }, true);
+
+  nextButton.addEventListener('click', nextBeat);
+  resetButton.addEventListener('click', resetBeat);
+
+  renderBeat(0, false);
 })();
 </script>
 </body>
