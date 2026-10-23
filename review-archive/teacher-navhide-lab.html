@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 课堂页 v3 · 隐藏导航（三种藏法）</title>
+<link rel="icon" href="data:,">
+<style>
+/* ==========================================================================
+   课堂页 v3（静态观感稿）：整页都是她 —— 悬浮控件直接浮在画面上
+   · 只做观感，不做交互逻辑；左下角 dev 开关切「讲课态 / 出题态」两帧
+   · 视觉语言沿用 v2：色值 / 字体栈 / 导航结构不变，但悬浮控件改深色毛玻璃 + 白字
+   · 立绘 ../assets/nancy/nancy-teacher-bust.png 原比例放大裁切，不加任何滤镜
+   v2（teacher-class-v2.html）保留不动。
+   ========================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#12141F}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#F2F1F8;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{display:block}
+img{display:block}
+
+/* ================= 背景层（独立底图层：以后换场景图只改这一层） ================= */
+.scene-bg{position:absolute;inset:0;z-index:0;
+  background:url("teacher-class-room-bg-2x.png") 50% 50%/cover no-repeat}
+.scene-bg::after{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg, rgba(11,14,23,.34) 0%, rgba(11,14,23,0) 16%),
+    linear-gradient(0deg, rgba(11,13,22,.38) 0%, rgba(11,13,22,0) 18%),
+    radial-gradient(120% 92% at 50% 28%, rgba(0,0,0,0) 58%, rgba(0,0,0,.17) 100%)}
+
+/* 新场景图已经自带人物、地板与落地阴影，旧版的独立景深层全部撤掉 */
+.floor,.shadow,.nancy{display:none}
+
+/* ================= 地板光带（画面下三分之一，给她站立的纵深） ================= */
+.floor{position:absolute;left:0;right:0;top:470px;height:232px;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg, rgba(190,202,255,0) 0%, rgba(190,202,255,.050) 40%, rgba(190,202,255,.078) 64%, rgba(190,202,255,0) 100%)}
+.floor::after{content:"";position:absolute;left:50%;top:6px;width:400px;height:196px;transform:translateX(-50%);
+  background:radial-gradient(50% 50% at 50% 50%, rgba(202,214,255,.085), rgba(202,214,255,0) 70%)}
+
+/* ================= 她的脚前：柔和落地阴影，别让她飘 ================= */
+.shadow{position:absolute;left:145px;top:652px;width:150px;height:46px;z-index:1;pointer-events:none;
+  background:radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.56), rgba(0,0,0,.22) 50%, rgba(0,0,0,0) 74%)}
+
+/* ================= 她：全身入画（头顶 y100、鞋底齐操作区上缘），不加滤镜、不拉伸 ================= */
+.nancy{position:absolute;top:97px;left:150px;height:595px;width:auto;z-index:3;
+  pointer-events:none;-webkit-user-drag:none;user-select:none}
+
+/* ================= 黑板：做大、压到她左肩后方（墙面上的板，不是浮卡） ================= */
+.board{position:absolute;left:-10px;top:200px;width:232px;height:196px;z-index:2;border-radius:22px;
+  background:rgba(20,24,38,.56);border:1px solid rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(26px) saturate(1.2);backdrop-filter:blur(26px) saturate(1.2);
+  box-shadow:0 16px 38px rgba(22,18,28,.20), inset 0 1px 0 rgba(255,255,255,.12);
+  padding:24px 20px;display:flex;flex-direction:column;justify-content:center}
+.board ul{list-style:none;display:grid;gap:29px}
+.board li{display:flex;align-items:center;gap:11px}
+.board .pin{flex:none;width:9px;height:9px;border-radius:50%;border:2.5px solid rgba(255,255,255,.70);
+  box-shadow:0 0 8px rgba(255,255,255,.16)}
+.board .tx{font-size:14.5px;font-weight:800;letter-spacing:.03em;line-height:1.15;color:rgba(255,255,255,.94);
+  text-shadow:0 0 12px rgba(255,255,255,.16);white-space:nowrap}
+
+/* ================= 讲台桌沿：底部操作区顶缘一道很淡的横向高光 ================= */
+.podium-edge{position:absolute;left:10px;right:10px;top:679px;height:2px;z-index:19;pointer-events:none;border-radius:2px;
+  background:linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.24) 16%, rgba(255,255,255,.46) 50%, rgba(255,255,255,.24) 84%, rgba(255,255,255,0) 100%);
+  box-shadow:0 0 18px rgba(255,255,255,.12)}
+
+/* ================= 出题态：8% 暗罩（注意力给选项；暗罩压在画面上，不压悬浮控件） ================= */
+.scrim{position:absolute;inset:0;z-index:4;background:rgba(0,0,0,.08);opacity:0;
+  pointer-events:none;transition:opacity .3s ease}
+.state-quiz .scrim{opacity:1}
+
+/* ================= 悬浮胶囊：左上（小头像 + Nancy · 在线）、右上（文字记录 + 收起） ================= */
+.pill{position:absolute;top:59px;z-index:6;height:32px;display:flex;align-items:center;border-radius:16px;
+  background:rgba(16,18,32,.46);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 10px 24px rgba(4,6,18,.30),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  font-size:11.5px;font-weight:700;letter-spacing:.01em}
+.pill-l{left:14px;padding:0 12px 0 6px;gap:7px}
+.mini-ava{width:21px;height:21px;border-radius:7px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:10px;font-weight:800;display:grid;place-items:center;box-shadow:0 3px 8px rgba(76,53,232,.35)}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:none}
+.pills-r{position:absolute;right:14px;top:59px;z-index:6;display:flex;gap:8px}
+.pillbtn{height:32px;display:flex;align-items:center;gap:5px;padding:0 12px;border-radius:16px;
+  background:rgba(16,18,32,.46);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 10px 24px rgba(4,6,18,.30),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  font-size:11.5px;font-weight:700}
+.pillbtn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+
+/* ================= 字幕条：底部操作区上方，半透明深色圆角条，白字，最多两行 ================= */
+.cap{position:absolute;left:16px;right:16px;bottom:175px;z-index:22;border-radius:18px;
+  display:grid;place-items:center;min-height:46px;padding:11px 16px;
+  background:rgba(14,16,30,.62);border:1px solid rgba(255,255,255,.10);
+  -webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5);
+  box-shadow:0 12px 28px rgba(4,6,18,.30);
+  color:#fff;font-size:14.5px;font-weight:600;line-height:1.5;letter-spacing:.01em;text-align:center;
+  transition:bottom .34s cubic-bezier(.22,.61,.36,1)}
+.cap .txt{max-width:100%}
+.state-quiz .cap{bottom:291px}
+
+/* ================= 再听一遍（小胶囊，字幕条上方；只出题态） ================= */
+.chip{position:absolute;right:16px;bottom:347px;z-index:21;
+  height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 13px;border-radius:15px;
+  background:rgba(16,18,32,.56);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.96);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  box-shadow:0 8px 20px rgba(4,6,18,.28);
+  font-size:11.5px;font-weight:800;letter-spacing:.01em;
+  opacity:0;pointer-events:none;transition:opacity .28s ease .06s}
+.chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.state-quiz .chip{opacity:1}
+
+/* ================= 选项浮卡：整宽毛玻璃白卡，从底部升起；第一张 = 按下态（浅绿底绿字） ================= */
+.opts{position:absolute;left:16px;right:16px;bottom:117px;z-index:20;display:grid;gap:10px;
+  opacity:0;transform:translateY(18px);pointer-events:none;
+  transition:opacity .26s ease,transform .36s cubic-bezier(.22,.61,.36,1)}
+.state-quiz .opts{opacity:1;transform:none}
+.opt{height:48px;border-radius:18px;padding:0 18px;text-align:left;
+  display:flex;align-items:center;
+  background:rgba(255,255,255,.90);border:1px solid rgba(255,255,255,.62);color:#252244;
+  -webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);
+  box-shadow:0 10px 24px rgba(4,6,18,.30);
+  font-size:14.5px;font-weight:700;letter-spacing:.01em}
+.opt.sel{background:rgba(230,247,239,.94);border-color:#9FE0C6;color:#0B7B5C}
+
+/* ================= 底部操作区：麦克风圆钮 + 输入框（深色毛玻璃，场景从底下隐约透出） ================= */
+.composer{position:absolute;left:0;right:0;bottom:117px;z-index:24;display:flex;align-items:center;gap:10px;padding:0 16px;
+  transition:opacity .22s ease}
+.state-quiz .composer{opacity:0;pointer-events:none}
+.mic{width:46px;height:46px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);
+  background:rgba(16,18,32,.48);color:#fff;
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
+  box-shadow:0 10px 24px rgba(4,6,18,.32),inset 0 1px 0 rgba(255,255,255,.14)}
+.mic svg{width:22px;height:22px}
+.field{flex:1;min-width:0;height:46px;border-radius:23px;padding:0 17px;
+  background:rgba(16,18,32,.48);border:1px solid rgba(255,255,255,.16);color:#fff;
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
+  box-shadow:0 10px 24px rgba(4,6,18,.32),inset 0 1px 0 rgba(255,255,255,.14);
+  font-size:13.5px;outline:none}
+.field::placeholder{color:rgba(255,255,255,.54)}
+.field:focus{border-color:rgba(201,192,251,.55)}
+
+/* ================= dev 小开关：左下角，明显标注，不进正式 UI ================= */
+.dev{position:absolute;left:6px;bottom:8px;z-index:30;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 4px;border-radius:15px;background:rgba(18,20,36,.80);border:1.5px dashed rgba(255,255,255,.30);
+  box-shadow:0 8px 20px rgba(4,6,18,.35)}
+.dev .tag{font-size:8px;font-weight:800;letter-spacing:.08em;color:rgba(255,255,255,.62)}
+.dev button{width:38px;height:23px;border-radius:9px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.92);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.dev button.on{background:#6552FF;border-color:#6552FF;color:#fff}
+</style>
+<link rel="stylesheet" href="../shell.css">
+<style>
+  /* 公区壳适配（必须放在 shell.css 之后）：深色底 + 深色毛玻璃导航 + 白字状态栏 */
+  .shell-stage{background:#12141F}
+  .shell-screen{--shell-bg:#1B1F2E;background:#1B1F2E;color:#F2F1F8}
+  .shell-screen .shell-st,.shell-screen .shell-si{color:#fff}
+  .shell-screen .shell-bat{border-color:rgba(255,255,255,.90)}
+  .shell-screen .shell-bat::after{background:rgba(255,255,255,.90)}
+  .shell-screen .shell-hbar{background:rgba(255,255,255,.82)}
+
+  .shell-screen .shell-nav{
+    background:linear-gradient(180deg,rgba(24,26,44,.66),rgba(18,20,36,.54));
+    -webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+    box-shadow:0 14px 32px rgba(4,6,18,.46)}
+  .shell-screen .shell-nav::before{background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,0))}
+  .shell-screen .shell-nav::after{box-shadow:inset 0 1.5px 1px rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.10),inset 0 -10px 18px rgba(255,255,255,.05)}
+  .shell-screen .shell-nav .nv{background:rgba(255,255,255,.10);color:rgba(255,255,255,.74)}
+  .shell-screen .shell-nav .nv.is-active{background:#6552FF;color:#fff}
+
+/* ================= 隐藏导航：三种藏法（A 淡出 / B 滑进讲台 / C 收成小把手） ================= */
+.shell-screen .shell-nav{transition:transform .46s cubic-bezier(.30,.94,.30,1),opacity .30s ease,box-shadow .3s ease}
+/* A · 淡出下沉：最干净，底部整条空出来 */
+.mode-a.nav-hidden .shell-nav{opacity:0;transform:translateY(16px) scale(.985);pointer-events:none}
+/* B · 整条滑进讲台：沉下去，带一点余味 */
+.mode-b.nav-hidden .shell-nav{opacity:0;transform:translateY(96px);pointer-events:none}
+/* C · 收成小把手：缩着沉到底边，留一个能点回来的小胶囊 */
+.mode-c .shell-nav{transform-origin:50% 100%}
+.mode-c.nav-hidden .shell-nav{opacity:0;transform:translateY(30px) scale(.20);pointer-events:none}
+
+.nav-nub{position:absolute;left:50%;bottom:44px;width:54px;height:28px;margin-left:-27px;z-index:59;
+  display:flex;align-items:center;justify-content:center;gap:3px;border-radius:14px;
+  background:rgba(24,26,44,.66);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.86);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
+  box-shadow:0 10px 24px rgba(4,6,18,.34);
+  opacity:0;transform:translateY(10px) scale(.86);pointer-events:none;
+  transition:opacity .24s ease,transform .34s cubic-bezier(.22,.61,.36,1)}
+.nav-nub svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.nav-nub .nub-tx{font-size:10px;font-weight:700;letter-spacing:.08em;line-height:1}
+.mode-c.nav-hidden .nav-nub{opacity:1;transform:none;pointer-events:auto;transition-delay:.18s,0s}
+
+/* 截图用：把过渡拉长，好抓中间帧 */
+.shell-screen.slow .shell-nav{transition-duration:1500ms,1200ms,.3s}
+</style>
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen state-teach" id="root">
+
+  <div class="scene-bg" aria-hidden="true"></div>
+  <div class="floor" aria-hidden="true"></div>
+  <div class="shadow" aria-hidden="true"></div>
+
+  <img class="nancy" src="../assets/nancy/nancy-teacher-cutout.png" alt="" draggable="false">
+
+  <section class="board" aria-label="今天要钉的三个词块">
+    <ul>
+      <li><i class="pin" aria-hidden="true"></i><span class="tx">周五前</span></li>
+      <li><i class="pin" aria-hidden="true"></i><span class="tx">交给小张</span></li>
+      <li><i class="pin" aria-hidden="true"></i><span class="tx">好的，我今天先做</span></li>
+    </ul>
+  </section>
+
+  <div class="scrim" aria-hidden="true"></div>
+
+  <div class="pill pill-l"><span class="mini-ava" aria-hidden="true">N</span>Nancy · 在线<i class="tdot" aria-hidden="true"></i></div>
+  <div class="pills-r">
+    <button class="pillbtn" type="button">文字记录</button>
+    <button class="pillbtn" type="button">收起
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 14 12 9.5 16.5 14"/><path d="M7.5 10 12 14.5 16.5 10"/></svg>
+    </button>
+  </div>
+
+  <button class="chip" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.6v4.8h3.2L12 18.4V5.6L7.2 9.6Z"/><path d="M15.4 9.2a4 4 0 0 1 0 5.6"/><path d="M17.8 6.8a7.4 7.4 0 0 1 0 10.4"/></svg>再听一遍
+  </button>
+
+  <div class="opts" aria-label="选一句回她">
+    <button class="opt sel" type="button">好的，我今天先做。</button>
+    <button class="opt" type="button">好的，我一会儿交给您。</button>
+    <button class="opt" type="button">好的，我周五再来。</button>
+  </div>
+
+  <div class="cap" aria-live="polite"><span class="txt" id="capTxt">来，接着昨天。今天就三个词块，钉黑板上。</span></div>
+
+  <div class="composer">
+    <button class="mic" type="button" aria-label="按住说话（演示）">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+    </button>
+    <input class="field" type="text" placeholder="问 Nancy…" aria-label="问 Nancy" readonly>
+  </div>
+
+  <div class="podium-edge" aria-hidden="true"></div>
+
+  <div class="nav-nub" id="nub" aria-label="唤出导航">
+    <span class="nub-tx">导航</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 14 12 9.5 16.5 14"/></svg>
+  </div>
+  <div class="dev" id="dev" aria-label="开发开关">
+    <span class="tag">HIDE</span>
+    <button id="modA" class="on" type="button" title="A · 淡出下沉">A</button>
+    <button id="modB" type="button" title="B · 整条滑进讲台">B</button>
+    <button id="modC" type="button" title="C · 收成小把手">C</button>
+    <button id="tog" type="button" title="收起 / 显示导航">收</button>
+  </div>
+
+</div>
+</div>
+<script src="../shell.js"></script>
+<script>
+/* 隐藏导航 lab：三种藏法，点画面空白处 = 收 / 出；?quiz=1 打开出题态 */
+(function () {
+  var root = document.getElementById('root');
+  var nub = document.getElementById('nub');
+  var bA = document.getElementById('modA');
+  var bB = document.getElementById('modB');
+  var bC = document.getElementById('modC');
+  var tog = document.getElementById('tog');
+  var cap = document.getElementById('capTxt');
+  root.classList.add('mode-a');
+  if (/[?&]quiz=1/.test(location.search)) {
+    root.classList.remove('state-teach');
+    root.classList.add('state-quiz');
+    cap.textContent = '听一句。『周五前交给小张。』你回哪句？';
+  }
+  function setMode(m) {
+    root.classList.remove('mode-a', 'mode-b', 'mode-c');
+    root.classList.add('mode-' + m);
+    bA.classList.toggle('on', m === 'a');
+    bB.classList.toggle('on', m === 'b');
+    bC.classList.toggle('on', m === 'c');
+  }
+  function setHidden(v) {
+    root.classList.toggle('nav-hidden', v);
+    tog.textContent = v ? '出' : '收';
+  }
+  bA.addEventListener('click', function () { setMode('a'); });
+  bB.addEventListener('click', function () { setMode('b'); });
+  bC.addEventListener('click', function () { setMode('c'); });
+  tog.addEventListener('click', function () { setHidden(!root.classList.contains('nav-hidden')); });
+  nub.addEventListener('click', function (e) { e.stopPropagation(); setHidden(false); });
+  var SKIP = '.dev,.shell-nav,.composer,.opts,.cap,.pill,.pills-r,.chip,.nav-nub';
+  root.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t && t.closest && t.closest(SKIP)) return;
+    setHidden(!root.classList.contains('nav-hidden'));
+  });
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('.shell-nav a') : null;
+    if (a) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+})();
+</script>
+</body>
+</html>

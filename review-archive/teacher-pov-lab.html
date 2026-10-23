@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 课堂页 · 学生视角两态（试验）</title>
+<link rel="icon" href="data:,">
+<style>
+/* ==========================================================================
+   课堂页 · 学生视角两态稿（teacher-pov-lab）
+   第一人称坐在课桌前：黑板是唯一内容层，Nancy 在右，桌面在下缘。
+   素材：assets/nancy/nancy-board-point.png / nancy-board-listen.png（941×1672，同一机位）
+   · 两态交叉淡入 200ms（擦黑板重写感），无滑动
+   · 交互零件沿用 teacher-voice-lab：按住说话、键盘小图标回退、A 方案藏导航
+   · 只做观感，不做语音识别 / 答题逻辑；左下角画布外有 A/B 开发开关，不参与截图
+   ========================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0D1612}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#F2F1F8;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{display:block}
+img{display:block}
+
+/* ================= 场景：两态各一层（底图 + 淡暗绿 + 粉笔字），交叉淡入 ================= */
+.scene{position:absolute;inset:0;z-index:1;background:#24463A}
+.layer{position:absolute;inset:0;opacity:0;transition:opacity .2s ease;pointer-events:none}
+.layer.on{opacity:1}
+.bg{position:absolute;inset:0;background-repeat:no-repeat;background-size:cover;background-position:100% 50%}
+.bg-a{background-image:url("../assets/nancy/nancy-board-point.png")}
+.bg-b{background-image:url("../assets/nancy/nancy-board-listen.png")}
+
+/* 文字区背后压一层很淡的暗绿（只压字区，不压整块黑板） */
+.wash{position:absolute;pointer-events:none}
+.wash-a{left:6px;top:86px;width:200px;height:300px;
+  background:radial-gradient(58% 50% at 42% 46%, rgba(5,22,15,.35) 0%, rgba(5,22,15,.22) 54%, rgba(5,22,15,0) 80%)}
+.wash-b{left:6px;top:112px;width:204px;height:254px;
+  background:radial-gradient(58% 50% at 42% 46%, rgba(5,22,15,.35) 0%, rgba(5,22,15,.2) 56%, rgba(5,22,15,0) 82%)}
+
+/* 粉笔字：可读性优先，KaiTi 手写感；不描边不发光过度 */
+.chalk{position:absolute;left:20px;width:178px;z-index:2;
+  font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;
+  color:rgba(244,249,243,.95);
+  text-shadow:0 0 1px rgba(255,255,255,.42),0 1px 2px rgba(0,0,0,.20)}
+.chalk-a{top:96px}
+.chalk-a .hist{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:rgba(233,243,236,.62);white-space:nowrap}
+.chalk-a .day{margin-top:8px;font-size:25px;font-weight:800;letter-spacing:.04em;line-height:1.16;white-space:nowrap}
+.chalk-a .sub{margin-top:11px;font-size:13.5px;font-weight:700;letter-spacing:.32em;color:rgba(239,247,241,.82)}
+.steps{margin-top:15px;list-style:none;display:grid;gap:20px}
+.steps li{position:relative;width:max-content;font-size:19.5px;font-weight:700;letter-spacing:.05em;line-height:1.2;white-space:nowrap}
+.steps .cur::after{content:"";position:absolute;left:-12px;right:-13px;top:-6px;bottom:-7px;
+  border:1.8px solid rgba(242,248,242,.80);border-radius:50%;transform:rotate(-2.6deg)}
+
+.chalk-b{top:128px;width:178px}
+.chalk-b .lbl{font-size:13.5px;font-weight:700;letter-spacing:.22em;color:rgba(239,247,241,.80)}
+.chalk-b .quote{margin-top:12px;font-size:21.5px;font-weight:800;line-height:1.5;letter-spacing:.02em}
+.choices{margin-top:26px;display:grid;gap:16px}
+.choices p{font-size:18.5px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.choices i{font-style:normal;font-weight:800;margin-right:8px;color:rgba(240,248,242,.70)}
+
+/* ================= 底部很淡的渐变（只保字幕可读，不盖整块毛玻璃） ================= */
+.veil{position:absolute;left:0;right:0;bottom:0;height:200px;z-index:5;pointer-events:none;
+  background:linear-gradient(180deg, rgba(9,18,14,0) 0%, rgba(9,18,14,.24) 62%, rgba(9,18,14,.38) 100%)}
+
+/* ================= 顶部胶囊：左 Nancy · 在线 / 右 收起 ================= */
+.pill{position:absolute;top:57px;z-index:6;height:30px;display:flex;align-items:center;border-radius:15px;
+  background:rgba(14,18,28,.44);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 8px 20px rgba(4,6,18,.26),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  font-size:11px;font-weight:700;letter-spacing:.01em;transition:opacity .2s ease}
+.pill-l{left:14px;padding:0 11px 0 5px;gap:7px}
+.mini-ava{width:21px;height:21px;border-radius:7px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;
+  font-size:10px;font-weight:800;display:grid;place-items:center;box-shadow:0 3px 8px rgba(76,53,232,.35)}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:none}
+.pills-r{position:absolute;right:14px;top:57px;z-index:6;display:flex;gap:8px}
+.pillbtn{height:30px;display:flex;align-items:center;gap:5px;padding:0 11px;border-radius:15px;
+  background:rgba(14,18,28,.44);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 8px 20px rgba(4,6,18,.26),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  font-size:11px;font-weight:700}
+.pillbtn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .25s cubic-bezier(.3,.9,.3,1)}
+.chrome-hidden .pill-l{opacity:0;pointer-events:none}
+.chrome-hidden .pillbtn svg{transform:rotate(180deg)}
+
+/* ================= 单行字幕（不是卡片） ================= */
+.subtitle{position:absolute;left:22px;right:22px;bottom:112px;z-index:7;text-align:center;
+  font-size:13.5px;font-weight:600;letter-spacing:.02em;line-height:1.4;color:rgba(255,255,255,.96);
+  text-shadow:0 1px 2px rgba(0,0,0,.5),0 0 16px rgba(0,0,0,.38);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:opacity .2s ease}
+.chrome-hidden .subtitle{opacity:0;pointer-events:none}
+.chrome-hidden .veil{opacity:0;transition:opacity .2s ease}
+
+/* ================= 按住说话 + 键盘小图标回退（复用 voice lab 零件） ================= */
+.voice-dock{position:absolute;left:16px;bottom:40px;z-index:8;display:flex;align-items:center;gap:9px;
+  transition:opacity .2s ease}
+.chrome-hidden .voice-dock{opacity:0;pointer-events:none}
+.talk{height:50px;border-radius:25px;padding:0 16px 0 7px;display:flex;align-items:center;gap:9px;
+  background:rgba(18,22,34,.60);border:1px solid rgba(255,255,255,.18);color:#fff;
+  -webkit-backdrop-filter:blur(20px) saturate(1.65);backdrop-filter:blur(20px) saturate(1.65);
+  box-shadow:0 12px 28px rgba(8,7,28,.32),inset 0 1px 0 rgba(255,255,255,.16);
+  transition:transform .12s ease}
+.talk-orb{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:linear-gradient(145deg,#8174ff,#6552ff 58%,#4C35E8);
+  box-shadow:0 6px 15px rgba(101,82,255,.42),inset 0 1px 0 rgba(255,255,255,.32)}
+.talk-orb svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.talk-tx{font-size:11.5px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
+.talk:active{transform:scale(.97)}
+.talk.live .talk-orb{box-shadow:0 0 0 8px rgba(101,82,255,.16),0 0 28px rgba(101,82,255,.48)}
+.keybtn{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:rgba(18,22,34,.58);border:1px solid rgba(255,255,255,.17);color:rgba(255,255,255,.90);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
+  box-shadow:0 10px 24px rgba(8,7,28,.28),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .12s ease}
+.keybtn:active{transform:scale(.94)}
+.keybtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* ================= 开发开关：右下角小胶囊（截图前隐藏，不参与截图） ================= */
+.dev{position:absolute;right:10px;bottom:10px;z-index:100;display:flex;align-items:center;gap:4px;
+  padding:4px 5px;border-radius:11px;background:rgba(18,20,30,.72);border:1.5px dashed rgba(170,160,220,.55);
+  box-shadow:0 8px 20px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.dev .tag{font-size:7px;font-weight:800;letter-spacing:.1em;color:#B9AEFF;margin:0 2px 0 1px}
+.dev button{width:26px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.85);font-size:10px;font-weight:800;line-height:1}
+.dev button.on{background:#6552FF;border-color:#6552FF;color:#fff;box-shadow:0 4px 12px rgba(76,53,232,.35)}
+</style>
+<link rel="stylesheet" href="../shell.css">
+<style>
+  /* 公区壳适配（必须放在 shell.css 之后）：深色底 + 白字状态栏 + A 方案藏导航 */
+  .shell-stage{background:#0D1612}
+  .shell-screen{--shell-bg:#14201A;background:#14201A;color:#F2F1F8}
+  .shell-screen .shell-st,.shell-screen .shell-si{color:#fff}
+  .shell-screen .shell-bat{border-color:rgba(255,255,255,.90)}
+  .shell-screen .shell-bat::after{background:rgba(255,255,255,.90)}
+  .shell-screen .shell-hbar{background:rgba(255,255,255,.82)}
+  .shell-screen .shell-nav{background:rgba(20,24,32,.62);border:1px solid rgba(255,255,255,.14);
+    -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);
+    box-shadow:0 16px 40px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.10)}
+  .shell-screen .shell-nav .nv{background:rgba(255,255,255,.10);color:rgba(255,255,255,.74)}
+  .shell-screen .shell-nav .nv.is-active{background:#6552FF;color:#fff}
+
+  /* A · 淡出下沉（默认藏导航） */
+  .shell-screen .shell-nav{transition:transform .46s cubic-bezier(.30,.94,.30,1) .12s,opacity .30s ease .12s}
+  .shell-screen.nav-hidden .shell-nav{opacity:0;transform:translateY(16px) scale(.985);pointer-events:none}
+</style>
+</head>
+<body data-tab="today">
+<div class="shell-stage">
+<div class="shell-screen nav-hidden" id="root">
+
+  <div class="scene" aria-label="课堂场景">
+    <div class="layer layer-a on" id="layerA">
+      <div class="bg bg-a" aria-hidden="true"></div>
+      <div class="wash wash-a" aria-hidden="true"></div>
+      <div class="chalk chalk-a">
+        <p class="hist">昨天：安排 / 安全</p>
+        <p class="day">第 15 天</p>
+        <p class="sub">今天四步</p>
+        <ul class="steps">
+          <li class="cur">听安排</li>
+          <li>抓关键词</li>
+          <li>练一遍</li>
+          <li>去实战</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="layer layer-b" id="layerB" aria-hidden="true">
+      <div class="bg bg-b" aria-hidden="true"></div>
+      <div class="wash wash-b" aria-hidden="true"></div>
+      <div class="chalk chalk-b">
+        <p class="lbl">听这句</p>
+        <p class="quote">「明天把安排<br>发给你」</p>
+        <div class="choices">
+          <p><i>A</i>明天发安排</p>
+          <p><i>B</i>明天问安全</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="veil" aria-hidden="true"></div>
+
+  <div class="pill pill-l"><span class="mini-ava" aria-hidden="true">N</span>Nancy · 在线<i class="tdot" aria-hidden="true"></i></div>
+  <div class="pills-r">
+    <button class="pillbtn" id="collapseBtn" type="button" aria-label="收起悬浮控件">
+      <span id="collapseTx">收起</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 9.5 12 14l4.5-4.5"/><path d="M7.5 14.5 12 10l4.5 4.5"/></svg>
+    </button>
+  </div>
+
+  <p class="subtitle" id="subtitle" aria-live="polite">今天四步，先听安排。</p>
+
+  <div class="voice-dock" id="voiceDock" aria-label="语音输入">
+    <button class="talk" id="talk" type="button" aria-label="按住说话">
+      <span class="talk-orb" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+      </span>
+      <span class="talk-tx" id="talkTx">按住说话</span>
+    </button>
+    <button class="keybtn" id="typeOpen" type="button" aria-label="改用键盘输入">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="3"/><path d="M6.7 9h.1M10 9h.1M13.3 9h.1M16.6 9h.1M6.7 12.3h.1M10 12.3h.1M13.3 12.3h.1M16.6 12.3h.1M7.2 15.6h9.6"/></svg>
+    </button>
+  </div>
+</div>
+
+<aside class="dev" id="dev" aria-label="开发开关（A/B 两态）">
+  <span class="tag">DEV</span>
+  <button id="devA" class="on" type="button" title="讲课态">A</button>
+  <button id="devB" type="button" title="倾听 / 出题态">B</button>
+</aside>
+</div>
+<script src="../shell.js"></script>
+<script>
+(function () {
+  var root = document.getElementById('root');
+  var layerA = document.getElementById('layerA');
+  var layerB = document.getElementById('layerB');
+  var subtitle = document.getElementById('subtitle');
+  var talk = document.getElementById('talk');
+  var talkTx = document.getElementById('talkTx');
+  var devA = document.getElementById('devA');
+  var devB = document.getElementById('devB');
+  var collapseBtn = document.getElementById('collapseBtn');
+  var collapseTx = document.getElementById('collapseTx');
+
+  var SUB = { a: '今天四步，先听安排。', b: '听这句，选一个意思。' };
+  var state = 'a';
+
+  function setState(s) {
+    state = s;
+    layerA.classList.toggle('on', s === 'a');
+    layerB.classList.toggle('on', s === 'b');
+    layerA.setAttribute('aria-hidden', s !== 'a');
+    layerB.setAttribute('aria-hidden', s !== 'b');
+    devA.classList.toggle('on', s === 'a');
+    devB.classList.toggle('on', s === 'b');
+    if (!talk.classList.contains('live')) subtitle.textContent = SUB[s];
+  }
+
+  devA.addEventListener('click', function () { setState('a'); });
+  devB.addEventListener('click', function () { setState('b'); });
+
+  document.addEventListener('keydown', function (e) {
+    var k = (e.key || '').toLowerCase();
+    if (k === 'a' || k === '1') setState('a');
+    if (k === 'b' || k === '2') setState('b');
+  });
+
+  /* 按住说话：只做按压态与字幕反馈，不录音 */
+  function startTalk() {
+    talk.classList.add('live');
+    talkTx.textContent = '松开结束';
+    subtitle.textContent = '我在听，慢慢说。';
+  }
+  function endTalk() {
+    if (!talk.classList.contains('live')) return;
+    talk.classList.remove('live');
+    talkTx.textContent = '按住说话';
+    subtitle.textContent = SUB[state];
+  }
+  talk.addEventListener('pointerdown', startTalk);
+  talk.addEventListener('pointercancel', endTalk);
+  window.addEventListener('pointerup', endTalk);
+  window.addEventListener('blur', endTalk);
+
+  /* 收起：把悬浮控件收干净，只留黑板；按钮变成展开 */
+  collapseBtn.addEventListener('click', function () {
+    var hidden = root.classList.toggle('chrome-hidden');
+    collapseTx.textContent = hidden ? '展开' : '收起';
+    collapseBtn.setAttribute('aria-label', hidden ? '展开悬浮控件' : '收起悬浮控件');
+    root.classList.add('nav-hidden');
+  });
+
+  /* 点画面空白：沿用 A 方案显 / 藏导航 */
+  var SKIP = '.dev,.shell-nav,.pill,.pills-r,.subtitle,.voice-dock,.talk,.keybtn';
+  root.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t && t.closest && t.closest(SKIP)) return;
+    root.classList.toggle('nav-hidden');
+  });
+
+  /* 导航只展示、不跳转 */
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('.shell-nav a') : null;
+    if (a) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
+  setState('a');
+  root.classList.add('nav-hidden');
+})();
+</script>
+</body>
+</html>

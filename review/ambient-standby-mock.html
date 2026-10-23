@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>息屏陪读 · 静态模拟</title>
+<style>
+  :root {
+    --ink: #000;
+    --flap-top: #111110;
+    --flap-bottom: #080808;
+    --flap-edge: rgba(255,255,255,.055);
+    --ivory: #e8ddca;
+    --ivory-dim: #b7aa96;
+    --date: #7f7260;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    width: 1440px;
+    height: 720px;
+    margin: 0;
+    overflow: hidden;
+    background: var(--ink);
+  }
+
+  body {
+    position: relative;
+    font-family: "Bahnschrift", "Arial Narrow", "Microsoft YaHei", sans-serif;
+    color: var(--ivory);
+    isolation: isolate;
+  }
+
+  body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: #000;
+  }
+
+  body::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 48%, rgba(0,0,0,.46) 100%);
+  }
+
+  .clock-zone {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 60%;
+    height: 100%;
+    z-index: 3;
+  }
+
+  .clock {
+    position: absolute;
+    left: 50px;
+    top: 122px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .flap {
+    position: relative;
+    width: 352px;
+    height: 424px;
+    overflow: hidden;
+    border-radius: 26px;
+    border: 1px solid var(--flap-edge);
+    background: linear-gradient(180deg, var(--flap-top), #0c0c0b 49.7%, #070707 50.3%, var(--flap-bottom));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.04),
+      inset 0 -1px 0 rgba(255,255,255,.025),
+      0 28px 64px rgba(0,0,0,.72);
+  }
+
+  .flap::before,
+  .flap::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .flap::before {
+    top: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,.018), rgba(0,0,0,.06));
+  }
+
+  .flap::after {
+    top: 50%;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(0,0,0,.2), rgba(255,255,255,.012));
+  }
+
+  .hinge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(50% - 1px);
+    height: 2px;
+    z-index: 4;
+    background: rgba(0,0,0,.92);
+    box-shadow: 0 1px 0 rgba(255,255,255,.035);
+  }
+
+  .hinge::before,
+  .hinge::after {
+    content: "";
+    position: absolute;
+    top: -8px;
+    width: 8px;
+    height: 18px;
+    border-radius: 3px;
+    background: #030303;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+  }
+
+  .hinge::before { left: -5px; }
+  .hinge::after { right: -5px; }
+
+  .digit {
+    position: absolute;
+    inset: -8px 0 -2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    font-family: "Bahnschrift Condensed", "Arial Narrow", Impact, sans-serif;
+    font-stretch: condensed;
+    font-size: 328px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -18px;
+    color: var(--ivory);
+    text-shadow: 0 0 38px rgba(232,221,202,.08);
+    transform: scaleX(.93);
+  }
+
+  .colon {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    align-items: center;
+    margin: 0 0 0 0;
+    opacity: .46;
+  }
+
+  .colon i {
+    display: block;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #a3927b;
+    box-shadow: 0 0 18px rgba(232,221,202,.12);
+  }
+
+  .date {
+    position: absolute;
+    left: 55px;
+    top: 592px;
+    color: var(--date);
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: .26em;
+    white-space: nowrap;
+  }
+
+  .portrait-zone {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 40%;
+    height: 100%;
+    z-index: 2;
+    overflow: hidden;
+  }
+
+  .nancy-glow {
+    position: absolute;
+    right: 84px;
+    top: 52px;
+    width: 450px;
+    height: 560px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 48% 42%, rgba(219,138,88,.075), rgba(122,66,37,.025) 42%, rgba(0,0,0,0) 68%);
+    filter: blur(22px);
+  }
+
+  .nancy {
+    position: absolute;
+    top: 14px;
+    right: -32px;
+    width: 632px;
+    height: 865px;
+    object-fit: cover;
+    object-position: top center;
+    opacity: .94;
+    filter: brightness(.6) saturate(.76) contrast(1.1) sepia(.09) drop-shadow(0 0 26px rgba(226,139,86,.07));
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.78) 11%, #000 25%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.78) 11%, #000 25%, #000 100%);
+  }
+
+  .portrait-light {
+    position: absolute;
+    right: 20px;
+    top: 74px;
+    width: 510px;
+    height: 560px;
+    z-index: 3;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 38% 33%, rgba(255,191,135,.065), rgba(255,163,101,.02) 36%, rgba(0,0,0,0) 68%);
+    mix-blend-mode: screen;
+  }
+</style>
+</head>
+<body>
+  <section class="clock-zone" aria-label="夜间时间">
+    <div class="clock">
+      <div class="flap"><span class="digit">23</span><i class="hinge"></i></div>
+      <div class="colon" aria-hidden="true"><i></i><i></i></div>
+      <div class="flap"><span class="digit">17</span><i class="hinge"></i></div>
+    </div>
+    <div class="date">10月23日 · 星期五</div>
+  </section>
+
+  <section class="portrait-zone" aria-hidden="true">
+    <div class="nancy-glow"></div>
+    <img class="nancy" src="../assets/nancy/nancy-teacher-bust.png" alt="">
+    <div class="portrait-light"></div>
+  </section>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 横屏课堂 · 三幕（试验）</title>
+<link rel="icon" href="data:,">
+<style>
+/* ==========================================================================
+   横屏课堂 · 三幕试验稿（teacher-class-landscape）
+   844×390 主画布；底图 full-bleed；三态只做黑板交叉淡入，不做转屏动画。
+   临时试验页，不进产品、不接主线。
+   ========================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050708}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#f7faf7;-webkit-font-smoothing:antialiased;
+  user-select:none
+}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{display:block}
+
+.preview-stage{position:fixed;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(100% 130% at 50% 45%,#0c1110 0%,#050708 70%)}
+.stage{position:relative;flex:none;width:844px;height:390px;overflow:hidden;border-radius:46px;background:#173d2f;
+  transform-origin:center center;
+  box-shadow:0 28px 78px rgba(0,0,0,.58),0 0 0 1px rgba(255,255,255,.10),inset 0 0 0 1px rgba(255,255,255,.055)}
+.bg{position:absolute;inset:0;z-index:0;background-image:url("../assets/nancy/nancy-board-landscape.png");
+  background-repeat:no-repeat;background-size:cover;background-position:50% 50%}
+
+/* 三幕黑板字：全部贴在左侧黑板内容区，200ms 只淡入淡出 */
+.layer{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity .2s ease;pointer-events:none}
+.layer.on{opacity:1}
+.wash{position:absolute;left:12px;top:66px;width:650px;height:272px;
+  background:radial-gradient(70% 70% at 38% 44%,rgba(4,20,14,.31) 0%,rgba(4,20,14,.19) 60%,rgba(4,20,14,0) 100%)}
+.chalk{position:absolute;left:42px;top:76px;width:610px;color:rgba(247,250,245,.97);
+  font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;
+  text-shadow:0 0 1px rgba(255,255,255,.42),0 1px 2px rgba(0,0,0,.22)}
+/* A · 开场 */
+.a-main{margin-top:36px;font-size:46px;font-weight:800;line-height:1.1;letter-spacing:.025em;white-space:nowrap}
+.a-main em{font-style:normal;display:inline-block;min-width:108px;letter-spacing:.11em;
+  border-bottom:3px solid rgba(245,249,244,.73);line-height:.92;text-align:center;transform:translateY(-3px)}
+.a-words{display:flex;align-items:flex-end;gap:84px;margin-top:31px;font-size:53px;font-weight:800;
+  line-height:1;letter-spacing:.06em}
+.a-words span{position:relative}
+.a-q{margin-top:7px;margin-left:147px;font-size:63px;font-weight:700;line-height:.9;
+  color:rgba(247,250,245,.92);transform:rotate(-8deg);transform-origin:left center}
+
+/* B · 出题 */
+.b-eyebrow{font-size:23px;font-weight:700;letter-spacing:.20em;color:rgba(239,247,241,.79)}
+.b-quote{margin-top:20px;font-size:45px;font-weight:800;line-height:1.22;letter-spacing:.018em;white-space:nowrap}
+.b-ul{position:relative;display:inline-block;padding:0 2px}
+.b-ul::after{content:"";position:absolute;left:-1px;right:-3px;bottom:-6px;height:4px;border-radius:50%;
+  background:rgba(245,249,244,.88);transform:rotate(-1.4deg);box-shadow:0 1px 1px rgba(0,0,0,.12)}
+
+/* C · 纠错 */
+.c-equation{margin-top:20px;font-size:55px;font-weight:800;line-height:1.16;letter-spacing:.035em;white-space:nowrap}
+.c-circle{position:relative;display:inline-block;padding:0 10px}
+.c-circle::before,.c-circle::after{content:"";position:absolute;pointer-events:none}
+.c-circle::before{left:-2px;right:-7px;top:-9px;bottom:-5px;border:1.4px solid rgba(246,250,245,.62);
+  border-radius:52% 46% 55% 45%;transform:rotate(-4.2deg)}
+.c-circle::after{left:-6px;right:-3px;top:-6px;bottom:-10px;border:2.7px solid rgba(246,250,245,.84);
+  border-radius:45% 54% 48% 56%;transform:rotate(-2.2deg);opacity:.88}
+.c-strike{position:relative;display:inline-block;color:rgba(247,250,245,.84)}
+.c-strike::before,.c-strike::after{content:"";position:absolute;left:-7px;right:-8px;top:54%;height:3px;
+  border-radius:50%;background:rgba(246,250,245,.84);transform-origin:center}
+.c-strike::before{transform:rotate(-4deg)}
+.c-strike::after{transform:rotate(2.5deg);opacity:.58;top:51%}
+.c-explain{margin-top:39px;font-size:35px;font-weight:700;line-height:1.25;letter-spacing:.02em;white-space:nowrap}
+
+/* 顶部状态栏 */
+.status{position:absolute;left:22px;right:78px;top:12px;z-index:20;display:flex;align-items:center;
+  justify-content:space-between;pointer-events:none;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.22)}
+.status .time{font-size:15px;font-weight:800;letter-spacing:.01em}
+.status .right{display:flex;align-items:center;gap:9px}
+.status .five-g{font-size:13px;font-weight:800;letter-spacing:.02em}
+.battery{position:relative;width:25px;height:12px;border:1.5px solid rgba(255,255,255,.92);border-radius:3px}
+.battery::before{content:"";position:absolute;left:2.5px;right:4px;top:2px;bottom:2px;border-radius:1.5px;background:rgba(255,255,255,.92)}
+.battery::after{content:"";position:absolute;right:-4px;top:3.5px;width:2px;height:5px;border-radius:0 1.5px 1.5px 0;background:rgba(255,255,255,.92)}
+
+/* 顶部胶囊 */
+.brand,.collapse{position:absolute;top:38px;z-index:22;height:30px;display:flex;align-items:center;
+  border-radius:15px;background:rgba(10,18,15,.43);border:1px solid rgba(255,255,255,.17);
+  color:rgba(255,255,255,.97);font-size:11.5px;font-weight:700;letter-spacing:.015em;
+  box-shadow:0 8px 20px rgba(1,8,5,.25),inset 0 1px 0 rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(14px) saturate(1.55);backdrop-filter:blur(14px) saturate(1.55);
+  transition:opacity .2s ease}
+.brand{left:22px;gap:7px;padding:0 11px 0 5px}
+.mini-ava{width:21px;height:21px;border-radius:7px;display:grid;place-items:center;flex:none;
+  color:#fff;font-size:10px;font-weight:900;background:linear-gradient(135deg,#6552ff,#9d8fff);
+  box-shadow:0 3px 8px rgba(76,53,232,.36)}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;flex:none}
+.collapse{right:16px;gap:5px;padding:0 11px;border:1px solid rgba(255,255,255,.17)}
+.collapse svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .22s ease}
+
+/* 右侧竖导航：图标整体转 90° */
+.nav{position:absolute;right:8px;top:82px;z-index:21;width:56px;padding:6px;border-radius:23px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:rgba(10,18,16,.54);border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 12px 26px rgba(1,7,5,.27),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(18px) saturate(1.45);backdrop-filter:blur(18px) saturate(1.45);
+  transition:opacity .2s ease,transform .25s ease}
+.nav-item{width:42px;height:42px;border:0;border-radius:16px;background:transparent;display:grid;place-items:center;
+  color:rgba(255,255,255,.74);transition:background .15s ease,color .15s ease,transform .12s ease}
+.nav-item svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;
+  transform:rotate(90deg)}
+.nav-item.on{background:#6552ff;color:#fff;box-shadow:0 5px 14px rgba(76,53,232,.38),inset 0 1px 0 rgba(255,255,255,.22)}
+.nav-item:active{transform:scale(.94)}
+
+/* 字幕、底部语音条、B 的两个玻璃选项 */
+.subtitle{position:absolute;left:24px;right:80px;bottom:83px;z-index:14;text-align:center;
+  font-size:18px;font-weight:700;letter-spacing:.02em;line-height:1.35;color:rgba(255,255,255,.97);
+  text-shadow:0 2px 3px rgba(0,0,0,.56),0 0 18px rgba(0,0,0,.34);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:opacity .18s ease}
+.voice-dock{position:absolute;left:24px;bottom:16px;z-index:16;display:flex;align-items:center;gap:9px;
+  transition:opacity .18s ease,transform .18s ease}
+.talk{height:50px;border-radius:25px;padding:0 16px 0 6px;display:flex;align-items:center;gap:9px;
+  border:1px solid rgba(255,255,255,.20);color:#fff;background:rgba(12,18,17,.63);
+  box-shadow:0 12px 28px rgba(2,7,5,.30),inset 0 1px 0 rgba(255,255,255,.17);
+  -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);transition:transform .12s ease}
+.talk-orb{width:37px;height:37px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:linear-gradient(145deg,#8174ff,#6552ff 58%,#4c35e8);
+  box-shadow:0 6px 15px rgba(101,82,255,.42),inset 0 1px 0 rgba(255,255,255,.32)}
+.talk-orb svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.talk-tx{font-size:12px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
+.talk:active{transform:scale(.97)}
+.talk.live .talk-orb{box-shadow:0 0 0 8px rgba(101,82,255,.16),0 0 28px rgba(101,82,255,.46)}
+.keybtn{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:50%;
+  background:rgba(12,18,17,.60);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.89);
+  box-shadow:0 10px 24px rgba(2,7,5,.24),inset 0 1px 0 rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(18px) saturate(1.55);backdrop-filter:blur(18px) saturate(1.55);transition:transform .12s ease}
+.keybtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.keybtn:active{transform:scale(.94)}
+
+.options{position:absolute;left:24px;right:240px;bottom:16px;z-index:18;display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s linear .18s}
+.options.on{opacity:1;visibility:visible;transition:opacity .18s ease}
+.options.leaving{opacity:0}
+.opt{position:relative;height:58px;border-radius:22px;padding:0 22px;text-align:left;
+  border:1px solid rgba(255,255,255,.32);background:rgba(9,17,16,.34);color:rgba(255,255,255,.97);
+  font-size:23px;font-weight:800;letter-spacing:.015em;white-space:nowrap;
+  box-shadow:0 10px 26px rgba(1,7,5,.20),inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 0 rgba(0,0,0,.12);
+  -webkit-backdrop-filter:blur(18px) saturate(1.45);backdrop-filter:blur(18px) saturate(1.45);
+  transition:border-color .14s ease,background .14s ease,box-shadow .14s ease,opacity .18s ease,transform .1s ease}
+.opt.pressed,.opt.picked{border-color:rgba(183,162,255,.88);background:rgba(101,82,255,.18);
+  box-shadow:0 0 0 1px rgba(183,162,255,.20),0 10px 26px rgba(1,7,5,.22),inset 0 1px 0 rgba(255,255,255,.23)}
+.opt.wrong{border-color:rgba(255,159,140,.98);background:rgba(188,73,60,.20);
+  box-shadow:0 0 0 1px rgba(255,159,140,.18),0 0 18px rgba(255,112,90,.18),inset 0 1px 0 rgba(255,255,255,.19)}
+.opt.correct{border-color:rgba(104,229,193,.98);background:rgba(46,174,143,.18);
+  box-shadow:0 0 0 1px rgba(104,229,193,.18),0 0 18px rgba(73,211,174,.16),inset 0 1px 0 rgba(255,255,255,.19)}
+.opt b{font-weight:900;margin-right:11px;color:rgba(255,255,255,.83)}
+.opt:active{transform:scale(.994)}
+
+/* 收起时只留黑板与交互选项 */
+.chrome-hidden .brand,.chrome-hidden .nav,.chrome-hidden .voice-dock{
+  opacity:0!important;pointer-events:none;transform:translateX(5px)}
+.chrome-hidden .collapse svg{transform:rotate(180deg)}
+
+/* 开发开关：仅试验用，截图前隐藏 */
+.dev{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:4px;
+  padding:4px 5px;border-radius:11px;background:rgba(15,18,22,.80);border:1.5px dashed rgba(173,164,222,.58);
+  box-shadow:0 8px 20px rgba(0,0,0,.30);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:opacity .12s}
+.dev .tag{font-size:7px;font-weight:800;letter-spacing:.1em;color:#bcb2ff;margin:0 2px 0 1px}
+.dev button{width:26px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,.17);
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.86);font-size:10px;font-weight:800;line-height:1}
+.dev button.on{background:#6552ff;border-color:#6552ff;color:#fff;box-shadow:0 4px 12px rgba(76,53,232,.34)}
+.preview-stage.shot .dev{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="preview-stage" id="previewStage">
+<main class="stage" id="stage" aria-label="横屏课堂三幕演示">
+  <div class="bg" aria-hidden="true"></div>
+
+  <section class="layer on" id="layerA" aria-label="A 开场">
+    <div class="wash" aria-hidden="true"></div>
+    <div class="chalk chalk-a">
+      <p class="a-main">明天把 <em>____</em> 发给你</p>
+      <p class="a-words"><span>安排</span> <span>安全</span></p>
+      <p class="a-q" aria-hidden="true">?</p>
+    </div>
+  </section>
+
+  <section class="layer" id="layerB" aria-label="B 出题">
+    <div class="wash" aria-hidden="true"></div>
+    <div class="chalk chalk-b">
+      <p class="b-eyebrow">听这句</p>
+      <p class="b-quote">「明天把<span class="b-ul">安排</span>发给你」</p>
+    </div>
+  </section>
+
+  <section class="layer" id="layerC" aria-label="C 纠错">
+    <div class="wash" aria-hidden="true"></div>
+    <div class="chalk chalk-c">
+      <p class="c-equation"><span class="c-circle">安排</span> ≠ <span class="c-strike">安全</span></p>
+      <p class="c-explain">安排 = 把事交给别人做</p>
+    </div>
+  </section>
+
+  <header class="status" aria-label="状态栏">
+    <span class="time">11:20</span>
+    <span class="right"><span class="five-g">5G</span><i class="battery" aria-hidden="true"></i></span>
+  </header>
+
+  <div class="brand"><span class="mini-ava" aria-hidden="true">N</span>Nancy · 在线<i class="tdot" aria-hidden="true"></i></div>
+  <button class="collapse" id="collapseBtn" type="button" aria-label="收起悬浮控件">
+    <span id="collapseTx">收起</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 9.5 12 14l4.5-4.5"/><path d="M7.5 14.5 12 10l4.5 4.5"/></svg>
+  </button>
+
+  <nav class="nav" id="nav" aria-label="底部导航（横屏）">
+    <button class="nav-item on" type="button" data-nav="today" aria-label="今天">
+      <svg viewBox="0 0 24 24"><path d="M4 10.2 12 3.5l8 6.7"/><path d="M6.2 9.2v10.3h11.6V9.2"/><path d="M9.5 19.5v-5.6h5v5.6"/></svg>
+    </button>
+    <button class="nav-item" type="button" data-nav="xiaoan" aria-label="小安">
+      <svg viewBox="0 0 24 24"><path d="M5.1 5.4h13.8a2 2 0 0 1 2 2v7.7a2 2 0 0 1-2 2h-7.2l-4.1 3v-3H5.1a2 2 0 0 1-2-2V7.4a2 2 0 0 1 2-2Z"/><path d="M8 10.4h.1M12 10.4h.1M16 10.4h.1"/></svg>
+    </button>
+    <button class="nav-item" type="button" data-nav="calendar" aria-label="日历">
+      <svg viewBox="0 0 24 24"><rect x="3.2" y="5.2" width="17.6" height="15.3" rx="3"/><path d="M7.2 3.5v3.3M16.8 3.5v3.3M3.2 9.2h17.6M7.5 13h.1M12 13h.1M16.5 13h.1M7.5 16.7h.1M12 16.7h.1"/></svg>
+    </button>
+    <button class="nav-item" type="button" data-nav="me" aria-label="我的">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.7"/><path d="M4.6 20.2c.7-4.1 3.4-6.2 7.4-6.2s6.7 2.1 7.4 6.2"/></svg>
+    </button>
+  </nav>
+
+  <p class="subtitle" id="subtitle" aria-live="polite">昨天你听成了安全。今天再听一遍。</p>
+
+  <div class="voice-dock" id="voiceDock">
+    <button class="talk" id="talk" type="button" aria-label="按住说话">
+      <span class="talk-orb" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+      </span>
+      <span class="talk-tx" id="talkTx">按住说话</span>
+    </button>
+    <button class="keybtn" id="typeIcon" type="button" aria-label="改用键盘输入">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="3"/><path d="M6.7 9h.1M10 9h.1M13.3 9h.1M16.6 9h.1M6.7 12.3h.1M10 12.3h.1M13.3 12.3h.1M16.6 12.3h.1M7.2 15.6h9.6"/></svg>
+    </button>
+  </div>
+
+  <div class="options" id="options" aria-label="答案选项">
+    <button class="opt" id="optA" type="button" data-correct="true"><b>A</b>明天发安排</button>
+    <button class="opt" id="optB" type="button" data-correct="false"><b>B</b>明天问安全</button>
+  </div>
+
+</main>
+<aside class="dev" id="dev" aria-label="开发开关（A/B/C 三幕）">
+  <span class="tag">DEV</span>
+  <button id="devA" class="on" type="button" title="开场">A</button>
+  <button id="devB" type="button" title="出题">B</button>
+  <button id="devC" type="button" title="纠错">C</button>
+</aside>
+</div>
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  var layers = { a: document.getElementById('layerA'), b: document.getElementById('layerB'), c: document.getElementById('layerC') };
+  var subtitle = document.getElementById('subtitle');
+  var voiceDock = document.getElementById('voiceDock');
+  var options = document.getElementById('options');
+  var optA = document.getElementById('optA');
+  var optB = document.getElementById('optB');
+  var talk = document.getElementById('talk');
+  var talkTx = document.getElementById('talkTx');
+  var collapseBtn = document.getElementById('collapseBtn');
+  var collapseTx = document.getElementById('collapseTx');
+  var devButtons = { a: document.getElementById('devA'), b: document.getElementById('devB'), c: document.getElementById('devC') };
+
+  var COPY = {
+    a: '昨天你听成了安全。今天再听一遍。',
+    b: '听这句，选一个意思。',
+    c: '同样的问题又犯了，明天会再复习这个'
+  };
+  var state = 'a';
+  var locked = false;
+  var wrongTimer = null;
+
+  function setScene(next) {
+    state = next;
+    Object.keys(layers).forEach(function (key) {
+      layers[key].classList.toggle('on', key === next);
+      layers[key].setAttribute('aria-hidden', key === next ? 'false' : 'true');
+      devButtons[key].classList.toggle('on', key === next);
+    });
+    subtitle.textContent = COPY[next];
+    voiceDock.style.opacity = next === 'b' ? '0' : '1';
+    voiceDock.style.pointerEvents = next === 'b' ? 'none' : 'auto';
+    options.classList.toggle('on', next === 'b');
+    if (next !== 'b') {
+      options.classList.remove('leaving');
+      optA.classList.remove('correct', 'wrong', 'picked', 'pressed');
+      optB.classList.remove('correct', 'wrong', 'picked', 'pressed');
+      locked = false;
+    }
+  }
+
+  function choose(btn) {
+    if (state !== 'b' || locked) return;
+    locked = true;
+    if (btn.dataset.correct === 'true') {
+      btn.classList.add('correct');
+      subtitle.textContent = '对了。明天发安排。';
+      return;
+    }
+    btn.classList.add('wrong');
+    window.clearTimeout(wrongTimer);
+    wrongTimer = window.setTimeout(function () {
+      options.classList.add('leaving');
+      wrongTimer = window.setTimeout(function () { setScene('c'); }, 190);
+    }, 300);
+  }
+
+  optA.addEventListener('click', function () { choose(optA); });
+  optB.addEventListener('click', function () { choose(optB); });
+  [optA, optB].forEach(function (btn) {
+    btn.addEventListener('pointerdown', function () { if (!locked) btn.classList.add('pressed'); });
+    btn.addEventListener('pointerup', function () { btn.classList.remove('pressed'); });
+    btn.addEventListener('pointercancel', function () { btn.classList.remove('pressed'); });
+  });
+
+  devButtons.a.addEventListener('click', function () { setScene('a'); });
+  devButtons.b.addEventListener('click', function () { setScene('b'); });
+  devButtons.c.addEventListener('click', function () { setScene('c'); });
+  document.addEventListener('keydown', function (e) {
+    var key = (e.key || '').toLowerCase();
+    if (key === 'a' || key === '1') setScene('a');
+    if (key === 'b' || key === '2') setScene('b');
+    if (key === 'c' || key === '3') setScene('c');
+  });
+
+  /* 点画面空白：A → B；B / C 不抢选项与按钮 */
+  stage.addEventListener('click', function (e) {
+    if (state !== 'a' || e.target.closest('.brand,.collapse,.nav,.voice-dock,.subtitle,.dev,.options')) return;
+    setScene('b');
+  });
+
+  /* 按住说话只做观感，不录音 */
+  function startTalk() {
+    talk.classList.add('live');
+    talkTx.textContent = '松开结束';
+    subtitle.textContent = '我在听，慢慢说。';
+  }
+  function endTalk() {
+    if (!talk.classList.contains('live')) return;
+    talk.classList.remove('live');
+    talkTx.textContent = '按住说话';
+    subtitle.textContent = COPY[state];
+  }
+  talk.addEventListener('pointerdown', startTalk);
+  talk.addEventListener('pointercancel', endTalk);
+  window.addEventListener('pointerup', endTalk);
+  window.addEventListener('blur', endTalk);
+
+  collapseBtn.addEventListener('click', function () {
+    var hidden = stage.classList.toggle('chrome-hidden');
+    collapseTx.textContent = hidden ? '展开' : '收起';
+    collapseBtn.setAttribute('aria-label', hidden ? '展开悬浮控件' : '收起悬浮控件');
+  });
+
+  /* 导航仅展示，不跳转 */
+  document.querySelectorAll('.nav-item').forEach(function (item) {
+    item.addEventListener('click', function (e) { e.preventDefault(); });
+  });
+
+  function fit() {
+    var k = Math.min(1, window.innerWidth / 844, window.innerHeight / 390);
+    stage.style.transform = 'scale(' + k + ')';
+  }
+  window.addEventListener('resize', fit);
+  fit();
+  setScene('a');
+})();
+</script>
+</body>
+</html>

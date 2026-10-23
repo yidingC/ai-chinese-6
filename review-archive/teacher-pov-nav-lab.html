@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Chinese 6.0 · 课堂底部导航模拟</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../shell.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#080D0B}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#F4F8F4;-webkit-font-smoothing:antialiased;user-select:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+svg{display:block}
+.shell-stage{background:radial-gradient(80% 74% at 50% 44%,#17201C 0%,#080D0B 74%)}
+.shell-screen{background:#14201A;color:#F2F1F8;--c-ink:#F7F9F6;--c-muted:rgba(238,246,240,.62)}
+.shell-screen .shell-st,.shell-screen .shell-si{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.26)}
+.shell-screen .shell-bat{border-color:rgba(255,255,255,.92)}
+.shell-screen .shell-bat::after{background:rgba(255,255,255,.92)}
+
+/* 课堂场景 */
+.scene{position:absolute;inset:0;z-index:1;background:#24463A;overflow:hidden}
+.bg{position:absolute;inset:0;background-image:url("../assets/nancy/nancy-board-point.png");background-repeat:no-repeat;background-size:cover;background-position:100% 50%}
+.wash{position:absolute;left:6px;top:86px;width:200px;height:300px;pointer-events:none;
+  background:radial-gradient(58% 50% at 42% 46%,rgba(5,22,15,.35) 0%,rgba(5,22,15,.22) 54%,rgba(5,22,15,0) 80%)}
+.chalk{position:absolute;left:20px;top:96px;width:190px;z-index:2;font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;
+  color:rgba(244,249,243,.95);text-shadow:0 0 1px rgba(255,255,255,.42),0 1px 2px rgba(0,0,0,.20)}
+.chalk .hist{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:rgba(233,243,236,.62);white-space:nowrap}
+.chalk .day{margin-top:8px;font-size:25px;font-weight:800;letter-spacing:.04em;line-height:1.16;white-space:nowrap}
+.chalk .sub{margin-top:11px;font-size:13.5px;font-weight:700;letter-spacing:.32em;color:rgba(239,247,241,.82)}
+.steps{margin-top:15px;list-style:none;display:grid;gap:20px}
+.steps li{position:relative;width:max-content;font-size:19.5px;font-weight:700;letter-spacing:.05em;line-height:1.2;white-space:nowrap}
+.steps .cur::after{content:"";position:absolute;left:-12px;right:-13px;top:-6px;bottom:-7px;
+  border:1.8px solid rgba(242,248,242,.80);border-radius:50%;transform:rotate(-2.6deg)}
+.veil{position:absolute;left:0;right:0;bottom:0;height:270px;z-index:5;pointer-events:none;
+  background:linear-gradient(180deg,rgba(9,18,14,0) 0%,rgba(9,18,14,.21) 55%,rgba(9,18,14,.48) 100%)}
+
+/* 顶部 */
+.pill{position:absolute;left:14px;top:57px;z-index:25;height:30px;display:flex;align-items:center;gap:7px;padding:0 11px 0 5px;border-radius:15px;
+  background:rgba(14,18,28,.46);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 8px 20px rgba(4,6,18,.26),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);font-size:11px;font-weight:700;letter-spacing:.01em;
+  transition:opacity .2s ease}
+.mini-ava{width:21px;height:21px;border-radius:7px;background:linear-gradient(135deg,#6552ff,#9d8fff);color:#fff;display:grid;place-items:center;
+  font-size:10px;font-weight:800;box-shadow:0 3px 8px rgba(76,53,232,.35)}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;display:inline-block;flex:none;box-shadow:0 0 7px rgba(53,200,143,.4)}
+.collapse{position:absolute;right:14px;top:57px;z-index:25;height:30px;display:flex;align-items:center;gap:5px;padding:0 11px;border-radius:15px;
+  background:rgba(14,18,28,.46);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.96);
+  box-shadow:0 8px 20px rgba(4,6,18,.26),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);font-size:11px;font-weight:700}
+.collapse svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s ease}
+.chrome-hidden .pill{opacity:0;pointer-events:none}
+.chrome-hidden .collapse svg{transform:rotate(180deg)}
+.chrome-hidden .subtitle,.chrome-hidden .control-dock,.chrome-hidden .composer{opacity:0!important;pointer-events:none!important}
+
+/* 字幕和底栏 */
+.subtitle{position:absolute;left:22px;right:22px;bottom:132px;z-index:24;text-align:center;font-size:13.5px;font-weight:600;letter-spacing:.025em;
+  line-height:1.45;color:rgba(255,255,255,.97);text-shadow:0 1px 2px rgba(0,0,0,.52),0 0 16px rgba(0,0,0,.38);
+  white-space:normal;pointer-events:none;transition:bottom .26s cubic-bezier(.22,.9,.24,1),opacity .18s ease}
+.control-dock{position:absolute;left:16px;right:16px;bottom:56px;z-index:22;height:56px;display:flex;align-items:center;gap:10px;
+  transition:opacity .18s ease,transform .2s ease}
+.voice-pill{position:relative;flex:none;height:56px;min-width:154px;padding:0 14px 0 7px;border-radius:28px;display:flex;align-items:center;gap:9px;
+  border:1px solid rgba(255,255,255,.23);color:#fff;
+  background:linear-gradient(180deg,rgba(22,27,43,.88),rgba(13,18,27,.78));
+  box-shadow:0 16px 34px rgba(2,7,8,.36),0 0 0 1px rgba(110,92,255,.10),inset 0 1px 0 rgba(255,255,255,.18);
+  -webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);
+  transition:transform .12s ease,background .2s ease,border-color .2s ease}
+.voice-pill:active{transform:scale(.98)}
+.voice-orb{position:relative;width:43px;height:43px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(145deg,#887CFF,#6552FF 58%,#4C35E8);box-shadow:0 8px 18px rgba(76,53,232,.44),inset 0 1px 0 rgba(255,255,255,.32);
+  transition:background .18s ease,box-shadow .18s ease}
+.voice-orb svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.voice-orb .mic-off{display:none}
+.voice-text{font-size:15px;font-weight:800;letter-spacing:.02em;white-space:nowrap;color:#fff}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#43DBA6;flex:none;box-shadow:0 0 0 3px rgba(67,219,166,.12),0 0 10px rgba(67,219,166,.42)}
+.voice-pill.is-muted{border-color:rgba(255,255,255,.13);background:rgba(15,20,28,.70);box-shadow:0 12px 28px rgba(2,7,8,.30),inset 0 1px 0 rgba(255,255,255,.11)}
+.voice-pill.is-muted .voice-orb{background:linear-gradient(145deg,#5A5F6D,#3B404B);box-shadow:0 6px 14px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.12)}
+.voice-pill.is-muted .voice-orb .mic-on{display:none}
+.voice-pill.is-muted .voice-orb .mic-off{display:block}
+.voice-pill.is-muted .live-dot{background:rgba(255,255,255,.34);box-shadow:none}
+.stretch{flex:1 1 auto;min-width:0}
+.round{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.19);
+  background:rgba(14,20,29,.58);color:rgba(255,255,255,.88);box-shadow:0 10px 24px rgba(2,7,8,.25),inset 0 1px 0 rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);transition:transform .12s ease,background .16s ease}
+.round:active{transform:scale(.94)}
+.round svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn{width:44px;height:44px;opacity:.88;border-color:rgba(255,255,255,.16);background:rgba(13,19,26,.47);box-shadow:0 8px 20px rgba(2,7,8,.18),inset 0 1px 0 rgba(255,255,255,.11)}
+.nav-btn svg{width:19px;height:19px;stroke-width:1.8}
+.nav-btn:active{opacity:1}
+
+/* 输入态 */
+.composer{position:absolute;left:16px;right:16px;bottom:56px;z-index:23;height:56px;display:flex;align-items:center;gap:8px;opacity:0;
+  transform:translateY(9px);pointer-events:none;transition:opacity .18s ease,transform .2s ease}
+.back-voice{width:46px;height:46px;background:rgba(30,26,61,.66);border-color:rgba(159,145,255,.24);color:#E7E2FF}
+.field{min-width:0;flex:1;height:48px;border-radius:24px;border:1px solid rgba(255,255,255,.18);outline:none;
+  padding:0 16px;background:rgba(14,20,29,.64);color:#fff;font-size:14px;font-weight:500;caret-color:#C6BCFF;
+  box-shadow:0 12px 26px rgba(2,7,8,.25),inset 0 1px 0 rgba(255,255,255,.10);
+  -webkit-backdrop-filter:blur(18px) saturate(1.55);backdrop-filter:blur(18px) saturate(1.55)}
+.field::placeholder{color:rgba(255,255,255,.38)}
+.send{width:46px;height:46px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.32);
+  box-shadow:0 8px 18px rgba(2,7,8,.18),inset 0 1px 0 rgba(255,255,255,.08);transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .12s ease}
+.send.ready{background:linear-gradient(145deg,#8073FF,#6552FF 58%,#4C35E8);border-color:rgba(197,187,255,.55);color:#fff;
+  box-shadow:0 8px 22px rgba(76,53,232,.40),inset 0 1px 0 rgba(255,255,255,.27)}
+.typing .control-dock{opacity:0;transform:translateY(8px);pointer-events:none}
+.typing .composer{opacity:1;transform:none;pointer-events:auto}
+.typing .subtitle{bottom:132px}
+
+/* 抽屉 */
+.scrim{position:absolute;inset:0;z-index:40;background:rgba(3,9,7,.27);opacity:0;pointer-events:none;transition:opacity .24s ease}
+.drawer{position:absolute;left:8px;right:8px;bottom:8px;z-index:70;height:186px;border-radius:30px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(25,37,31,.87),rgba(10,17,14,.95));border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 26px 70px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(24px) saturate(1.55);backdrop-filter:blur(24px) saturate(1.55);
+  transform:translateY(calc(100% + 18px));pointer-events:none;
+  transition:transform .26s cubic-bezier(.22,.9,.24,1),height .26s cubic-bezier(.22,.9,.24,1)}
+.drawer-open .scrim{opacity:1;pointer-events:auto}
+.drawer-open .drawer{transform:translateY(0);pointer-events:auto}
+.drawer-expanded .drawer{height:424px}
+.drawer-open .subtitle{bottom:212px;z-index:65}
+.drawer-expanded .subtitle{bottom:450px}
+.drawer-inner{height:100%;padding:0 16px 34px;display:flex;flex-direction:column}
+.grip{height:24px;flex:none;display:grid;place-items:center;touch-action:none;cursor:grab}
+.grip span{width:38px;height:4px;border-radius:2px;background:rgba(255,255,255,.30);box-shadow:0 1px 0 rgba(0,0,0,.10)}
+.entries{height:76px;flex:none;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;align-items:start}
+.entry{min-width:0;height:76px;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:7px;padding:0;color:rgba(255,255,255,.62)}
+.entry-ico{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.13);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);transition:background .16s ease,color .16s ease,border-color .16s ease,transform .12s ease}
+.entry-ico svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.entry-label{font-size:10.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;color:rgba(255,255,255,.58)}
+.entry.is-current .entry-ico{background:rgba(108,87,255,.30);border-color:rgba(186,174,255,.38);color:#FFF;
+  box-shadow:0 8px 18px rgba(76,53,232,.22),inset 0 1px 0 rgba(255,255,255,.17)}
+.entry.is-current .entry-label{color:#fff;font-weight:800}
+.entry:active .entry-ico{transform:scale(.94)}
+.panel{min-height:0;flex:1;overflow:hidden;opacity:0;transform:translateY(7px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.drawer-expanded .panel{opacity:1;transform:none;pointer-events:auto;transition-delay:.04s}
+.panel h2{font-size:23px;line-height:1.15;font-weight:900;letter-spacing:.01em}
+.panel .subline{margin-top:6px;font-size:12.5px;line-height:1.4;color:rgba(255,255,255,.56)}
+.panel-content{padding-top:10px}
+.homework-card{margin-top:13px;padding:13px 14px;border-radius:18px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.11)}
+.homework-card strong{display:block;font-size:15px;font-weight:800;line-height:1.35}
+.homework-card span{display:block;margin-top:7px;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.52)}
+.drawer-action{width:100%;height:43px;margin-top:12px;border-radius:22px;border:1px solid rgba(194,184,255,.37);
+  background:linear-gradient(145deg,#786BFF,#6552FF 58%,#4C35E8);color:#fff;font-size:14px;font-weight:800;
+  box-shadow:0 10px 22px rgba(76,53,232,.32),inset 0 1px 0 rgba(255,255,255,.23)}
+.cal-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.cal-top .today-note{font-size:11.5px;font-weight:700;color:rgba(255,255,255,.56);white-space:nowrap;padding-bottom:2px}
+.calendar{margin-top:10px;border-radius:18px;padding:9px 10px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+.cal-week,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);align-items:center}
+.cal-week span{text-align:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.38);height:18px;line-height:18px}
+.cal-grid{gap:2px 0;margin-top:2px}
+.cal-day{height:25px;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.70)}
+.cal-day.blank{visibility:hidden}
+.cal-day.today{color:#fff}
+.cal-day.today span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#6552FF;box-shadow:0 6px 14px rgba(76,53,232,.33)}
+.xiaolan-card{margin-top:13px;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.11)}
+.xiaolan-ava{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#9B8FFF,#6552FF);font-size:17px;font-weight:900;color:#fff;box-shadow:0 8px 18px rgba(76,53,232,.28)}
+.xiaolan-card p{font-size:13.5px;font-weight:600;line-height:1.55;color:rgba(255,255,255,.76)}
+.profile-stats{margin-top:13px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.profile-stat{min-width:0;padding:14px 7px;border-radius:17px;text-align:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10)}
+.profile-stat b{display:block;font-size:16px;font-weight:900;color:#fff;line-height:1.2}
+.profile-stat span{display:block;margin-top:6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.48)}
+.home-bar{position:absolute;left:128px;top:831px;width:134px;height:5px;border-radius:2.5px;background:rgba(255,255,255,.86);z-index:90;pointer-events:none}
+
+/* 开发开关 */
+.dev{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:14px;
+  background:rgba(15,18,22,.92);border:1.5px dashed rgba(173,164,222,.55);box-shadow:0 10px 28px rgba(0,0,0,.38);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.dev .tag{font-size:8px;font-weight:900;letter-spacing:.12em;color:#BCB2FF;margin-right:3px}
+.dev button{height:28px;padding:0 8px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.78);font-size:9px;font-weight:800;white-space:nowrap}
+.dev button.on{background:#6552FF;border-color:#6552FF;color:#fff;box-shadow:0 4px 12px rgba(76,53,232,.34)}
+.dev .hint{font-size:8px;font-weight:700;color:rgba(255,255,255,.34);margin-left:4px;white-space:nowrap}
+@media (min-width:760px){.dev{left:calc(50% + 214px);bottom:50%;transform:translateY(50%);flex-direction:column;align-items:stretch;width:150px}.dev .tag{text-align:center;margin:0 0 3px}.dev .hint{text-align:center;margin:2px 0 0;line-height:1.4}}
+body.shot .dev{display:none!important}
+body.shot,body.shot *{cursor:none!important}
+</style>
+</head>
+<body>
+<div class="shell-stage">
+  <div class="shell-screen" id="screen">
+    <div class="scene" aria-label="课堂场景">
+      <div class="bg" aria-hidden="true"></div>
+      <div class="wash" aria-hidden="true"></div>
+      <div class="chalk">
+        <p class="hist">昨天：安排 / 安全</p>
+        <p class="day">第 15 天</p>
+        <p class="sub">今天四步</p>
+        <ul class="steps">
+          <li class="cur">听安排</li>
+          <li>抓关键词</li>
+          <li>练一遍</li>
+          <li>去实战</li>
+        </ul>
+      </div>
+    </div>
+    <div class="veil" aria-hidden="true"></div>
+
+    <div class="shell-st">11:20</div>
+    <div class="shell-si">5G <span class="shell-bat" aria-hidden="true"></span></div>
+
+    <div class="pill"><span class="mini-ava" aria-hidden="true">N</span>Nancy · 在线<i class="tdot" aria-hidden="true"></i></div>
+    <button class="collapse" id="collapseBtn" type="button" aria-label="收起悬浮控件">
+      <span id="collapseTx">收起</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 9.5 12 14l4.5-4.5"/><path d="M7.5 14.5 12 10l4.5 4.5"/></svg>
+    </button>
+
+    <p class="subtitle" id="subtitle" aria-live="polite">今天四步，先听安排。</p>
+
+    <div class="control-dock" id="controlDock">
+      <button class="voice-pill" id="voiceBtn" type="button" aria-label="关闭语音" aria-pressed="true">
+        <span class="voice-orb" aria-hidden="true">
+          <svg class="mic-on" viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+          <svg class="mic-off" viewBox="0 0 24 24"><path d="M9 5a3 3 0 0 1 6 0v5.2"/><path d="M6.1 10.7a6 6 0 0 0 9.3 5.1M17.9 11.4a6 6 0 0 1-.7 2.8"/><path d="M12 17.6v3.2M4 4l16 16"/></svg>
+        </span>
+        <span class="voice-text" id="voiceText">我在听</span>
+        <i class="live-dot" aria-hidden="true"></i>
+      </button>
+
+      <button class="round" id="keyboardBtn" type="button" aria-label="改用键盘输入">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="3"/><path d="M6.7 9h.1M10 9h.1M13.3 9h.1M16.6 9h.1M6.7 12.3h.1M10 12.3h.1M13.3 12.3h.1M16.6 12.3h.1M7.2 15.6h9.6"/></svg>
+      </button>
+
+      <span class="stretch" aria-hidden="true"></span>
+
+      <button class="round nav-btn" id="navBtn" type="button" aria-label="打开课堂导航" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 9h14.8M4.6 13h14.8M4.6 17h8.8"/><path d="M17.8 3.6 20 5.8l-2.2 2.2"/></svg>
+      </button>
+    </div>
+
+    <div class="composer" id="composer" aria-hidden="true">
+      <button class="round back-voice" id="backVoiceBtn" type="button" aria-label="回到语音">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+      </button>
+      <input class="field" id="messageInput" type="text" placeholder="输入你想说的话" autocomplete="off" aria-label="输入消息">
+      <button class="send" id="sendBtn" type="button" aria-label="发送" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.8 18.2 12 13 17.2"/></svg>
+      </button>
+    </div>
+
+    <div class="scrim" id="scrim" aria-hidden="true"></div>
+
+    <section class="drawer" id="drawer" aria-label="课堂抽屉" aria-hidden="true">
+      <div class="drawer-inner">
+        <div class="grip" id="drawerGrip" aria-label="下拉关闭"><span></span></div>
+        <nav class="entries" aria-label="课堂功能">
+          <button class="entry is-current" type="button" data-entry="classroom">
+            <span class="entry-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.2h16v11.2H4z"/><path d="M7 8.2h6M7 11.2h10M12 16.4v3.2M8.5 19.6h7"/></svg></span>
+            <span class="entry-label">课堂</span>
+          </button>
+          <button class="entry" type="button" data-entry="homework">
+            <span class="entry-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.8h9l4 4v12.4H6z"/><path d="M14.8 3.8v4.5h4.3M9 12h6M9 15.2h4.8"/></svg></span>
+            <span class="entry-label">作业</span>
+          </button>
+          <button class="entry" type="button" data-entry="calendar">
+            <span class="entry-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.2" width="17" height="15" rx="3"/><path d="M3.5 9.6h17M8.2 3.4v3.4M15.8 3.4v3.4M7.5 13h.1M12 13h.1M16.5 13h.1"/></svg></span>
+            <span class="entry-label">日历</span>
+          </button>
+          <button class="entry" type="button" data-entry="xiaolan">
+            <span class="entry-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.1 5.4h13.8a2 2 0 0 1 2 2v7.7a2 2 0 0 1-2 2h-7.2l-4.1 3v-3H5.1a2 2 0 0 1-2-2V7.4a2 2 0 0 1 2-2Z"/><path d="M8 10.4h.1M12 10.4h.1M16 10.4h.1"/></svg></span>
+            <span class="entry-label">小安</span>
+          </button>
+          <button class="entry" type="button" data-entry="profile">
+            <span class="entry-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5h6.2l2 2H20v13H4z"/><path d="M7.5 12h9M7.5 15.4h5.8"/></svg></span>
+            <span class="entry-label">学习档案</span>
+          </button>
+        </nav>
+        <div class="panel" id="panel" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <div class="home-bar" aria-hidden="true"></div>
+  </div>
+
+  <aside class="dev" id="dev" aria-label="导航状态开发开关">
+    <span class="tag">DEV</span>
+    <button type="button" data-n="1" class="on">N1 常态</button>
+    <button type="button" data-n="2">N2 闭麦</button>
+    <button type="button" data-n="3">N3 抽屉</button>
+    <button type="button" data-n="4">N4 日历</button>
+    <button type="button" data-n="5">N5 输入</button>
+    <span class="hint">1–5 切态 · Esc 关闭 · S 截图</span>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var screen=document.getElementById('screen');
+  var subtitle=document.getElementById('subtitle');
+  var voiceBtn=document.getElementById('voiceBtn');
+  var voiceText=document.getElementById('voiceText');
+  var keyboardBtn=document.getElementById('keyboardBtn');
+  var navBtn=document.getElementById('navBtn');
+  var composer=document.getElementById('composer');
+  var backVoiceBtn=document.getElementById('backVoiceBtn');
+  var messageInput=document.getElementById('messageInput');
+  var sendBtn=document.getElementById('sendBtn');
+  var scrim=document.getElementById('scrim');
+  var drawer=document.getElementById('drawer');
+  var drawerGrip=document.getElementById('drawerGrip');
+  var panel=document.getElementById('panel');
+  var collapseBtn=document.getElementById('collapseBtn');
+  var collapseTx=document.getElementById('collapseTx');
+  var devButtons=Array.prototype.slice.call(document.querySelectorAll('.dev [data-n]'));
+  var entryButtons=Array.prototype.slice.call(document.querySelectorAll('.entry'));
+
+  var muted=false;
+  var composerOpen=false;
+  var drawerOpen=false;
+  var drawerView='classroom';
+  var drawerReturn=null;
+  var dragging=false;
+  var dragStartY=0;
+  var dragY=0;
+  var devState='n1';
+
+  var PANELS={
+    homework:'<div class="panel-content"><h2>今天的作业</h2><div class="homework-card"><strong>听安排，选一个意思</strong><span>1 项待完成</span></div><button class="drawer-action" type="button" data-close-action>去完成</button></div>',
+    calendar:'<div class="panel-content"><div class="cal-top"><h2>课程日历</h2><span class="today-note">今天 4 步</span></div><div class="calendar" id="miniCalendar"><div class="cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div class="cal-grid" id="calGrid"></div></div></div>',
+    xiaolan:'<div class="panel-content"><h2>小安 · 同班同学</h2><div class="xiaolan-card"><span class="xiaolan-ava">安</span><p>她刚做完同一道题，想问你怎么选。</p></div></div>',
+    profile:'<div class="panel-content"><h2>学习档案</h2><div class="profile-stats"><div class="profile-stat"><b>第 15 天</b><span>课堂进度</span></div><div class="profile-stat"><b>32 个</b><span>已学词汇</span></div><div class="profile-stat"><b>4 步</b><span>今天任务</span></div></div></div>'
+  };
+
+  function setMuted(next){
+    muted=!!next;
+    voiceBtn.classList.toggle('is-muted',muted);
+    voiceBtn.setAttribute('aria-pressed',muted?'false':'true');
+    voiceBtn.setAttribute('aria-label',muted?'打开语音':'关闭语音');
+    voiceText.textContent=muted?'已闭麦':'我在听';
+  }
+
+  function syncSend(){
+    var has=messageInput.value.trim().length>0;
+    sendBtn.classList.toggle('ready',has);
+    sendBtn.disabled=!has;
+  }
+
+  function openComposer(prefill){
+    if(drawerOpen) closeDrawer(false);
+    composerOpen=true;
+    setMuted(true);
+    screen.classList.add('typing');
+    composer.setAttribute('aria-hidden','false');
+    if(typeof prefill==='string'){
+      messageInput.value=prefill;
+    }
+    syncSend();
+    requestAnimationFrame(function(){messageInput.focus();});
+    syncDev();
+  }
+
+  function closeComposer(){
+    composerOpen=false;
+    screen.classList.remove('typing');
+    composer.setAttribute('aria-hidden','true');
+    messageInput.blur();
+    syncDev();
+  }
+
+  function renderEntries(){
+    entryButtons.forEach(function(btn){
+      btn.classList.toggle('is-current',btn.dataset.entry===(drawerView==='classroom'?'classroom':drawerView));
+    });
+  }
+
+  function fillCalendar(){
+    var grid=document.getElementById('calGrid');
+    if(!grid) return;
+    var html='';
+    for(var i=0;i<2;i++) html+='<span class="cal-day blank"></span>';
+    for(var d=1;d<=30;d++){
+      if(d===15) html+='<span class="cal-day today" aria-label="今天，第 15 天"><span>15</span></span>';
+      else html+='<span class="cal-day">'+d+'</span>';
+    }
+    grid.innerHTML=html;
+  }
+
+  function renderPanel(){
+    if(drawerView==='classroom'){
+      panel.innerHTML='';
+      return;
+    }
+    panel.innerHTML=PANELS[drawerView]||'';
+    if(drawerView==='calendar') fillCalendar();
+    renderEntries();
+  }
+
+  function setDrawerView(view,keepOpen){
+    drawerView=view;
+    renderPanel();
+    if(view==='classroom'){
+      if(keepOpen) screen.classList.remove('drawer-expanded');
+      else closeDrawer();
+    }else{
+      screen.classList.add('drawer-expanded');
+    }
+    renderEntries();
+    syncDev();
+  }
+
+  function openDrawer(view){
+    if(drawerOpen) return;
+    drawerReturn={muted:muted,composer:composerOpen,subtitle:subtitle.textContent,chromeHidden:screen.classList.contains('chrome-hidden')};
+    drawerOpen=true;
+    drawerView=view||'classroom';
+    navBtn.setAttribute('aria-expanded','true');
+    drawer.setAttribute('aria-hidden','false');
+    screen.classList.add('drawer-open');
+    screen.classList.toggle('drawer-expanded',drawerView!=='classroom');
+    renderPanel();
+    syncDev();
+  }
+
+  function closeDrawer(restore){
+    if(!drawerOpen) return;
+    drawerOpen=false;
+    screen.classList.remove('drawer-open','drawer-expanded');
+    navBtn.setAttribute('aria-expanded','false');
+    drawer.setAttribute('aria-hidden','true');
+    drawer.style.transition='';
+    drawer.style.transform='';
+    if(restore!==false && drawerReturn){
+      setMuted(drawerReturn.muted);
+      if(drawerReturn.composer && !composerOpen) openComposer();
+      if(!drawerReturn.composer && composerOpen) closeComposer();
+      subtitle.textContent=drawerReturn.subtitle;
+    }
+    drawerReturn=null;
+    drawerView='classroom';
+    renderEntries();
+    syncDev();
+  }
+
+  function syncDev(){
+    devState=drawerOpen ? (drawerView==='calendar'?'n4':'n3') : (composerOpen?'n5':(muted?'n2':'n1'));
+    devButtons.forEach(function(btn){btn.classList.toggle('on',btn.dataset.n===devState.slice(1));});
+  }
+
+  function applyDev(n){
+    devState='n'+n;
+    if(n==='1'){
+      closeDrawer(false); if(composerOpen) closeComposer();
+      setMuted(false);
+    }else if(n==='2'){
+      closeDrawer(false); if(composerOpen) closeComposer();
+      setMuted(true);
+    }else if(n==='3'){
+      if(composerOpen) closeComposer();
+      closeDrawer(false);
+      setMuted(false);
+      openDrawer('classroom');
+    }else if(n==='4'){
+      if(composerOpen) closeComposer();
+      closeDrawer(false);
+      setMuted(false);
+      openDrawer('calendar');
+    }else if(n==='5'){
+      closeDrawer(false);
+      openComposer('我明天下午发您');
+    }
+    devButtons.forEach(function(btn){btn.classList.toggle('on',btn.dataset.n===n);});
+  }
+
+  voiceBtn.addEventListener('click',function(){
+    if(drawerOpen) return;
+    setMuted(!muted);
+    syncDev();
+  });
+
+  keyboardBtn.addEventListener('click',function(){openComposer('');});
+  backVoiceBtn.addEventListener('click',function(){closeComposer();setMuted(false);syncDev();});
+  messageInput.addEventListener('input',function(){syncSend();syncDev();});
+  messageInput.addEventListener('keydown',function(e){ if(e.key==='Enter'&&messageInput.value.trim()){e.preventDefault();} });
+  sendBtn.addEventListener('click',function(){
+    if(!sendBtn.classList.contains('ready')) return;
+    messageInput.value='';
+    syncSend();
+  });
+
+  navBtn.addEventListener('click',function(){
+    if(drawerOpen) closeDrawer(); else openDrawer('classroom');
+  });
+  scrim.addEventListener('click',function(){closeDrawer();});
+
+  entryButtons.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var view=btn.dataset.entry;
+      if(view==='classroom') closeDrawer();
+      else setDrawerView(view,true);
+    });
+  });
+
+  panel.addEventListener('click',function(e){
+    var action=e.target && e.target.closest ? e.target.closest('[data-close-action]') : null;
+    if(action) closeDrawer();
+  });
+
+  collapseBtn.addEventListener('click',function(){
+    var hidden=screen.classList.toggle('chrome-hidden');
+    collapseTx.textContent=hidden?'展开':'收起';
+    collapseBtn.setAttribute('aria-label',hidden?'展开悬浮控件':'收起悬浮控件');
+  });
+
+  drawerGrip.addEventListener('pointerdown',function(e){
+    if(!drawerOpen) return;
+    dragging=true;
+    dragStartY=e.clientY;
+    dragY=0;
+    drawer.style.transition='none';
+    try{drawerGrip.setPointerCapture(e.pointerId);}catch(err){}
+  });
+  drawerGrip.addEventListener('pointermove',function(e){
+    if(!dragging) return;
+    dragY=Math.max(0,e.clientY-dragStartY);
+    drawer.style.transform='translateY('+dragY+'px)';
+  });
+  function endDrag(){
+    if(!dragging) return;
+    dragging=false;
+    drawer.style.transition='';
+    if(dragY>58){ drawer.style.transform=''; closeDrawer(); }
+    else { drawer.style.transform=''; }
+    dragY=0;
+  }
+  drawerGrip.addEventListener('pointerup',endDrag);
+  drawerGrip.addEventListener('pointercancel',endDrag);
+  drawerGrip.addEventListener('lostpointercapture',endDrag);
+
+  document.addEventListener('keydown',function(e){
+    var k=(e.key||'').toLowerCase();
+    var inField=e.target && e.target.tagName==='INPUT';
+    if(k==='s'){
+      e.preventDefault();
+      document.body.classList.toggle('shot');
+      return;
+    }
+    if(k==='escape'){
+      if(drawerOpen){e.preventDefault();closeDrawer();}
+      return;
+    }
+    if(inField) return;
+    if(/^[1-5]$/.test(k)){e.preventDefault();applyDev(k);}
+  });
+
+  devButtons.forEach(function(btn){btn.addEventListener('click',function(){applyDev(btn.dataset.n);});});
+
+  function fit(){
+    var k=Math.min(1,window.innerWidth/390,window.innerHeight/844);
+    screen.style.transform='scale('+k+')';
+  }
+  window.addEventListener('resize',fit);
+  fit();
+  syncSend();
+  applyDev('1');
+})();
+</script>
+</body>
+</html>
