@@ -68,7 +68,9 @@ body.shot,body.shot *{cursor:none!important}
 .d1-date{display:block;font-family:var(--chalk-kai);font-size:22px;font-weight:400;line-height:26px;
   letter-spacing:.035em;color:rgba(247,250,245,.86);white-space:nowrap;transform:rotate(-.45deg);transform-origin:left center;
   text-shadow:0 0 1.3px rgba(255,255,255,.34),0 1px 1px rgba(0,0,0,.16)}
-.d1-review-layout{position:absolute;left:245px;top:42px;display:block;width:272px;transform:rotate(-.12deg)}
+.d1-review-layout{position:absolute;left:245px;top:42px;display:block;width:272px;
+  opacity:0;visibility:hidden;transform:translateX(-10px) rotate(-.12deg);
+  transition:opacity .3s ease,transform .3s cubic-bezier(.2,.7,.3,1),visibility 0s linear .3s}
 .d1-review-label{position:relative;display:block;width:max-content;height:18px;font-family:var(--chalk-kai);
   font-size:14.5px;font-weight:400;line-height:18px;letter-spacing:.045em;color:rgba(241,248,242,.56);
   text-shadow:0 0 1.3px rgba(255,255,255,.34),0 1px 1px rgba(0,0,0,.16)}
@@ -98,22 +100,15 @@ body.shot,body.shot *{cursor:none!important}
 .d1-last{display:block;margin-top:8px;font-family:var(--chalk-kai);font-size:16px;font-weight:400;line-height:19px;
   letter-spacing:.025em;color:rgba(238,246,240,.64);text-align:left;white-space:nowrap;
   text-shadow:0 0 1.3px rgba(255,255,255,.32),0 1px 1px rgba(0,0,0,.16)}
-.d1-new-layout{display:none;position:absolute;left:34px;top:30px;grid-template-columns:112px 1px 312px;column-gap:36px;
-  width:497px;height:151px;transform:rotate(-.10deg)}
-.stage.board-new .d1-review-layout{display:none}
+@keyframes d1-new-layout-in{
+  from{opacity:0;transform:translateX(10px) rotate(-.10deg)}
+  to{opacity:1;transform:rotate(-.10deg)}
+}
+.d1-new-layout{display:none;position:absolute;left:34px;top:30px;grid-template-columns:minmax(0,1fr);column-gap:0;
+  width:552px;height:151px;opacity:0;transform:translateX(10px) rotate(-.10deg)}
 .stage.board-new .d1-new-layout{display:grid}
-.d1-review-rail{display:block;min-width:0;padding-top:1px}
-.d1-mini-label{display:block;height:16px;font-family:var(--chalk-kai);font-size:11.5px;font-weight:400;line-height:16px;
-  letter-spacing:.045em;color:rgba(241,248,242,.34)}
-.d1-mini-row{display:flex;align-items:flex-start;gap:2.5px;margin-top:5px}
-.d1-mini-row .d1-char{height:21px;font-size:18px;line-height:21px;color:rgba(241,248,242,.31)}
-.d1-mini-row .d1-pinyin{height:9px;font-size:7.2px;line-height:9px;color:rgba(235,244,238,.20)}
-.d1-mini-last{display:block;margin-top:8px;font-family:var(--chalk-kai);font-size:10.5px;font-weight:400;line-height:13px;
-  letter-spacing:.02em;color:rgba(238,246,240,.30);white-space:nowrap}
-.d1-new-divider{display:block;height:120px;margin-top:3px;transform:rotate(.45deg);border-radius:2px;
-  background:linear-gradient(180deg,rgba(245,250,245,0) 0%,rgba(245,250,245,.17) 18%,rgba(245,250,245,.23) 78%,rgba(245,250,245,0) 100%)}
-.d1-new-content{display:block;min-width:0;padding-top:0}
-.d1-new-map{display:block}
+.d1-new-content{display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-width:0;padding-top:0}
+.d1-new-map{display:block;width:300px;max-width:100%}
 .d1-today-heading{position:relative;display:block;width:max-content;height:26px;font-family:var(--chalk-kai);
   font-size:24px;font-weight:400;line-height:26px;letter-spacing:.02em;color:rgba(246,227,180,.95);white-space:nowrap;
   text-shadow:0 0 1.4px rgba(255,243,207,.30),0 1px 1px rgba(0,0,0,.15)}
@@ -129,7 +124,7 @@ body.shot,body.shot *{cursor:none!important}
 .d1-food-unit:nth-child(4){transform:translateY(-.5px) rotate(.6deg)}
 .d1-food-unit:nth-child(5){transform:translateY(1px) rotate(-.55deg)}
 .d1-food-unit:nth-child(6){transform:translateY(-.3px) rotate(.4deg)}
-.d1-detail-panel{display:none;position:relative;width:312px;height:151px;font-family:var(--chalk-kai);
+.d1-detail-panel{display:none;position:relative;width:312px;height:151px;margin-inline:auto;font-family:var(--chalk-kai);
   color:rgba(247,250,245,.95);text-shadow:0 0 1.35px rgba(255,255,255,.32),0 1px 1px rgba(0,0,0,.16)}
 .stage[data-board-state="pinyin"] .d1-pinyin-panel,
 .stage[data-board-state="coffee"] .d1-coffee-panel,
@@ -145,8 +140,8 @@ body.shot,body.shot *{cursor:none!important}
 .d1-under-word{position:relative;display:inline-block}
 .d1-under-word::after{content:"";position:absolute;left:-2px;right:-2px;bottom:-2px;height:1.5px;
   transform:rotate(-1.5deg);border-radius:50%;background:rgba(245,249,244,.42)}
-.d1-pinyin-panel{padding:0 0 0 20px}
-.d1-pinyin-hero{display:flex;align-items:flex-end;gap:14px;margin-top:1px}
+.d1-pinyin-panel{padding:0;text-align:center}
+.d1-pinyin-hero{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin-top:1px}
 .d1-pinyin-mega{display:block;font-family:"Segoe Print","Segoe UI","Microsoft YaHei",sans-serif;font-size:59px;
   font-weight:400;line-height:64px;letter-spacing:-.045em;color:rgba(250,252,247,.97);white-space:nowrap;
   text-shadow:0 0 1.6px rgba(255,255,255,.40),0 1px 1px rgba(0,0,0,.16)}
@@ -165,12 +160,12 @@ body.shot,body.shot *{cursor:none!important}
   color:rgba(249,251,247,.94);white-space:nowrap}
 .d1-single-answer{display:block;margin-top:4px;font-size:18.5px;font-weight:400;line-height:22px;letter-spacing:.055em;
   color:rgba(238,246,240,.65);white-space:nowrap}
-.d1-service-panel{padding:7px 0 0 8px}
+.d1-service-panel{padding:7px 0 0;text-align:center}
 .d1-service-question{display:block;margin-top:3px;font-size:50px;font-weight:400;line-height:56px;letter-spacing:.015em;
   color:rgba(250,252,247,.98);white-space:nowrap}
 .d1-service-prompt{display:block;margin-top:8px;font-size:22px;font-weight:400;line-height:26px;letter-spacing:.06em;
   color:rgba(238,246,240,.60);white-space:nowrap}
-.d1-measure-panel{padding:2px 0 0 4px}
+.d1-measure-panel{padding:2px 0 0;text-align:center}
 .d1-measure-rule{display:block;font-size:24px;font-weight:400;line-height:30px;letter-spacing:.03em;
   color:rgba(247,250,245,.92);white-space:nowrap}
 .d1-measure-examples{display:block;margin-top:10px}
@@ -212,14 +207,7 @@ body.shot,body.shot *{cursor:none!important}
 
 /* D1 状态切换：演示层只设置 stage.dataset.boardState。 */
 .stage[data-board-state="standby"] .d1-review-layout,
-.stage[data-board-state="review"] .d1-review-layout{display:block}
-.stage[data-board-state="new"] .d1-review-layout,
-.stage[data-board-state="pinyin"] .d1-review-layout,
-.stage[data-board-state="coffee"] .d1-review-layout,
-.stage[data-board-state="baozi"] .d1-review-layout,
-.stage[data-board-state="service"] .d1-review-layout,
-.stage[data-board-state="measure"] .d1-review-layout,
-.stage[data-board-state="payoff"] .d1-review-layout{display:none}
+.stage[data-board-state="review"] .d1-review-layout{opacity:1;visibility:visible;transform:rotate(-.12deg);transition-delay:0s}
 .stage[data-board-state="standby"] .d1-new-layout,
 .stage[data-board-state="review"] .d1-new-layout,
 .stage[data-board-state="payoff"] .d1-new-layout{display:none}
@@ -228,7 +216,8 @@ body.shot,body.shot *{cursor:none!important}
 .stage[data-board-state="coffee"] .d1-new-layout,
 .stage[data-board-state="baozi"] .d1-new-layout,
 .stage[data-board-state="service"] .d1-new-layout,
-.stage[data-board-state="measure"] .d1-new-layout{display:grid}
+.stage[data-board-state="measure"] .d1-new-layout{display:grid;opacity:1;transform:rotate(-.10deg);
+  animation:d1-new-layout-in .3s cubic-bezier(.2,.7,.3,1) both}
 .stage[data-board-state="standby"] .d1-target .d1-char::before,
 .stage[data-board-state="standby"] .d1-target .d1-char::after{opacity:0}
 .stage[data-board-state="review"] .d1-target .d1-char::before,
@@ -376,6 +365,9 @@ body.shot,body.shot *{cursor:none!important}
 .subtitle{position:absolute;left:24px;right:80px;bottom:82px;z-index:14;text-align:center;font-size:18px;font-weight:400;letter-spacing:.02em;
   line-height:1.35;color:rgba(255,255,255,.97);text-shadow:0 2px 3px rgba(0,0,0,.56),0 0 18px rgba(0,0,0,.34);
   white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:opacity .18s ease}
+.subtitle-speaker{font-weight:800;color:rgba(255,255,255,.98)}
+.subtitle-speaker.mate{color:#ffd18a}
+.subtitle-speaker.you{color:#a9dcff}
 .voice-dock{position:absolute;left:auto;right:18px;bottom:16px;z-index:16;display:flex;align-items:center;gap:9px;transition:opacity .18s ease,transform .18s ease}
 .talk{height:50px;border-radius:25px;padding:0 16px 0 6px;display:flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.20);color:#fff;
   background:rgba(12,18,17,.63);box-shadow:0 12px 28px rgba(2,7,5,.30),inset 0 1px 0 rgba(255,255,255,.17);
@@ -511,6 +503,15 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     <img src="../assets/board-props/postcard-polaroid-restaurant-05.png?v=20261023d" loading="eager" decoding="async" alt="" aria-hidden="true" draggable="false">
   </button>
 
+  <button type="button" class="board-theater-ticket" data-theater-entry aria-label="进入生活剧场：夜市第一摊" disabled>
+    <img src="../assets/board-props/theater-ticket-01.png?v=20261026" loading="eager" decoding="async" alt="" aria-hidden="true" draggable="false">
+    <span class="board-theater-ticket-copy" aria-hidden="true">
+      <span class="board-theater-ticket-kicker">今晚</span>
+      <span class="board-theater-ticket-title">生活剧场</span>
+      <span class="board-theater-ticket-foot">夜市 · 第一摊</span>
+    </span>
+  </button>
+
   <!-- D1 · 生词卡 -->
   <section class="density-layer on" id="d1" aria-label="D1 生词卡">
     <div class="board">
@@ -531,18 +532,6 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
             <span class="d1-last">昨天的量词小错误：二杯可乐 ×</span>
           </span>
           <span class="d1-new-layout">
-            <span class="d1-review-rail">
-              <span class="d1-mini-label">复习</span>
-              <span class="d1-mini-row" aria-label="热，累，冷，渴，饿">
-                <span class="d1-unit"><span class="d1-char">热</span><span class="d1-pinyin">rè</span></span>
-                <span class="d1-unit"><span class="d1-char">累</span><span class="d1-pinyin">lèi</span></span>
-                <span class="d1-unit"><span class="d1-char">冷</span><span class="d1-pinyin">lěng</span></span>
-                <span class="d1-unit"><span class="d1-char">渴</span><span class="d1-pinyin">kě</span></span>
-                <span class="d1-unit"><span class="d1-char">饿</span><span class="d1-pinyin">è</span></span>
-              </span>
-              <span class="d1-mini-last">昨天：二杯可乐 ×</span>
-            </span>
-            <span class="d1-new-divider" aria-hidden="true"></span>
             <span class="d1-new-content">
               <span class="d1-new-map">
               <span class="d1-today-heading">今天：去餐厅点单</span>
@@ -611,6 +600,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
         <span class="wrap-board-line">已修正：二杯 → 两杯</span>
         <span class="wrap-board-line">下次复习：杯 / 个</span>
       </div>
+      <span class="d1-date wrap-date" aria-hidden="true">10月22日 周四</span>
     </div>
   </section>
 
@@ -1545,15 +1535,35 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;color:rgba(250,252,247,.96);
   text-shadow:0 0 1.4px rgba(255,255,255,.34),0 1px 2px rgba(0,0,0,.20)}
 .stage[data-board-state="wrap"] .wrap-board{display:block}
+.wrap-date{display:none;position:absolute;left:34px;top:1px}
+.stage[data-board-state="wrap"] .wrap-date{display:block}
 .stage[data-board-state="wrap"] .d1-board{opacity:0!important;visibility:hidden!important}
 .board-memory-postcard{position:absolute;left:68px;top:117px;z-index:3;display:block;width:88px;height:auto;margin:0;padding:0;
   border:0;border-radius:0;background:transparent;appearance:none;line-height:0;
-  opacity:0;visibility:hidden;pointer-events:none;user-select:none}
+  opacity:0;visibility:hidden;pointer-events:none;user-select:none;transform:translateY(4px) scale(.97);transform-origin:50% 50%;
+  transition:opacity .38s ease,transform .38s cubic-bezier(.2,.7,.3,1),visibility 0s linear .38s}
 .board-memory-postcard img{display:block;width:100%;height:auto;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.28))}
 .board-memory-postcard:focus-visible{outline:2px solid rgba(246,242,210,.82);outline-offset:4px}
 .stage[data-scene="classroom"][data-board-state="standby"][data-memory-restaurant="true"] .board-memory-postcard{
-  opacity:1;visibility:visible;pointer-events:auto;cursor:pointer}
+  opacity:1;visibility:visible;pointer-events:auto;cursor:pointer;transform:none;transition-delay:0s}
+.board-theater-ticket{position:absolute;left:44px;top:284px;z-index:4;display:block;width:96px;height:63px;margin:0;padding:0;
+  border:0;border-radius:0;background:transparent;appearance:none;line-height:0;transform-origin:50% 50%;
+  opacity:0;visibility:hidden;pointer-events:none;user-select:none;transform:translateY(4px) scale(.97);
+  transition:opacity .38s ease,transform .38s cubic-bezier(.2,.7,.3,1),visibility 0s linear .38s}
+.board-theater-ticket img{display:block;width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.30))}
+.board-theater-ticket-copy{position:absolute;left:20px;top:22px;width:56px;display:flex;flex-direction:column;align-items:center;gap:1.5px;
+  color:#4c392d;font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;line-height:1;text-align:center;
+  transform:rotate(9.2deg);transform-origin:50% 50%;text-shadow:0 1px 0 rgba(255,255,255,.22);pointer-events:none}
+.board-theater-ticket-kicker{font-size:6px;font-weight:700;letter-spacing:.16em;opacity:.68}
+.board-theater-ticket-title{font-size:11.5px;font-weight:800;letter-spacing:.025em;white-space:nowrap}
+.board-theater-ticket-foot{font-size:6.5px;font-weight:700;letter-spacing:.025em;white-space:nowrap;opacity:.82}
+.stage[data-scene="classroom"][data-board-state="standby"] .board-theater-ticket{
+  opacity:1;visibility:visible;pointer-events:auto;cursor:pointer;transform:none;transition-delay:0s}
+.stage[data-scene="classroom"][data-board-state="standby"] .board-theater-ticket:hover{transform:translateY(-1px)}
+.stage[data-scene="classroom"][data-board-state="standby"] .board-theater-ticket:active{transform:translateY(0)}
+.board-theater-ticket:focus-visible{outline:2px solid rgba(246,242,210,.82);outline-offset:4px}
 .wrap-board-line{display:block;font-size:25px;font-weight:400;line-height:42px;letter-spacing:.035em;white-space:nowrap}
 .stage.classroom-demo[data-board-state="wrap"] .subtitle{left:var(--board-safe-left);right:calc(100% - var(--board-safe-right))}
 
@@ -1567,7 +1577,9 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 .theater-shot{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;
   opacity:0;transition:none}
 .stage[data-theater-stage="follow"] .theater-shot[data-theater-shot="follow"],
+.stage[data-theater-stage="follow-ack"] .theater-shot[data-theater-shot="follow"],
 .stage[data-theater-stage="follow-near"] .theater-shot[data-theater-shot="follow"],
+.stage[data-theater-stage="follow-seen"] .theater-shot[data-theater-shot="follow"],
 .stage[data-theater-stage="stall"] .theater-shot[data-theater-shot="stall"],
 .stage[data-theater-stage="options"] .theater-shot[data-theater-shot="stall"],
 .stage[data-theater-stage="quantity"] .theater-shot[data-theater-shot="stall"],
@@ -1612,7 +1624,8 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   var theaterImages = Array.prototype.slice.call(stage.querySelectorAll('.theater-shot'));
   var theaterScene = document.getElementById('theaterScene');
   var boardMemoryPostcard = stage.querySelector('.board-memory-postcard');
-  var boardPropImages = Array.prototype.slice.call(stage.querySelectorAll('.board-memory-postcard img'));
+  var boardTheaterTicket = stage.querySelector('.board-theater-ticket');
+  var boardPropImages = Array.prototype.slice.call(stage.querySelectorAll('.board-memory-postcard img, .board-theater-ticket img'));
   var d1 = document.getElementById('d1');
   var dev = document.getElementById('dev');
   var nextButton = document.getElementById('demoNext');
@@ -1630,24 +1643,56 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   /* boardReveal 是 payoff 的 prompt / answer 第二层状态，供视觉样式消费。 */
   var DEMO_BEATS = [
     { pose:'book', board:'standby', text:'我在听。你来了，就先看看这儿。' },
-    { pose:'book', board:'standby', hold:true, text:'下午好。先别急着开新课，我们用两分钟，把昨天那五个词捡回来，好吗？' },
-    { pose:'point', board:'review', text:'热、累、冷、渴、饿。先跟我过一遍。' },
-    { pose:'point', board:'review', boardRing:'ke', text:'‘渴’呢？渴的时候，你会怎么说？' },
-    { pose:'point', board:'review', boardRing:'e', text:'‘饿’也一样。' },
-    { pose:'book', board:'review', text:'我还记着昨天那个“二杯”。别急，今天我们会把它改过来。' },
-    { pose:'book', board:'review', hold:true, text:'旧的都回来了。要不要开始今天的新课？' },
+    { pose:'book', board:'standby', hold:true, text:'下午好。先别急着开新课，我们把昨天那五个词捡回来，好吗？' },
+    { pose:'book', board:'standby', text:'你：好。' },
+    { pose:'point', board:'review', text:'那先看黑板。热、累、冷、渴、饿。' },
+    { pose:'point', board:'review', text:'先跟我念一遍。' },
+    { pose:'point', board:'review', text:'同桌：热、累、冷、渴、饿。' },
+    { pose:'point', board:'review', text:'对。你也来一遍。' },
+    { pose:'point', board:'review', text:'你：热、累、冷、渴、饿。' },
+    { pose:'point', board:'review', boardRing:'ke', hold:true, text:'‘渴’呢？渴的时候，你会怎么说？' },
+    { pose:'point', board:'review', boardRing:'ke', text:'你：我渴了。' },
+    { pose:'point', board:'review', boardRing:'ke', hold:true, text:'对。‘饿’呢？' },
+    { pose:'point', board:'review', boardRing:'e', text:'你：我饿了。' },
+    { pose:'book', board:'review', text:'很好。再看昨天那个“二杯”。' },
+    { pose:'book', board:'review', hold:true, text:'你听，二杯。哪里不对？' },
+    { pose:'book', board:'review', text:'你：应该说“两杯”。' },
+    { pose:'book', board:'review', text:'对。数字 2 放在“杯”前，要说“两”。' },
+    { pose:'book', board:'review', hold:true, text:'旧的都回来了。开始今天的新课？' },
+    { pose:'book', board:'review', text:'你：开始。' },
     { pose:'side', board:'new', text:'今天只做一件事：进餐厅，把你想吃、想喝的点出来。' },
-    { pose:'mouth', board:'pinyin', text:'昨天那个音，先拆开。不是“二”，是 liǎng——l 加 iang，第三声，liǎng。' },
-    { pose:'mouth', board:'pinyin', hold:true, text:'来，跟我再说一次。liǎng。' },
-    { pose:'thumbs-up', board:'pinyin', hold:true, text:'对，就是 liǎng。第三声也抓住了。' },
-    { pose:'coffee', board:'coffee', hold:true, text:'先看喝的。这是咖啡，kāfēi。你喝什么？' },
-    { pose:'baozi', board:'baozi', hold:true, text:'好，咖啡，kāfēi 说得很清楚。那吃的呢？这是包子，bāozi。你吃什么？' },
-    { pose:'point', board:'service', text:'对，包子也记住了。服务员走过来，会问：您要什么？' },
-    { pose:'point', board:'measure', text:'杯子用“杯”，别的东西用“个”；数字 2 放在量词前，说“两”。' },
-    { pose:'two-cups', board:'payoff', boardReveal:'prompt', hold:true, text:'现在，把昨天那句说回来。我要——' },
-    { pose:'two-cups', board:'payoff', boardReveal:'answer', text:'两杯可乐。这次对了。' },
-    { pose:'clap', board:'payoff', boardReveal:'answer', hold:true, text:'两杯，不是二杯。你这次说对了。' },
-    { pose:'side', board:'payoff', boardReveal:'answer', boardDim:true, text:'好，记住这个说法。走，我们进餐厅，真的点一次。' }
+    { pose:'mouth', board:'pinyin', text:'先解决昨天那个音。不是“二”，是 liǎng。' },
+    { pose:'mouth', board:'pinyin', text:'你：liǎng。' },
+    { pose:'mouth', board:'pinyin', text:'对，第三声。听清楚：liǎng。' },
+    { pose:'mouth', board:'pinyin', text:'同桌：liáng？' },
+    { pose:'mouth', board:'pinyin', text:'不是二声，是第三声。再听，liǎng。' },
+    { pose:'mouth', board:'pinyin', text:'你：liǎng。' },
+    { pose:'thumbs-up', board:'pinyin', text:'对，就是 liǎng。' },
+    { pose:'coffee', board:'coffee', hold:true, text:'看，这是什么？' },
+    { pose:'coffee', board:'coffee', text:'你：咖啡。' },
+    { pose:'coffee', board:'coffee', hold:true, text:'kāfēi。你喝什么？' },
+    { pose:'coffee', board:'coffee', text:'你：我喝咖啡。' },
+    { pose:'baozi', board:'baozi', hold:true, text:'好。那这是什么？' },
+    { pose:'baozi', board:'baozi', text:'你：包子。' },
+    { pose:'baozi', board:'baozi', hold:true, text:'bāozi。你吃什么？' },
+    { pose:'baozi', board:'baozi', text:'你：我吃包子。' },
+    { pose:'point', board:'service', text:'对。服务员来了，会问：您要什么？' },
+    { pose:'point', board:'service', hold:true, text:'这句话里有几个字？' },
+    { pose:'point', board:'service', text:'你：您、要、什么。' },
+    { pose:'point', board:'measure', text:'对。杯子用“杯”，别的东西用“个”。' },
+    { pose:'point', board:'measure', hold:true, text:'咖啡用什么量词？' },
+    { pose:'point', board:'measure', text:'你：一杯咖啡。' },
+    { pose:'point', board:'measure', hold:true, text:'包子呢？' },
+    { pose:'point', board:'measure', text:'你：一个包子。' },
+    { pose:'point', board:'measure', hold:true, text:'数字 2 放在量词前。不是“二杯”，是——' },
+    { pose:'point', board:'measure', text:'你：两杯。' },
+    { pose:'two-cups', board:'payoff', boardReveal:'prompt', hold:true, text:'完整说。我要——' },
+    { pose:'two-cups', board:'payoff', boardReveal:'prompt', text:'你：我要两杯可乐。' },
+    { pose:'two-cups', board:'payoff', boardReveal:'answer', hold:true, text:'再说一次，让服务员听清。' },
+    { pose:'two-cups', board:'payoff', boardReveal:'answer', text:'你：我要两杯可乐。' },
+    { pose:'clap', board:'payoff', boardReveal:'answer', hold:true, text:'两杯，不是二杯。这次对了。' },
+    { pose:'side', board:'payoff', boardReveal:'answer', boardDim:true, text:'走，我们进餐厅，真的点一次。' },
+    { pose:'side', board:'payoff', boardReveal:'answer', boardDim:true, text:'你：好。' }
   ];
 
   var RESTAURANT_LINES = [
@@ -1689,10 +1734,22 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   ];
 
   var WRAP_LINES = [
-    '今天你完成了餐厅点单，也把“二杯”改成了“两杯”。',
-    '这杯，我记住了。下次我还会考你“杯”和“个”。',
-    '作业：找个朋友一起点饮料，说一次“我要两杯___”。'
+    'Nancy：停一下。今天你自己完成了什么？',
+    '你：自己点单。',
+    'Nancy：对。昨天哪里错了？',
+    '你：二杯。',
+    'Nancy：现在该怎么说？',
+    '你：两杯。',
+    'Nancy：完整说一次。',
+    '你：我要两杯可乐。',
+    'Nancy：这杯，我记住了。下次还考你“杯”和“个”。',
+    'Nancy：作业是找个朋友一起点饮料，说一次——',
+    '你：我要两杯___。',
+    'Nancy：对。再把整句说完整。',
+    '你：我要两杯可乐。'
   ];
+
+  var POST_CLASS_INVITE_TEXT = 'Nancy：课上完了。小票还在，要不要一起去生活剧场？';
 
   var lastBeat = DEMO_BEATS.length - 1;
   var beat = -1;
@@ -1708,8 +1765,9 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   var theaterStage = null;
   var theaterChoice = null;
   var theaterSilenceHint = 0;
-  var theaterHandoffSecond = false;
+  var theaterHandoffStep = 0;
   var wrapStep = -1;
+  var postClassInvite = false;
   var lessonActive = false;
   var MEMORY_KEY = 'ai-chinese-6.memory.v1';
 
@@ -1751,8 +1809,22 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     stage.classList.toggle('demo-board-exit', !!options.dim);
   }
 
+  function setSubtitleContent(text) {
+    var match = String(text || '').match(/^(同桌|Nancy|服务员|摊主|同学|你)：/);
+    subtitle.textContent = '';
+    if (!match) {
+      subtitle.textContent = text;
+      return;
+    }
+    var label = document.createElement('span');
+    label.className = 'subtitle-speaker' + (match[1] === '同桌' ? ' mate' : '') + (match[1] === '你' ? ' you' : '');
+    label.textContent = match[0];
+    subtitle.appendChild(label);
+    subtitle.appendChild(document.createTextNode(text.slice(match[0].length)));
+  }
+
   function fadeSubtitle(text) {
-    subtitle.textContent = text;
+    setSubtitleContent(text);
     if (!subtitle.animate || typeof subtitle.getAnimations !== 'function') return;
     subtitle.getAnimations().forEach(function (animation) { animation.cancel(); });
     subtitle.animate(
@@ -1774,6 +1846,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
       if (button) button.disabled = !posesReady || !waiting;
     });
     if (enterTheaterButton) enterTheaterButton.disabled = !posesReady || inTheater;
+    if (boardTheaterTicket) boardTheaterTicket.disabled = !posesReady || inTheater || inRestaurant;
     [theaterBaoziButton, theaterHamburgerButton, theaterMilkTeaButton].forEach(function (button) {
       if (button) button.disabled = !posesReady || !theaterChoosing;
     });
@@ -1814,13 +1887,15 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   function enterTheater() {
     if (!posesReady || stage.dataset.scene === 'theater') return;
+    postClassInvite = false;
+    stage.removeAttribute('data-post-class-invite');
     cancelRestaurantExit();
     clearRestaurantErrorClass();
     restaurantLine = -1;
     wrapStep = -1;
     theaterChoice = null;
     theaterSilenceHint = 0;
-    theaterHandoffSecond = false;
+    theaterHandoffStep = 0;
     stage.dataset.scene = 'theater';
     setRestaurantState(null);
     setLessonActive(false);
@@ -1831,7 +1906,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     theaterStage = null;
     theaterChoice = null;
     theaterSilenceHint = 0;
-    theaterHandoffSecond = false;
+    theaterHandoffStep = 0;
     stage.removeAttribute('data-theater-stage');
   }
 
@@ -1841,7 +1916,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     if (!choice) return;
     theaterChoice = item;
     theaterSilenceHint = 0;
-    theaterHandoffSecond = false;
+    theaterHandoffStep = 0;
     setTheaterStage('quantity', choice.countQuestion);
   }
 
@@ -1849,7 +1924,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     if (stage.dataset.scene !== 'theater' || theaterStage !== 'quantity' || !theaterChoice) return;
     var choice = THEATER_ITEMS[theaterChoice];
     if (!choice) return;
-    theaterHandoffSecond = false;
+    theaterHandoffStep = 0;
     setTheaterStage(choice.stage, choice.text);
   }
 
@@ -1871,10 +1946,18 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   function advanceTheater() {
     if (!theaterStage || theaterStage === 'options' || theaterStage === 'quantity') return;
     if (theaterStage === 'follow') {
+      setTheaterStage('follow-ack', '你：来了。');
+      return;
+    }
+    if (theaterStage === 'follow-ack') {
       setTheaterStage('follow-near', 'Nancy：前面那家，蒸汽最大。');
       return;
     }
     if (theaterStage === 'follow-near') {
+      setTheaterStage('follow-seen', '你：看到了。');
+      return;
+    }
+    if (theaterStage === 'follow-seen') {
       setTheaterStage('stall', '摊主：您要什么？');
       return;
     }
@@ -1884,13 +1967,19 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
       return;
     }
     if (theaterStage === 'handoff-baozi' || theaterStage === 'handoff-hamburger' || theaterStage === 'handoff-milk-tea') {
-      if (!theaterHandoffSecond) {
-        theaterHandoffSecond = true;
+      if (theaterHandoffStep === 0) {
+        theaterHandoffStep = 1;
+        fadeSubtitle('你：谢谢。');
+        syncRestaurantStatus();
+        return;
+      }
+      if (theaterHandoffStep === 1) {
+        theaterHandoffStep = 2;
         fadeSubtitle('Nancy：边走边吃，前边还有一家。');
         syncRestaurantStatus();
         return;
       }
-      theaterHandoffSecond = false;
+      theaterHandoffStep = 0;
       setTheaterStage('caught', 'Nancy：你选的，我先替你尝了。');
       return;
     }
@@ -1977,6 +2066,8 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   function enterRestaurant(replay) {
     cancelRestaurantExit();
+    postClassInvite = false;
+    stage.removeAttribute('data-post-class-invite');
     restaurantReplay = !!replay;
     if (restaurantReplay) setLessonActive(true);
     stage.dataset.scene = 'restaurant';
@@ -2072,10 +2163,22 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     }
   }
 
+  function enterPostClassStandby() {
+    var d1Button = document.querySelector('.dev [data-state="d1"]');
+    if (d1Button && d1 && !d1.classList.contains('on')) d1Button.click();
+    resetRestaurant();
+    resetTheater();
+    renderBeat(0, false);
+    wrapStep = -1;
+    postClassInvite = true;
+    stage.dataset.postClassInvite = 'true';
+    fadeSubtitle(POST_CLASS_INVITE_TEXT);
+  }
+
   function advanceWrap() {
     if (restaurantLeaving || wrapStep < 0) return;
     if (wrapStep >= WRAP_LINES.length - 1) {
-      resetBeat();
+      enterPostClassStandby();
       return;
     }
     wrapStep += 1;
@@ -2095,12 +2198,19 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     if (animateSubtitle) {
       fadeSubtitle(step.text);
     } else {
-      subtitle.textContent = step.text;
+      setSubtitleContent(step.text);
     }
   }
 
   function nextBeat() {
     if (!posesReady || restaurantLeaving) return;
+    if (postClassInvite) {
+      postClassInvite = false;
+      stage.removeAttribute('data-post-class-invite');
+      renderBeat(0, true);
+      syncRestaurantStatus();
+      return;
+    }
     if (stage.dataset.scene === 'theater') {
       advanceTheater();
       return;
@@ -2121,6 +2231,8 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   }
 
   function resetBeat() {
+    postClassInvite = false;
+    stage.removeAttribute('data-post-class-invite');
     var d1Button = document.querySelector('.dev [data-state="d1"]');
     if (d1Button && d1 && !d1.classList.contains('on')) d1Button.click();
     resetRestaurant();
@@ -2162,7 +2274,10 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   }, true);
 
   nextButton.addEventListener('click', nextBeat);
-  resetButton.addEventListener('click', resetBeat);
+  resetButton.addEventListener('click', function () {
+    clearLessonMemory();
+    resetBeat();
+  });
   if (boardMemoryPostcard) boardMemoryPostcard.addEventListener('click', function (event) {
     if (!posesReady || stage.classList.contains('keyboard-open')) return;
     if (stage.dataset.scene !== 'classroom' || stage.dataset.boardState !== 'standby' || stage.dataset.memoryRestaurant !== 'true') return;
