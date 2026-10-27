@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-lang="zh">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>第 15 课 · 中英单语课堂压测</title>
+<title>第 5 课 · 我要两杯可乐</title>
 <link rel="icon" href="data:,">
 <style>
 /* ==========================================================================
-   第 15 课 · 中英单语课堂压测
+   第 5 课 · 我要两杯可乐
    844×390 横屏；以 teacher-density-lab 为底稿。
    D1–D7 同一课堂，整页在中文 / 英文之间单语切换。
    ========================================================================== */
@@ -45,6 +45,7 @@ body.shot,body.shot *{cursor:none!important}
 .density-layer{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity .18s ease;pointer-events:none}
 .density-layer.on{opacity:1;pointer-events:auto}
 .board{position:absolute;left:34px;top:68px;width:620px;height:182px;color:rgba(247,250,245,.97);
+  --chalk-kai:"STKaiti","Kaiti SC","KaiTi","Microsoft YaHei",sans-serif;
   font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;
   text-shadow:0 0 1px rgba(255,255,255,.42),0 1px 2px rgba(0,0,0,.22)}
 .board button{font-family:inherit}
@@ -430,7 +431,7 @@ body.immersive .dev{position:fixed;left:50%;bottom:8px;transform:translateX(-50%
 
 
 /* 中英单语压测：语言切换与英文排版 */
-body.lang-en .board{font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;letter-spacing:-.005em}
+body.lang-en .board{letter-spacing:-.005em}
 body.lang-en .chalk-title{font-size:22px;letter-spacing:-.015em;line-height:1.15;white-space:normal}
 body.lang-en .d2-head{font-size:22px}
 body.lang-en .d2-groups{grid-template-columns:178px 212px 144px;gap:22px;margin-top:13px}
@@ -465,7 +466,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 <body>
 <div class="preview-stage" id="previewStage">
 <div class="stage-wrap" id="stageWrap">
-<main class="stage" id="stage" data-scene="classroom" data-pose="book" data-board-state="standby" aria-label="第 15 课中英单语课堂压测">
+<main class="stage" id="stage" data-scene="classroom" data-pose="book" data-board-state="standby" aria-label="第 5 课 · 我要两杯可乐">
 
   <div class="bg" aria-hidden="true"></div>
   <div class="board-wash" aria-hidden="true"></div>
@@ -954,7 +955,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
       expand: 'Show',
       listening: 'Listening \u00b7 tap to mute',
       muted: 'Muted \u00b7 tap to unmute',
-      nav: ['Today', 'Xiaolan', 'Calendar', 'Me'],
+      nav: ['Today', 'Xiao An', 'Calendar', 'Me'],
       d1: [
         { z:'点', p:'diǎn', pos:'Measure word \u00b7 clock time', eg:'现在八点。', egp:'xiànzài bā diǎn.', ege:"It's eight o'clock.", progress:'Word 1 / 8', sub:"点 is the measure word for clock time. 现在八点 \u2014 it's eight o'clock." },
         { z:'点', p:'diǎn', pos:'Measure word \u00b7 clock time', eg:'你几点来？', egp:'nǐ jǐ diǎn lái?', ege:'What time are you coming?', progress:'Word 1 / 8', sub:'点 is the measure word for clock time. 你几点来？\u2014 what time are you coming?' }
@@ -1168,7 +1169,9 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   function setLanguage(next) {
     LANG = next === 'en' ? 'en' : 'zh';
+    document.title = LANG === 'en' ? 'Lesson 5 · Ordering at a Restaurant' : '第 5 课 · 我要两杯可乐';
     htmlRoot.lang = LANG === 'en' ? 'en' : 'zh-CN';
+    htmlRoot.dataset.lang = LANG;
     body.classList.toggle('lang-en', LANG === 'en');
     body.classList.toggle('lang-zh', LANG === 'zh');
     langButtons.forEach(function (btn) {
@@ -1177,6 +1180,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
     applyAll();
+    window.dispatchEvent(new CustomEvent('lesson-language-change', { detail: { lang: LANG } }));
   }
 
   function resetD4() {
@@ -1433,9 +1437,8 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 .stage.classroom-demo .d1-card:focus,
 .stage.classroom-demo .d1-card:focus-visible{outline:none}
 
-/* 演示现场只保留推进和重置，避免误点 D 状态或语言 */
+/* 演示现场保留推进、分支测试和开发语言入口，继续隐藏 D 状态 */
 .dev.demo-only .tag,
-.dev.demo-only .dev-lang,
 .dev.demo-only .shot-key,
 .dev.demo-only [data-state]{display:none!important}
 
@@ -1566,6 +1569,7 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 .board-theater-ticket:focus-visible{outline:2px solid rgba(246,242,210,.82);outline-offset:4px}
 .wrap-board-line{display:block;font-size:25px;font-weight:400;line-height:42px;letter-spacing:.035em;white-space:nowrap}
 .stage.classroom-demo[data-board-state="wrap"] .subtitle{left:var(--board-safe-left);right:calc(100% - var(--board-safe-right))}
+.stage.classroom-demo[data-post-class-invite="true"] .subtitle{left:160px}
 
 .restaurant-tests{display:flex;align-items:center;gap:4px;margin-left:2px;padding-left:7px;border-left:1px solid rgba(255,255,255,.13)}
 .theater-tests{display:flex;align-items:center;gap:4px;margin-left:2px;padding-left:7px;border-left:1px solid rgba(255,255,255,.13)}
@@ -1608,6 +1612,39 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   text-shadow:0 2px 6px rgba(0,0,0,.92),0 0 22px rgba(0,0,0,.58)}
 
 .dev button:disabled{opacity:.28;cursor:default}
+
+/* 第 5 课英文演示：只覆盖实际产品界面的英文排版。 */
+.subtitle-gloss{display:block;margin-top:3px;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  font-size:14px;font-weight:400;line-height:1.25;letter-spacing:.002em;color:rgba(255,255,255,.82);
+  text-shadow:inherit;white-space:normal}
+body.lang-en .stage.classroom-demo .subtitle{font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  right:310px;font-size:16.5px;line-height:1.3;letter-spacing:-.004em}
+body.lang-en .subtitle-speaker{font-weight:750}
+
+body.lang-en .d1-review-layout{width:330px}
+body.lang-en .d1-review-label{font-family:var(--chalk-kai);
+  font-size:12.5px;line-height:17px;letter-spacing:.055em;white-space:nowrap}
+body.lang-en .d1-last{width:322px;font-family:var(--chalk-kai);
+  font-size:12.5px;line-height:15.5px;letter-spacing:0;white-space:normal}
+body.lang-en .d1-last::after{width:318px}
+body.lang-en .d1-today-heading{font-family:var(--chalk-kai);
+  font-size:21.5px;letter-spacing:-.012em}
+body.lang-en .d1-state-kicker{font-family:var(--chalk-kai);
+  font-size:11px;letter-spacing:.06em}
+body.lang-en .d1-pinyin-tone{font-family:var(--chalk-kai);
+  font-size:17px;letter-spacing:.04em}
+body.lang-en .d1-measure-rule{font-family:var(--chalk-kai);
+  font-size:21px;letter-spacing:-.006em}
+body.lang-en .d1-payoff-tag,body.lang-en .d1-payoff-today{font-family:var(--chalk-kai);
+  font-size:10.5px;letter-spacing:.05em}
+body.lang-en .d1-payoff-prompt{font-size:42px;letter-spacing:-.018em}
+body.lang-en .wrap-board-line{font-family:var(--chalk-kai);
+  font-size:22px;letter-spacing:-.006em}
+
+body.lang-en .board-theater-ticket-copy{left:13px;top:22px;width:70px;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif}
+body.lang-en .board-theater-ticket-kicker{font-size:5.5px;letter-spacing:.13em}
+body.lang-en .board-theater-ticket-title{font-size:8.8px;letter-spacing:-.01em}
+body.lang-en .board-theater-ticket-foot{font-size:5.2px;letter-spacing:-.01em}
 </style>
 
 <script>
@@ -1751,6 +1788,106 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
 
   var POST_CLASS_INVITE_TEXT = 'Nancy：课上完了。小票还在，要不要一起去生活剧场？';
 
+  /*
+   * 英文演示只翻译实际产品流程。课堂里 Nancy 的指令用英文；
+   * 中文角色台词保留中文主句，并用 gloss 以小号英文释义。
+   */
+  var DEMO_SUBTITLE_EN = {
+    '我在听。你来了，就先看看这儿。': { text:'I’m listening. You’re here — start by looking at the board.' },
+    '下午好。先别急着开新课，我们把昨天那五个词捡回来，好吗？': { text:'Good afternoon. Before we start something new, let’s bring back yesterday’s five words. All right?' },
+    '你：好。': { text:'You: 好。', gloss:'Okay.' },
+    '那先看黑板。热、累、冷、渴、饿。': { text:'Let’s look at the board first: 热、累、冷、渴、饿.' },
+    '先跟我念一遍。': { text:'Repeat after me once.' },
+    '同桌：热、累、冷、渴、饿。': { text:'Classmate: 热、累、冷、渴、饿。', gloss:'Hot, tired, cold, thirsty, hungry.' },
+    '对。你也来一遍。': { text:'Good. Now you try.' },
+    '你：热、累、冷、渴、饿。': { text:'You: 热、累、冷、渴、饿。', gloss:'Hot, tired, cold, thirsty, hungry.' },
+    '‘渴’呢？渴的时候，你会怎么说？': { text:'What about ‘渴’? When you’re thirsty, what do you say?' },
+    '你：我渴了。': { text:'You: 我渴了。', gloss:'I’m thirsty.' },
+    '对。‘饿’呢？': { text:'Right. And ‘饿’?' },
+    '你：我饿了。': { text:'You: 我饿了。', gloss:'I’m hungry.' },
+    '很好。再看昨天那个“二杯”。': { text:'Good. Now look at yesterday’s 二杯 again.' },
+    '你听，二杯。哪里不对？': { text:'Listen: 二杯. What’s wrong?' },
+    '你：应该说“两杯”。': { text:'You: 应该说“两杯”。', gloss:'You should say “两杯.”' },
+    '对。数字 2 放在“杯”前，要说“两”。': { text:'Right. Before a measure word, the number 2 is 两.' },
+    '旧的都回来了。开始今天的新课？': { text:'The old words are back. Ready to start today’s lesson?' },
+    '你：开始。': { text:'You: 开始。', gloss:'Let’s start.' },
+    '今天只做一件事：进餐厅，把你想吃、想喝的点出来。': { text:'Today we’ll do one thing: go to a restaurant and order what you want to eat and drink.' },
+    '先解决昨天那个音。不是“二”，是 liǎng。': { text:'First, yesterday’s sound. Not “二” — liǎng.' },
+    '你：liǎng。': { text:'You: liǎng.' },
+    '对，第三声。听清楚：liǎng。': { text:'Good — third tone. Listen carefully: liǎng.' },
+    '同桌：liáng？': { text:'Classmate: liáng?', gloss:'Second tone?' },
+    '不是二声，是第三声。再听，liǎng。': { text:'Not second tone — third tone. Listen again: liǎng.' },
+    '对，就是 liǎng。': { text:'Yes — liǎng.' },
+    '看，这是什么？': { text:'Look — what’s this?' },
+    '你：咖啡。': { text:'You: 咖啡。', gloss:'Coffee.' },
+    'kāfēi。你喝什么？': { text:'kāfēi. What do you drink?' },
+    '你：我喝咖啡。': { text:'You: 我喝咖啡。', gloss:'I drink coffee.' },
+    '好。那这是什么？': { text:'Good. And what’s this?' },
+    '你：包子。': { text:'You: 包子。', gloss:'Steamed bun.' },
+    'bāozi。你吃什么？': { text:'bāozi. What do you eat?' },
+    '你：我吃包子。': { text:'You: 我吃包子。', gloss:'I eat a steamed bun.' },
+    '对。服务员来了，会问：您要什么？': { text:'Right. When the server comes over, they ask: 您要什么？' },
+    '这句话里有几个字？': { text:'How many characters are in that sentence?' },
+    '你：您、要、什么。': { text:'You: 您、要、什么。', gloss:'You · want · what.' },
+    '对。杯子用“杯”，别的东西用“个”。': { text:'Right. Use 杯 for drinks and 个 for other things.' },
+    '咖啡用什么量词？': { text:'Which measure word goes with coffee?' },
+    '你：一杯咖啡。': { text:'You: 一杯咖啡。', gloss:'A cup of coffee.' },
+    '包子呢？': { text:'And for 包子?' },
+    '你：一个包子。': { text:'You: 一个包子。', gloss:'One steamed bun.' },
+    '数字 2 放在量词前。不是“二杯”，是——': { text:'Use 两 before the measure word — not 二杯.' },
+    '你：两杯。': { text:'You: 两杯。', gloss:'Two cups.' },
+    '完整说。我要——': { text:'Say the whole thing: 我要—' },
+    '你：我要两杯可乐。': { text:'You: 我要两杯可乐。', gloss:'I’d like two colas.' },
+    '再说一次，让服务员听清。': { text:'Say it again so the server can hear you clearly.' },
+    '两杯，不是二杯。这次对了。': { text:'两杯, not 二杯. That was right this time.' },
+    '走，我们进餐厅，真的点一次。': { text:'Let’s go into the restaurant and order for real.' },
+    '你：好。': { text:'You: 好。', gloss:'Okay.' },
+
+    'Nancy：到了。先听她怎么问。': { text:'Nancy: We’re here. Listen to how she orders first.' },
+    '服务员：您要什么？': { text:'Server: 您要什么？', gloss:'What would you like?' },
+    '同学：我要一杯咖啡。': { text:'Classmate: 我要一杯咖啡。', gloss:'I’d like a coffee.' },
+    'Nancy：我要一个面包。': { text:'Nancy: 我要一个面包。', gloss:'I’d like a bun.' },
+    'Nancy：到你了。先说要喝什么。': { text:'Nancy: Your turn. Start with what you want to drink.' },
+    'Nancy：再说一次。我要——': { text:'Nancy: Try again. 我要—' },
+    'Nancy：两杯可乐，一杯给我。刚才这句是你自己说出来的。': { text:'Nancy: 两杯可乐，一杯给我。刚才这句是你自己说出来的。', gloss:'Two colas — one for me. You said that yourself.' },
+    '服务员：好的。': { text:'Server: 好的。', gloss:'Okay.' },
+    'Nancy：数字 2 放在‘杯’前，要说‘两’。两杯。': { text:'Nancy: Put the number 2 before the measure word and say 两. 两杯.' },
+    '先说数量，再说饮料。': { text:'Start with the quantity, then the drink.' },
+    '跟我说：两杯可乐。': { text:'Say it with me: 两杯可乐.' },
+
+    'Nancy：停一下。今天你自己完成了什么？': { text:'Nancy: Stop here. What did you do on your own today?' },
+    '你：自己点单。': { text:'You: 自己点单。', gloss:'I ordered on my own.' },
+    'Nancy：对。昨天哪里错了？': { text:'Nancy: Right. What was wrong yesterday?' },
+    '你：二杯。': { text:'You: 二杯。', gloss:'二杯 — the wrong form.' },
+    'Nancy：现在该怎么说？': { text:'Nancy: How should you say it now?' },
+    'Nancy：完整说一次。': { text:'Nancy: Say the whole sentence.' },
+    'Nancy：这杯，我记住了。下次还考你“杯”和“个”。': { text:'Nancy: I’ll remember this one. Next time I’ll test you on 杯 and 个.' },
+    'Nancy：作业是找个朋友一起点饮料，说一次——': { text:'Nancy: For homework, find a friend and order a drink together. Say—' },
+    '你：我要两杯___。': { text:'You: 我要两杯___。', gloss:'I’d like two ___.' },
+    'Nancy：对。再把整句说完整。': { text:'Nancy: Right. Now say the whole sentence.' },
+    'Nancy：课上完了。小票还在，要不要一起去生活剧场？': { text:'Nancy: Class is over. The ticket’s still here — want to come to Life Theater?' },
+
+    'Nancy：这边。': { text:'Nancy: 这边。', gloss:'This way.' },
+    '你：来了。': { text:'You: 来了。', gloss:'Coming.' },
+    'Nancy：前面那家，蒸汽最大。': { text:'Nancy: 前面那家，蒸汽最大。', gloss:'That stall ahead has the most steam.' },
+    '你：看到了。': { text:'You: 看到了。', gloss:'Got it.' },
+    '摊主：您要什么？': { text:'Stall owner: 您要什么？', gloss:'What would you like?' },
+    'Nancy：有包子、汉堡，还有奶茶。你要哪个？': { text:'Nancy: 有包子、汉堡，还有奶茶。你要哪个？', gloss:'We have baozi, burgers, and milk tea. Which one do you want?' },
+    '摊主：要哪个？': { text:'Stall owner: 要哪个？', gloss:'Which one?' },
+    'Nancy：包子、汉堡、奶茶。你慢慢选。': { text:'Nancy: 包子、汉堡、奶茶。你慢慢选。', gloss:'Baozi, burgers, milk tea. Take your time.' },
+    '摊主：几个？': { text:'Stall owner: 几个？', gloss:'How many?' },
+    '摊主：几杯？': { text:'Stall owner: 几杯？', gloss:'How many cups?' },
+    'Nancy：先说几个。': { text:'Nancy: 先说几个。', gloss:'Start with how many.' },
+    'Nancy：先说几杯。': { text:'Nancy: 先说几杯。', gloss:'Start with how many cups.' },
+    '摊主：一个包子，好。来，拿着。': { text:'Stall owner: 一个包子，好。来，拿着。', gloss:'One baozi — okay. Here, take it.' },
+    '摊主：一个汉堡，好。来，拿着。': { text:'Stall owner: 一个汉堡，好。来，拿着。', gloss:'One burger — okay. Here, take it.' },
+    '摊主：一杯奶茶，好。来，拿着。': { text:'Stall owner: 一杯奶茶，好。来，拿着。', gloss:'One milk tea — okay. Here, take it.' },
+    '你：谢谢。': { text:'You: 谢谢。', gloss:'Thank you.' },
+    'Nancy：边走边吃，前边还有一家。': { text:'Nancy: 边走边吃，前边还有一家。', gloss:'Eat while we walk — there’s another stall ahead.' },
+    'Nancy：你选的，我先替你尝了。': { text:'Nancy: 你选的，我先替你尝了。', gloss:'I tried the one you picked first.' },
+    'Nancy：嗯，下次记得点两份。': { text:'Nancy: 嗯，下次记得点两份。', gloss:'Mm. Next time, remember to order two.' }
+  };
+
   var lastBeat = DEMO_BEATS.length - 1;
   var beat = -1;
   var posesReady = false;
@@ -1770,6 +1907,11 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   var postClassInvite = false;
   var lessonActive = false;
   var MEMORY_KEY = 'ai-chinese-6.memory.v1';
+  var lastSubtitleSource = '';
+
+  function demoIsEnglish() {
+    return document.body.classList.contains('lang-en');
+  }
 
   function setLessonActive(active) {
     active = !!active;
@@ -1807,20 +1949,131 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     else stage.removeAttribute('data-board-reveal');
 
     stage.classList.toggle('demo-board-exit', !!options.dim);
+    updateDemoBoardAria();
+  }
+
+  function updateDemoBoardAria() {
+    var en = demoIsEnglish();
+    var state = stage.dataset.boardState || 'standby';
+    var labelsEn = {
+      standby: 'Classroom board: standby',
+      review: 'Classroom board: review',
+      new: 'Classroom board: ordering',
+      pinyin: 'Classroom board: pronunciation',
+      coffee: 'Classroom board: coffee',
+      baozi: 'Classroom board: baozi',
+      service: 'Classroom board: server question',
+      measure: 'Classroom board: measure words',
+      payoff: 'Classroom board: correction',
+      wrap: 'Classroom board: lesson wrap-up'
+    };
+    var labelsZh = {
+      standby: '课堂黑板：待机',
+      review: '课堂黑板：复习',
+      new: '课堂黑板：去餐厅点单',
+      pinyin: '课堂黑板：昨天那个音',
+      coffee: '课堂黑板：咖啡',
+      baozi: '课堂黑板：包子',
+      service: '课堂黑板：服务问句',
+      measure: '课堂黑板：量词',
+      payoff: '课堂黑板：量词纠错',
+      wrap: '课堂黑板：课堂收束'
+    };
+    d1Card.setAttribute('aria-label', (en ? labelsEn : labelsZh)[state] || (en ? 'Classroom board' : '课堂黑板'));
+  }
+
+  function applyDemoLanguage() {
+    var en = demoIsEnglish();
+    var reviewLabel = document.querySelector('.d1-review-label');
+    var mistakeLine = document.querySelector('.d1-last');
+    var todayHeading = document.querySelector('.d1-today-heading');
+    var pinyinKicker = document.querySelector('.d1-pinyin-panel .d1-state-kicker');
+    var toneLabel = document.querySelector('.d1-pinyin-tone');
+    var serviceKicker = document.querySelector('.d1-service-panel .d1-state-kicker');
+    var measureRule = document.querySelector('.d1-measure-rule');
+    var payoffTag = document.querySelector('.d1-payoff-tag');
+    var payoffToday = document.querySelector('.d1-payoff-today');
+    var payoffPrompt = document.querySelector('.d1-payoff-prompt');
+    var wrapLines = document.querySelectorAll('.wrap-board-line');
+    var ticketKicker = document.querySelector('.board-theater-ticket-kicker');
+    var ticketTitle = document.querySelector('.board-theater-ticket-title');
+    var ticketFoot = document.querySelector('.board-theater-ticket-foot');
+    var boardDates = document.querySelectorAll('.d1-date');
+    var reviewRow = document.querySelector('.d1-review-row');
+    var foodGrid = document.querySelector('.d1-food-grid');
+
+    document.title = en ? 'Lesson 5 · Ordering at a Restaurant' : '第 5 课 · 我要两杯可乐';
+    stage.setAttribute('aria-label', en ? 'Lesson 5 · Ordering at a Restaurant' : '第 5 课 · 我要两杯可乐');
+    document.querySelector('.status').setAttribute('aria-label', en ? 'Status bar' : '状态栏');
+    document.querySelector('.nav').setAttribute('aria-label', en ? 'Page navigation (landscape)' : '页面导航（横屏）');
+    if (boardTheaterTicket) boardTheaterTicket.setAttribute('aria-label', en ? 'Open Life Theater: Night Market · Stall 1' : '进入生活剧场：夜市第一摊');
+    if (boardMemoryPostcard) boardMemoryPostcard.setAttribute('aria-label', en ? 'Replay the restaurant order' : '重玩餐厅点单');
+    d1.setAttribute('aria-label', en ? 'Lesson 5 classroom board' : '第 5 课课堂黑板');
+
+    keyBtn.setAttribute('aria-label', en ? 'Keyboard input' : '键盘输入');
+    kbdDrawer.setAttribute('aria-label', en ? 'Keyboard input' : '键盘输入');
+    kbdClose.setAttribute('aria-label', en ? 'Close keyboard' : '关闭键盘');
+    kbdInput.setAttribute('aria-label', en ? 'Text input' : '输入');
+    kbdSend.setAttribute('aria-label', en ? 'Send' : '发送');
+
+    if (reviewLabel) reviewLabel.textContent = en ? 'Review' : '复习';
+    if (mistakeLine) mistakeLine.textContent = en ? "Yesterday's measure-word mistake: 二杯可乐 ×" : '昨天的量词小错误：二杯可乐 ×';
+    if (todayHeading) todayHeading.textContent = en ? 'Today: Ordering' : '今天：去餐厅点单';
+    if (pinyinKicker) pinyinKicker.textContent = en ? "Yesterday's sound" : '昨天那个音';
+    if (toneLabel) toneLabel.textContent = en ? 'Third tone' : '第三声';
+    if (serviceKicker) serviceKicker.textContent = en ? 'Server asks' : '服务员问';
+    if (measureRule) measureRule.innerHTML = en ? '2 + measure word = <span class="d1-ring-word">两</span>' : '数字 2 + 量词 = <span class="d1-ring-word">两</span>';
+    if (payoffTag) payoffTag.textContent = en ? 'Yesterday:' : '昨天：';
+    if (payoffToday) payoffToday.textContent = en ? 'Today' : '今天';
+    if (payoffPrompt) payoffPrompt.textContent = en ? 'Today: 我要 ____。' : '今天：我要 ____。';
+    if (wrapLines.length === 3) {
+      wrapLines[0].textContent = en ? 'Done: ordered on your own' : '今天完成：自己点单';
+      wrapLines[1].textContent = en ? 'Fixed: 二杯 → 两杯' : '已修正：二杯 → 两杯';
+      wrapLines[2].textContent = en ? 'Next: 杯 / 个' : '下次复习：杯 / 个';
+    }
+    if (ticketKicker) ticketKicker.textContent = en ? 'Tonight' : '今晚';
+    if (ticketTitle) ticketTitle.textContent = en ? 'Life Theater' : '生活剧场';
+    if (ticketFoot) ticketFoot.textContent = en ? 'Night Market · Stall 1' : '夜市 · 第一摊';
+    boardDates.forEach(function (date) {
+      date.textContent = en ? 'Oct 22 · Thu' : '10月22日 周四';
+    });
+    if (reviewRow) reviewRow.setAttribute('aria-label', en ? 'Review words: 热, 累, 冷, 渴, 饿' : '热，累，冷，渴，饿');
+    if (foodGrid) foodGrid.setAttribute('aria-label', en ? 'Target food words: 可乐, 咖啡, 奶茶, 汉堡, 包子, 面包' : '可乐，咖啡，奶茶，汉堡，包子，面包');
+
+    updateDemoBoardAria();
+    if (lastSubtitleSource) setSubtitleContent(lastSubtitleSource);
+  }
+
+  function localizedSubtitle(source) {
+    if (!demoIsEnglish()) return { text: source, gloss: '' };
+    var copy = DEMO_SUBTITLE_EN[source];
+    if (!copy) return { text: source, gloss: '' };
+    return { text: copy.text || source, gloss: copy.gloss || '' };
   }
 
   function setSubtitleContent(text) {
-    var match = String(text || '').match(/^(同桌|Nancy|服务员|摊主|同学|你)：/);
+    lastSubtitleSource = String(text || '');
+    var localized = localizedSubtitle(lastSubtitleSource);
+    var content = localized.text;
+    var match = content.match(/^(Classmate|Server|Stall owner|You|Nancy|同桌|服务员|摊主|同学|你)(：|:)\s*/);
     subtitle.textContent = '';
+    subtitle.classList.toggle('has-gloss', !!localized.gloss);
     if (!match) {
-      subtitle.textContent = text;
-      return;
+      subtitle.appendChild(document.createTextNode(content));
+    } else {
+      var label = document.createElement('span');
+      var speaker = match[1];
+      label.className = 'subtitle-speaker' + (speaker === '同桌' || speaker === 'Classmate' ? ' mate' : '') + (speaker === '你' || speaker === 'You' ? ' you' : '');
+      label.textContent = speaker + (match[2] === '：' ? '：' : ': ');
+      subtitle.appendChild(label);
+      subtitle.appendChild(document.createTextNode(content.slice(match[0].length)));
     }
-    var label = document.createElement('span');
-    label.className = 'subtitle-speaker' + (match[1] === '同桌' ? ' mate' : '') + (match[1] === '你' ? ' you' : '');
-    label.textContent = match[0];
-    subtitle.appendChild(label);
-    subtitle.appendChild(document.createTextNode(text.slice(match[0].length)));
+    if (localized.gloss) {
+      var gloss = document.createElement('span');
+      gloss.className = 'subtitle-gloss';
+      gloss.textContent = localized.gloss;
+      subtitle.appendChild(gloss);
+    }
   }
 
   function fadeSubtitle(text) {
@@ -2241,8 +2494,6 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
     syncRestaurantStatus();
   }
 
-  var zhButton = document.querySelector('.dev [data-lang="zh"]');
-  if (zhButton && !zhButton.classList.contains('on')) zhButton.click();
   if (dev) dev.classList.add('demo-only');
   syncMemoryProps();
 
@@ -2303,6 +2554,8 @@ body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
   if (theaterSilentButton) theaterSilentButton.addEventListener('click', chooseTheaterSilent);
   if (clearMemoryButton) clearMemoryButton.addEventListener('click', clearLessonMemory);
 
+  window.addEventListener('lesson-language-change', applyDemoLanguage);
+  applyDemoLanguage();
   renderBeat(0, false);
   syncRestaurantStatus();
 
