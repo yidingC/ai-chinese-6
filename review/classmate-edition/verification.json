@@ -1,0 +1,109 @@
+{
+  "stageBox": {
+    "x": 298,
+    "y": 165,
+    "width": 844,
+    "height": 390
+  },
+  "bookPose": {
+    "rule": ".stage[data-pose=\"book\"] .teacher-layer.pose-book",
+    "right": "10.3px",
+    "height": "309.594px",
+    "box": {
+      "x": 802.84375,
+      "y": 245.40625,
+      "width": 328.859375,
+      "height": 309.59375
+    }
+  },
+  "stateMetrics": {
+    "idle": {
+      "x": 293.3125,
+      "y": 339.9375,
+      "width": 369.25,
+      "height": 381.515625
+    },
+    "look-user": {
+      "x": 293.3125,
+      "y": 339.640625,
+      "width": 369.25,
+      "height": 381.8125
+    },
+    "awkward-scratch": {
+      "x": 293.3125,
+      "y": 339.640625,
+      "width": 369.25,
+      "height": 381.8125
+    },
+    "eager-answer": {
+      "x": 293.3125,
+      "y": 346.125,
+      "width": 369.25,
+      "height": 337.21875
+    }
+  },
+  "classmateImages": {
+    "idle": true,
+    "look-user": true,
+    "awkward-scratch": true,
+    "eager-answer": true
+  },
+  "classroom": {
+    "beats": 51,
+    "finalBeat": 50,
+    "xiaoAnLines": [
+      "小安：……二杯。",
+      "小安：喝。",
+      "小安：走！"
+    ],
+    "allowedMateStates": ["idle", "look-user", "awkward-scratch", "eager-answer"],
+    "manualStateOverride": "next beat restored idle at beat 1",
+    "reset": {
+      "beat": "0",
+      "board": "standby",
+      "mate": "idle"
+    }
+  },
+  "english": {
+    "beatsWalked": 51,
+    "subtitleOverflowIssues": 0,
+    "subtitleDockOverlapIssues": 0,
+    "xiaoAnSpeakerLabel": "Xiao An:",
+    "xiaoAnSpeakerColor": "rgb(255, 209, 138)",
+    "consoleErrors": 0
+  },
+  "restaurant": {
+    "scene": "restaurant",
+    "state": "01",
+    "classmateVisibility": "hidden",
+    "classmateOpacity": "0",
+    "foregroundVisibility": "hidden"
+  },
+  "theater": {
+    "scene": "theater",
+    "theaterStage": "follow",
+    "classmateVisibility": "hidden",
+    "classmateOpacity": "0",
+    "fullFlowReturned": "classroom beat 0 / online / idle"
+  },
+  "returnedFromRestaurant": {
+    "scene": "classroom",
+    "board": "wrap",
+    "mate": "idle",
+    "classmateVisibility": "visible",
+    "classmateOpacity": "1",
+    "date": "10月22日 周四"
+  },
+  "screenshots": [
+    "classroom-book-309_6-844x390.png",
+    "classmate-states-2x2.png",
+    "classroom-eager-answer-844x390.png",
+    "classroom-awkward-scratch-844x390.png",
+    "handoff-to-user-844x390.png",
+    "restaurant-entry-844x390.png",
+    "return-classroom-844x390.png",
+    "theater-follow-844x390.png"
+  ],
+  "originalFileSha256": "43833CBAAC6B781B816B4A419A22C02237C2492271380F0D7330D2D3FE35A646",
+  "errors": []
+}

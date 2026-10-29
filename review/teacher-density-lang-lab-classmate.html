@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" class="app-booting">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>第 5 课 · 我要两杯可乐 · 学伴版</title>
+<link rel="icon" href="data:,">
+<style>
+/* 首帧保护：可选图层和演示状态的隐藏规则位于长样式表后半段，先阻止它们在初始化前闪现。 */
+html.app-booting .wrap-board,
+html.app-booting .wrap-date,
+html.app-booting .board-memory-postcard,
+html.app-booting .board-theater-ticket,
+html.app-booting .restaurant-scene,
+html.app-booting .theater-scene,
+html.app-booting .classmate-layer,
+html.app-booting .classmate-foreground,
+html.app-booting .dev{visibility:hidden!important}
+html.app-booting .teacher-layer{opacity:0!important}
+html.app-booting .teacher-layer.pose-book{opacity:1!important}
+
+/* ==========================================================================
+   第 5 课 · 我要两杯可乐
+   844×390 横屏；以 teacher-density-lab 为底稿。
+   D1–D7 同一课堂，整页在中文 / 英文之间单语切换。
+   ========================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050708}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#f7faf7;-webkit-font-smoothing:antialiased;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{display:block}
+
+.preview-stage{position:fixed;inset:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:radial-gradient(100% 130% at 50% 45%,#0c1110 0%,#050708 70%)}
+.stage-wrap{position:relative;flex:none;width:844px;height:390px}
+.stage{position:absolute;left:0;top:0;width:844px;height:390px;overflow:hidden;border-radius:46px;background:#173d2f;
+  transform-origin:top left;box-shadow:0 28px 78px rgba(0,0,0,.58),0 0 0 1px rgba(255,255,255,.10),inset 0 0 0 1px rgba(255,255,255,.055);
+  container-type:inline-size;
+  --board-safe-left:12cqw;
+  --board-safe-right:63.7cqw;
+  --board-safe-axis:calc(var(--board-safe-left) + (var(--board-safe-right) - var(--board-safe-left) - 42.8cqw) / 2);
+  --board-local-left:calc(34 / 844 * 100cqw);
+  --wrap-board-left:35.7cqw;
+  --wrap-board-top:5.26cqw}
+body.immersive .stage{border-radius:46px;box-shadow:0 28px 78px rgba(0,0,0,.58),0 0 0 1px rgba(255,255,255,.10),inset 0 0 0 1px rgba(255,255,255,.055)}
+body.shot .dev{display:none!important}
+body.shot,body.shot *{cursor:none!important}
+
+.teacher-layer{position:absolute;right:47px;bottom:0;height:363px;width:auto;z-index:3;pointer-events:none;user-select:none;filter:drop-shadow(-10px 14px 18px rgba(4,16,12,.18))}
+.bg{position:absolute;inset:0;z-index:0;background-image:url("../assets/nancy/nancy-board-clean.png?v=20261022");
+  background-repeat:no-repeat;background-size:cover;background-position:center calc(100% + 22px)}
+.board-wash{position:absolute;left:16px;top:64px;width:648px;height:194px;z-index:1;pointer-events:none;
+  background:radial-gradient(72% 74% at 38% 45%,rgba(4,20,14,.32) 0%,rgba(4,20,14,.20) 60%,rgba(4,20,14,0) 100%)}
+.task-wash{position:absolute;left:18px;right:188px;top:184px;height:98px;z-index:15;pointer-events:none;
+  background:radial-gradient(70% 100% at 42% 46%,rgba(4,14,12,.23) 0%,rgba(4,14,12,.13) 62%,rgba(4,14,12,0) 100%)}
+
+.density-layer{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity .18s ease;pointer-events:none}
+.density-layer.on{opacity:1;pointer-events:auto}
+.board{position:absolute;left:54px;top:68px;width:620px;height:182px;color:rgba(247,250,245,.97);
+  --chalk-kai:"STKaiti","Kaiti SC","KaiTi","Microsoft YaHei",sans-serif;
+  font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;
+  text-shadow:0 0 1px rgba(255,255,255,.42),0 1px 2px rgba(0,0,0,.22)}
+.board button{font-family:inherit}
+.chalk-title{font-size:27px;font-weight:800;letter-spacing:.045em;line-height:1.15;white-space:nowrap}
+.chalk-sub{font-size:20px;font-weight:700;line-height:1.2;color:rgba(241,248,242,.72)}
+.py{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:11px;font-weight:700;letter-spacing:.015em;color:rgba(235,244,238,.58)}
+.en{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:11px;font-weight:600;letter-spacing:.01em;color:rgba(233,242,236,.58)}
+.rule{height:1.5px;border-radius:2px;transform:rotate(-.5deg);
+  background:linear-gradient(90deg,rgba(245,250,245,.63),rgba(245,250,245,.08));box-shadow:0 1px 0 rgba(255,255,255,.08)}
+
+/* D1  同一块黑板的三帧：待机 / 复习 / 新课 */
+.d1-card{display:block;position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;
+  background:transparent;box-shadow:none;text-align:left;padding:0;transform:none;text-shadow:inherit}
+.d1-card:hover,.d1-card:focus,.d1-card:focus-visible{background:transparent;outline:none}
+.d1-card{cursor:default}
+.stage.d1-clean .board-wash,.stage.d1-clean .task-wash{display:none}
+.stage.d1-clean .subtitle{bottom:42px}
+.d1-board{--chalk-kai:"STKaiti","Kaiti SC","KaiTi","Microsoft YaHei",sans-serif;
+  position:relative;display:block;height:100%;letter-spacing:0}
+.d1-date-row{display:flex;align-items:center;height:27px;padding-top:1px;padding-left:34px}
+.d1-date{display:block;font-family:var(--chalk-kai);font-size:22px;font-weight:400;line-height:26px;
+  letter-spacing:.035em;color:rgba(247,250,245,.86);white-space:nowrap;transform:rotate(-.45deg);transform-origin:left center;
+  text-shadow:0 0 1.3px rgba(255,255,255,.34),0 1px 1px rgba(0,0,0,.16)}
+.d1-review-layout{position:absolute;left:245px;top:42px;display:block;width:272px;
+  opacity:0;visibility:hidden;transform:translateX(-10px) rotate(-.12deg);
+  transition:opacity .3s ease,transform .3s cubic-bezier(.2,.7,.3,1),visibility 0s linear .3s}
+.d1-review-label{position:relative;display:block;width:max-content;height:18px;font-family:var(--chalk-kai);
+  font-size:14.5px;font-weight:400;line-height:18px;letter-spacing:.045em;color:rgba(241,248,242,.56);
+  text-shadow:0 0 1.3px rgba(255,255,255,.34),0 1px 1px rgba(0,0,0,.16)}
+.d1-review-label::after{content:"";position:absolute;left:0;right:1px;bottom:-1px;height:1.4px;transform:rotate(-1deg);
+  background:linear-gradient(90deg,rgba(245,250,245,.38),rgba(245,250,245,.03))}
+.d1-review-row{display:flex;align-items:flex-start;gap:15px;margin-top:5px}
+.d1-unit{display:inline-flex;flex:0 0 auto;flex-direction:column;align-items:center}
+.d1-char{display:inline-block;font-weight:400;letter-spacing:.025em;white-space:nowrap}
+.d1-review-row .d1-char{height:39px;font-size:36px;line-height:39px}
+.d1-pinyin{display:block;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-weight:700;
+  letter-spacing:.015em;color:rgba(235,244,238,.64);white-space:nowrap}
+.d1-review-row .d1-pinyin{height:13px;font-size:9.5px;line-height:13px}
+.d1-target .d1-char{position:relative}
+.d1-target .d1-char::after{content:"";position:absolute;left:-5px;right:-5px;top:-5px;bottom:-6px;opacity:0;
+  border:1.8px solid rgba(245,249,244,.80);border-radius:52% 47% 55% 46% / 44% 59% 41% 56%;
+  transform:rotate(-4deg);box-shadow:0 0 3px rgba(255,255,255,.08);transition:opacity .12s ease}
+.d1-target .d1-char::before{content:"";position:absolute;left:-2px;right:-8px;top:-2px;bottom:-8px;opacity:0;
+  border:1px solid rgba(245,249,244,.30);border-radius:51% 46% 54% 47% / 45% 58% 42% 55%;transform:rotate(2deg);
+  transition:opacity .12s ease}
+.stage.board-review .d1-target .d1-char::before{opacity:1}
+.stage.board-review .d1-target .d1-char::after{opacity:1}
+.d1-review-row .d1-unit:nth-child(1){transform:translateY(1px) rotate(-1.1deg)}
+.d1-review-row .d1-unit:nth-child(2){transform:translateY(-1px) rotate(.5deg)}
+.d1-review-row .d1-unit:nth-child(3){transform:translateY(1.6px) rotate(-.4deg)}
+.d1-review-row .d1-unit:nth-child(4){transform:translateY(-.5px) rotate(.8deg)}
+.d1-review-row .d1-unit:nth-child(5){transform:translateY(1.2px) rotate(-.6deg)}
+.d1-last{display:block;margin-top:8px;font-family:var(--chalk-kai);font-size:16px;font-weight:400;line-height:19px;
+  letter-spacing:.025em;color:rgba(238,246,240,.64);text-align:left;white-space:nowrap;
+  text-shadow:0 0 1.3px rgba(255,255,255,.32),0 1px 1px rgba(0,0,0,.16)}
+@keyframes d1-new-layout-in{
+  from{opacity:0;transform:translateX(10px) rotate(-.10deg)}
+  to{opacity:1;transform:rotate(-.10deg)}
+}
+.d1-new-layout{display:none;position:absolute;left:34px;top:30px;grid-template-columns:minmax(0,1fr);column-gap:0;
+  width:552px;height:151px;opacity:0;transform:translateX(10px) rotate(-.10deg)}
+.stage.board-new .d1-new-layout{display:grid}
+.d1-new-content{display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-width:0;padding-top:0}
+.d1-new-map{display:block;width:300px;max-width:100%}
+.d1-today-heading{position:relative;display:block;width:max-content;height:26px;font-family:var(--chalk-kai);
+  font-size:24px;font-weight:400;line-height:26px;letter-spacing:.02em;color:rgba(246,227,180,.95);white-space:nowrap;
+  text-shadow:0 0 1.4px rgba(255,243,207,.30),0 1px 1px rgba(0,0,0,.15)}
+.d1-today-heading::after{content:"";position:absolute;left:1px;right:3px;bottom:-4px;height:1.8px;border-radius:2px;
+  transform:rotate(-.65deg);background:linear-gradient(90deg,rgba(246,227,180,.60),rgba(246,227,180,.10))}
+.d1-food-grid{display:grid;grid-template-columns:repeat(3,94px);column-gap:9px;row-gap:4px;margin-top:6px}
+.d1-food-unit{display:inline-flex;flex-direction:column;align-items:flex-start;min-width:0}
+.d1-food-unit .d1-char{height:27px;font-size:25px;line-height:27px;color:rgba(247,250,245,.94)}
+.d1-food-unit .d1-pinyin{height:11px;font-size:9.2px;line-height:11px;color:rgba(235,244,238,.56)}
+.d1-food-unit:nth-child(1){transform:translateY(1px) rotate(-.8deg)}
+.d1-food-unit:nth-child(2){transform:translateY(-.5px) rotate(.55deg)}
+.d1-food-unit:nth-child(3){transform:translateY(.7px) rotate(-.35deg)}
+.d1-food-unit:nth-child(4){transform:translateY(-.5px) rotate(.6deg)}
+.d1-food-unit:nth-child(5){transform:translateY(1px) rotate(-.55deg)}
+.d1-food-unit:nth-child(6){transform:translateY(-.3px) rotate(.4deg)}
+.d1-detail-panel{display:none;position:relative;width:312px;height:151px;margin-inline:auto;font-family:var(--chalk-kai);
+  color:rgba(247,250,245,.95);text-shadow:0 0 1.35px rgba(255,255,255,.32),0 1px 1px rgba(0,0,0,.16)}
+.stage[data-board-state="pinyin"] .d1-pinyin-panel,
+.stage[data-board-state="coffee"] .d1-coffee-panel,
+.stage[data-board-state="baozi"] .d1-baozi-panel,
+.stage[data-board-state="service"] .d1-service-panel,
+.stage[data-board-state="measure"] .d1-measure-panel{display:block}
+.d1-state-kicker{display:block;font-size:13.5px;font-weight:400;line-height:17px;letter-spacing:.075em;
+  color:rgba(241,248,242,.58);white-space:nowrap}
+.d1-ring-word{position:relative;display:inline-block;z-index:0}
+.d1-ring-word::after{content:"";position:absolute;left:-6px;right:-7px;top:-5px;bottom:-5px;z-index:-1;
+  border:1.45px solid rgba(245,249,244,.62);border-radius:52% 46% 54% 47% / 46% 58% 42% 55%;
+  transform:rotate(-3deg)}
+.d1-under-word{position:relative;display:inline-block}
+.d1-under-word::after{content:"";position:absolute;left:-2px;right:-2px;bottom:-2px;height:1.5px;
+  transform:rotate(-1.5deg);border-radius:50%;background:rgba(245,249,244,.42)}
+.d1-pinyin-panel{padding:0;text-align:center}
+.d1-pinyin-hero{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin-top:1px}
+.d1-pinyin-mega{display:block;font-family:"Segoe Print","Segoe UI","Microsoft YaHei",sans-serif;font-size:59px;
+  font-weight:400;line-height:64px;letter-spacing:-.045em;color:rgba(250,252,247,.97);white-space:nowrap;
+  text-shadow:0 0 1.6px rgba(255,255,255,.40),0 1px 1px rgba(0,0,0,.16)}
+.d1-pinyin-han{display:block;font-size:39px;font-weight:400;line-height:45px;color:rgba(247,250,245,.93);
+  transform:translateY(-2px);white-space:nowrap}
+.d1-pinyin-breakdown{display:block;margin-top:2px;font-family:"Segoe Print","Segoe UI","Microsoft YaHei",sans-serif;
+  font-size:16.5px;font-weight:400;line-height:20px;letter-spacing:.012em;color:rgba(241,248,242,.69);white-space:nowrap}
+.d1-pinyin-tone{display:block;margin-top:4px;font-size:20px;font-weight:400;line-height:24px;letter-spacing:.08em;
+  color:rgba(246,227,180,.94);white-space:nowrap}
+.d1-single-panel{text-align:center}
+.d1-single-word{display:block;font-size:64px;font-weight:400;line-height:67px;letter-spacing:.035em;
+  color:rgba(250,252,247,.98);white-space:nowrap}
+.d1-single-pinyin{display:block;margin-top:-3px;font-family:"Segoe Print","Segoe UI","Microsoft YaHei",sans-serif;
+  font-size:14.5px;font-weight:400;line-height:17px;letter-spacing:.035em;color:rgba(236,244,238,.63);white-space:nowrap}
+.d1-single-question{display:block;margin-top:8px;font-size:26px;font-weight:400;line-height:29px;letter-spacing:.035em;
+  color:rgba(249,251,247,.94);white-space:nowrap}
+.d1-single-answer{display:block;margin-top:4px;font-size:18.5px;font-weight:400;line-height:22px;letter-spacing:.055em;
+  color:rgba(238,246,240,.65);white-space:nowrap}
+.d1-service-panel{padding:7px 0 0;text-align:center}
+.d1-service-question{display:block;margin-top:3px;font-size:50px;font-weight:400;line-height:56px;letter-spacing:.015em;
+  color:rgba(250,252,247,.98);white-space:nowrap}
+.d1-service-prompt{display:block;margin-top:8px;font-size:22px;font-weight:400;line-height:26px;letter-spacing:.06em;
+  color:rgba(238,246,240,.60);white-space:nowrap}
+.d1-measure-panel{padding:2px 0 0;text-align:center}
+.d1-measure-rule{display:block;font-size:24px;font-weight:400;line-height:30px;letter-spacing:.03em;
+  color:rgba(247,250,245,.92);white-space:nowrap}
+.d1-measure-examples{display:block;margin-top:10px}
+.d1-measure-line{display:block;font-size:20px;font-weight:400;line-height:26px;letter-spacing:.015em;
+  color:rgba(241,248,242,.78);white-space:nowrap}
+.d1-measure-line + .d1-measure-line{margin-top:5px}
+.d1-measure-result{color:rgba(246,227,180,.92)}
+.d1-payoff-layout{display:none;position:absolute;left:calc(var(--board-safe-axis) - var(--board-local-left));top:39px;width:42.8cqw;height:139px;
+  font-family:var(--chalk-kai);transform:rotate(-.08deg)}
+.stage[data-board-state="payoff"] .d1-payoff-layout{display:block}
+.d1-payoff-old{position:absolute;left:0;top:0;display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.d1-payoff-tag{font-size:11px;font-weight:400;line-height:14px;letter-spacing:.08em;color:rgba(238,246,240,.36)}
+.d1-payoff-wrong{position:relative;font-size:18.5px;font-weight:400;line-height:22px;letter-spacing:.035em;
+  color:rgba(238,246,240,.38);text-shadow:0 0 1.1px rgba(255,255,255,.22),0 1px 1px rgba(0,0,0,.14)}
+.d1-payoff-wrong::after{content:"";position:absolute;left:-3px;right:-3px;top:54%;height:1.4px;
+  transform:rotate(-1.6deg);background:rgba(238,246,240,.30)}
+.d1-payoff-arrow{position:absolute;left:129px;top:4px;width:62px;height:42px;color:rgba(238,246,240,.50)}
+.d1-payoff-arrow path{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.d1-payoff-correct{position:absolute;left:176px;top:20px;font-size:36px;font-weight:400;line-height:40px;
+  letter-spacing:.025em;color:rgba(250,252,247,.98);white-space:nowrap}
+.d1-payoff-check{display:inline-block;margin-left:5px;font-size:29px;line-height:34px;color:rgba(246,227,180,.98);
+  transform:rotate(-3deg)}
+.d1-payoff-today{position:absolute;left:0;top:73px;font-size:11px;font-weight:400;line-height:14px;
+  letter-spacing:.08em;color:rgba(238,246,240,.38)}
+.d1-payoff-final{position:absolute;left:0;top:88px;font-size:46px;font-weight:400;line-height:51px;letter-spacing:.025em;
+  color:rgba(250,252,247,.99);white-space:nowrap;
+  text-shadow:0 0 1.7px rgba(255,255,255,.42),0 1px 1px rgba(0,0,0,.17)}
+.d1-payoff-prompt{position:absolute;left:0;top:88px;font-size:46px;font-weight:400;line-height:51px;letter-spacing:.025em;
+  color:rgba(250,252,247,.90);white-space:nowrap;opacity:0;visibility:hidden;
+  text-shadow:0 0 1.5px rgba(255,255,255,.36),0 1px 1px rgba(0,0,0,.16)}
+.d1-payoff-final::after{content:"";position:absolute;left:0;right:2px;bottom:-5px;height:2px;
+  transform:rotate(-.5deg);border-radius:50%;
+  background:linear-gradient(90deg,rgba(246,227,180,.68),rgba(246,227,180,.08))}
+.stage[data-board-state="payoff"][data-board-reveal="prompt"] .d1-payoff-arrow,
+.stage[data-board-state="payoff"][data-board-reveal="prompt"] .d1-payoff-correct,
+.stage[data-board-state="payoff"][data-board-reveal="prompt"] .d1-payoff-today,
+.stage[data-board-state="payoff"][data-board-reveal="prompt"] .d1-payoff-final{opacity:0;visibility:hidden}
+.stage[data-board-state="payoff"][data-board-reveal="prompt"] .d1-payoff-prompt{opacity:1;visibility:visible}
+
+/* D1 状态切换：演示层只设置 stage.dataset.boardState。 */
+.stage[data-board-state="standby"] .d1-review-layout,
+.stage[data-board-state="review"] .d1-review-layout{opacity:1;visibility:visible;transform:rotate(-.12deg);transition-delay:0s}
+.stage[data-board-state="standby"] .d1-new-layout,
+.stage[data-board-state="review"] .d1-new-layout,
+.stage[data-board-state="payoff"] .d1-new-layout{display:none}
+.stage[data-board-state="new"] .d1-new-layout,
+.stage[data-board-state="pinyin"] .d1-new-layout,
+.stage[data-board-state="coffee"] .d1-new-layout,
+.stage[data-board-state="baozi"] .d1-new-layout,
+.stage[data-board-state="service"] .d1-new-layout,
+.stage[data-board-state="measure"] .d1-new-layout{display:grid;opacity:1;transform:rotate(-.10deg);
+  animation:d1-new-layout-in .3s cubic-bezier(.2,.7,.3,1) both}
+.stage[data-board-state="standby"] .d1-target .d1-char::before,
+.stage[data-board-state="standby"] .d1-target .d1-char::after{opacity:0}
+.stage[data-board-state="review"] .d1-target .d1-char::before,
+.stage[data-board-state="review"] .d1-target .d1-char::after{opacity:1}
+.stage[data-board-state="pinyin"] .d1-new-map,
+.stage[data-board-state="coffee"] .d1-new-map,
+.stage[data-board-state="baozi"] .d1-new-map,
+.stage[data-board-state="service"] .d1-new-map,
+.stage[data-board-state="measure"] .d1-new-map{display:none}
+
+/* D2  八词三组 */
+.d2-head{position:relative;z-index:2}
+.d2-groups{display:grid;grid-template-columns:150px 220px 140px;gap:30px;margin-top:17px}
+.d2-group{min-width:0}
+.d2-group h3{font-size:20px;font-weight:800;letter-spacing:.08em;color:rgba(240,248,242,.68);margin-bottom:5px}
+.d2-list{display:grid;gap:1px}
+.lex{display:flex;align-items:baseline;gap:8px;width:max-content;max-width:100%;border:0;background:transparent;padding:0 3px;text-align:left;
+  border-radius:9px;line-height:1.22;color:rgba(247,250,245,.96);transition:background .14s ease,color .14s ease}
+.lex .z{font-size:27px;font-weight:800;letter-spacing:.02em}
+.lex .p{font-size:11px;font-weight:800;color:rgba(235,244,238,.57);white-space:nowrap}
+.lex:hover{background:rgba(255,255,255,.055)}
+.lex.picked{background:rgba(255,255,255,.085);box-shadow:inset 0 -2px 0 rgba(245,249,244,.55)}
+.lex.focus{position:relative;font-size:35px;padding:4px 15px 3px;margin-left:5px}
+.lex.focus .z{font-size:35px}
+.lex.focus::after{content:"";position:absolute;left:-2px;right:-2px;top:-3px;bottom:-5px;border:2px solid rgba(245,249,244,.78);border-radius:50%;
+  transform:rotate(-3deg);box-shadow:0 0 4px rgba(255,255,255,.10)}
+.d2-hint{position:absolute;left:0;bottom:0;font-size:20px;font-weight:700;color:rgba(238,246,240,.48);letter-spacing:.03em}
+
+/* D3  语法对照 */
+.d3-q{position:absolute;left:0;font-size:24px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
+.d3-q.q1{top:0}.d3-q.q2{top:34px}
+.d3-arrow{font-family:"Segoe UI",sans-serif;color:rgba(242,248,242,.56);margin:0 10px}
+.d3-note{position:absolute;right:64px;top:0;width:150px;font-size:20px;font-weight:700;line-height:1.22;color:rgba(242,249,243,.72)}
+.d3-note + .d3-note{top:82px}
+.d3-corrections{position:absolute;left:0;top:73px;display:grid;grid-template-columns:210px 210px;gap:4px 18px;font-size:21px;font-weight:800}
+.corr{display:flex;align-items:center;gap:8px;height:27px;white-space:nowrap}
+.corr .mark{font-family:"Segoe UI",sans-serif;font-size:18px;font-weight:900;letter-spacing:0}
+.corr.no{color:rgba(247,231,214,.92)}
+.corr.no .sentence{position:relative}
+.corr.no .sentence::after{content:"";position:absolute;left:-4px;right:-4px;top:53%;height:2px;border-radius:2px;background:rgba(247,162,97,.95);transform:rotate(-2deg)}
+.corr.no .mark{color:#f6ad6d}
+.corr.yes{color:rgba(247,250,245,.97)}
+.corr.yes .sentence{position:relative;display:inline-block;padding:0 7px}
+.corr.yes .sentence::after{content:"";position:absolute;left:-3px;right:-3px;top:-3px;bottom:-4px;border:1.6px solid rgba(245,249,244,.76);
+  border-radius:50%;transform:rotate(-2deg)}
+.corr.yes .mark{color:#9ce0bf}
+
+/* D5  三声变调 */
+.d5-tone{display:flex;align-items:flex-end;gap:24px;font-family:"Segoe UI","PingFang SC",sans-serif;font-size:28px;font-weight:800;letter-spacing:.01em}
+.d5-tone .term{position:relative;display:inline-flex;align-items:flex-end;gap:6px;padding-bottom:4px}
+.d5-tone .term svg{position:absolute;left:0;bottom:-4px;width:100%;height:18px;overflow:visible;opacity:.93}
+.d5-tone .term svg path{fill:none;stroke:rgba(245,250,245,.84);stroke-width:2;stroke-linecap:round}
+.d5-tone .to{font-family:"Segoe UI",sans-serif;color:rgba(242,248,242,.55);font-size:23px}
+.d5-rule{margin-top:2px;font-size:20px;font-weight:800;letter-spacing:.04em;color:rgba(242,249,243,.74)}.d5-curves{display:flex;align-items:center;gap:48px;width:210px;height:13px;margin-top:-1px;opacity:.82}.d5-curves svg{height:13px;overflow:visible}.d5-curves path{fill:none;stroke:rgba(245,250,245,.86);stroke-width:2.1;stroke-linecap:round}.d5-rule .to2{display:inline-block;margin:0 8px;color:rgba(242,248,242,.52);font-family:"Segoe UI",sans-serif}
+.d5-lines{position:absolute;left:0;top:82px;display:grid;gap:5px}
+.d5-line{display:flex;align-items:baseline;gap:18px;width:max-content;border:0;background:transparent;border-radius:10px;padding:2px 7px;
+  color:rgba(246,250,245,.97);text-align:left;transition:opacity .15s ease,background .15s ease}
+.d5-line .zh{font-size:24px;font-weight:800;letter-spacing:.015em;white-space:nowrap}
+.d5-line .p{font-size:11px;font-weight:700;color:rgba(236,245,239,.56);white-space:nowrap}
+.d5-line:not(.current){opacity:.56}
+.d5-line.current{background:rgba(255,255,255,.075);box-shadow:inset 0 -2px 0 rgba(245,249,244,.58)}
+.d5-line:hover{opacity:.86}
+
+/* D6  当堂小测 */
+.d6-head{display:flex;align-items:center;gap:18px;white-space:nowrap}
+.d6-dots{display:flex;align-items:center;gap:7px;padding-top:3px}
+.d6-dots i{width:9px;height:9px;border-radius:50%;border:1.3px solid rgba(243,249,244,.66);display:block}
+.d6-dots i:nth-child(-n+4){background:rgba(243,249,244,.72)}
+.d6-question{position:absolute;left:0;top:49px;font-size:24px;font-weight:800;letter-spacing:.008em;white-space:nowrap}
+.d6-feedback{position:absolute;left:0;top:104px;width:600px;opacity:0;transform:translateY(5px);transition:opacity .16s ease,transform .16s ease}
+.d6-feedback.on{opacity:1;transform:none}
+.d6-feedback strong{display:block;font-size:24px;font-weight:900;letter-spacing:.02em}
+.d6-feedback span{display:block;margin-top:7px;font-size:22px;font-weight:800;color:rgba(246,251,247,.91)}
+.d6-feedback.bad strong{color:#f6b075}
+.d6-feedback.good strong{color:#9fe2c2}
+
+/* D7  复盘记忆 */
+.d7-lines{position:absolute;left:0;top:0;display:grid;grid-template-columns:230px;gap:10px;font-size:23px;font-weight:800}
+.d7-note{position:absolute;left:300px;top:18px;width:236px;min-height:126px;padding:10px 14px 12px;border-radius:6px 9px 7px 8px;
+  border:1.5px solid rgba(255,242,196,.46);background:rgba(255,246,206,.07);color:rgba(255,249,220,.92);
+  box-shadow:0 8px 24px rgba(4,12,9,.10),inset 0 1px 0 rgba(255,255,255,.07);transform:rotate(1.2deg)}
+.d7-note::before{content:"";position:absolute;left:18px;right:18px;top:35px;height:1px;background:rgba(255,244,207,.28);transform:rotate(-.4deg)}
+.d7-note .nt{display:flex;align-items:center;gap:7px;font-size:20px;font-weight:900;letter-spacing:.025em}
+.d7-note .nt b{display:grid;place-items:center;width:19px;height:19px;border:1.3px solid rgba(255,244,207,.60);border-radius:50%;font-size:12px}
+.d7-note p{font-size:20px;font-weight:800;line-height:1.28;letter-spacing:.01em;margin-top:8px}
+.d7-note p + p{margin-top:3px}
+.d7-updated{position:absolute;left:300px;top:151px;font-size:20px;font-weight:700;color:rgba(255,248,220,.47);letter-spacing:.04em}
+
+/* 底部题与选项，放在黑板外 */
+.practice{position:absolute;left:24px;right:260px;top:186px;height:92px;z-index:18;opacity:0;visibility:hidden;
+  transition:opacity .16s ease,visibility 0s linear .16s}
+.practice.on{opacity:1;visibility:visible;transition:opacity .16s ease}
+.practice-head{display:flex;align-items:center;gap:14px;height:42px}
+.audio-btn{height:40px;max-width:360px;padding:0 16px;border-radius:20px;display:flex;align-items:center;gap:9px;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.28);background:rgba(8,16,14,.38);color:rgba(255,255,255,.97);
+  box-shadow:0 8px 22px rgba(1,7,5,.18),inset 0 1px 0 rgba(255,255,255,.16);
+  -webkit-backdrop-filter:blur(16px) saturate(1.45);backdrop-filter:blur(16px) saturate(1.45);
+  font-size:20px;font-weight:800;letter-spacing:.01em}
+.audio-btn .play-ico{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;background:rgba(101,82,255,.88);flex:none}
+.audio-btn .play-ico svg{width:10px;height:10px;fill:#fff;stroke:none;margin-left:1px}
+.audio-btn.playing{background:rgba(101,82,255,.20);border-color:rgba(183,162,255,.78)}
+.practice-q{font-size:22px;font-weight:800;letter-spacing:.015em;white-space:nowrap;text-shadow:0 2px 3px rgba(0,0,0,.46)}
+.options{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:6px}
+.opt{position:relative;height:43px;border-radius:20px;padding:0 15px;text-align:left;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.30);background:rgba(9,17,16,.34);color:rgba(255,255,255,.97);
+  font-size:20px;font-weight:800;letter-spacing:.005em;
+  box-shadow:0 9px 23px rgba(1,7,5,.18),inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(0,0,0,.10);
+  -webkit-backdrop-filter:blur(17px) saturate(1.45);backdrop-filter:blur(17px) saturate(1.45);
+  transition:border-color .14s ease,background .14s ease,box-shadow .14s ease,transform .1s ease}
+.opt b{font-family:"Segoe UI",sans-serif;font-weight:900;color:rgba(255,255,255,.65);margin-right:8px}
+.opt:active{transform:scale(.993)}
+.opt.picked{border-color:rgba(183,162,255,.88);background:rgba(101,82,255,.18)}
+.opt.wrong{border-color:rgba(255,159,140,.98);background:rgba(188,73,60,.20);box-shadow:0 0 0 1px rgba(255,159,140,.18),0 0 18px rgba(255,112,90,.15),inset 0 1px 0 rgba(255,255,255,.19)}
+.opt.correct{border-color:rgba(104,229,193,.98);background:rgba(46,174,143,.18);box-shadow:0 0 0 1px rgba(104,229,193,.18),0 0 18px rgba(73,211,174,.14),inset 0 1px 0 rgba(255,255,255,.19)}
+.practice-d6 .options{margin-top:39px}
+
+/* 顶部状态、品牌、导航、字幕、语音 */
+.status{position:absolute;left:22px;right:78px;top:12px;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  pointer-events:none;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.22)}
+.status .time{font-size:15px;font-weight:800;letter-spacing:.01em}
+.status .right{display:flex;align-items:center;gap:9px}
+.status .five-g{font-size:13px;font-weight:800;letter-spacing:.02em}
+.battery{position:relative;width:25px;height:12px;border:1.5px solid rgba(255,255,255,.92);border-radius:3px}
+.battery::before{content:"";position:absolute;left:2.5px;right:4px;top:2px;bottom:2px;border-radius:1.5px;background:rgba(255,255,255,.92)}
+.battery::after{content:"";position:absolute;right:-4px;top:3.5px;width:2px;height:5px;border-radius:0 1.5px 1.5px 0;background:rgba(255,255,255,.92)}
+.brand,.collapse{position:absolute;top:38px;z-index:22;height:30px;display:flex;align-items:center;border-radius:15px;
+  background:rgba(10,18,15,.43);border:1px solid rgba(255,255,255,.17);color:rgba(255,255,255,.97);
+  font-size:11.5px;font-weight:700;letter-spacing:.015em;box-shadow:0 8px 20px rgba(1,8,5,.25),inset 0 1px 0 rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(14px) saturate(1.55);backdrop-filter:blur(14px) saturate(1.55);transition:opacity .2s ease}
+.brand{left:22px;top:36px;gap:7px;padding:0 11px 0 5px;white-space:nowrap}
+.mini-ava{width:21px;height:21px;border-radius:7px;display:grid;place-items:center;flex:none;color:#fff;font-size:10px;font-weight:900;
+  background:linear-gradient(135deg,#6552ff,#9d8fff);box-shadow:0 3px 8px rgba(76,53,232,.36)}
+.tdot{width:7px;height:7px;border-radius:50%;background:#35c88f;flex:none;box-shadow:0 0 7px rgba(53,200,143,.38)}
+.brand[data-state="in-class"] .tdot{background:#e27872;box-shadow:0 0 6px rgba(226,120,114,.32)}
+.collapse{right:14px;top:10px;width:34px;height:34px;justify-content:center;gap:0;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.17)}
+.collapse svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s ease}
+.nav{position:absolute;left:4px;right:auto;top:50%;transform:translateY(-50%);z-index:21;width:56px;padding:6px;border-radius:23px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:rgba(10,18,16,.54);border:1px solid rgba(255,255,255,.16);box-shadow:0 12px 26px rgba(1,7,5,.27),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(18px) saturate(1.45);backdrop-filter:blur(18px) saturate(1.45);transition:opacity .2s ease,transform .25s ease}
+.nav-item{width:42px;height:42px;border:0;border-radius:16px;background:transparent;display:grid;place-items:center;color:rgba(255,255,255,.74);
+  transition:background .15s ease,color .15s ease,transform .12s ease}
+.nav-item svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transform:rotate(90deg)}
+.nav-item.on{background:#6552ff;color:#fff;box-shadow:0 5px 14px rgba(76,53,232,.38),inset 0 1px 0 rgba(255,255,255,.22)}
+.nav-item:active{transform:scale(.94)}
+.subtitle{position:absolute;left:24px;right:80px;bottom:82px;z-index:14;text-align:center;font-size:18px;font-weight:400;letter-spacing:.02em;
+  line-height:1.35;color:rgba(255,255,255,.97);text-shadow:0 2px 3px rgba(0,0,0,.56),0 0 18px rgba(0,0,0,.34);
+  white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:opacity .18s ease}
+.subtitle-speaker{font-weight:800;color:rgba(255,255,255,.98)}
+.subtitle-speaker.mate{color:#ffd18a}
+.subtitle-speaker.you{color:#a9dcff}
+.voice-dock{position:absolute;left:auto;right:18px;bottom:16px;z-index:16;display:flex;align-items:center;gap:9px;transition:opacity .18s ease,transform .18s ease}
+.talk{height:50px;border-radius:25px;padding:0 16px 0 6px;display:flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.20);color:#fff;
+  background:rgba(12,18,17,.63);box-shadow:0 12px 28px rgba(2,7,5,.30),inset 0 1px 0 rgba(255,255,255,.17);
+  -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);transition:transform .12s ease}
+.talk-orb{width:37px;height:37px;border-radius:50%;flex:none;display:grid;place-items:center;background:linear-gradient(145deg,#8174ff,#6552ff 58%,#4c35e8);
+  box-shadow:0 0 0 6px rgba(101,82,255,.12),0 6px 15px rgba(101,82,255,.42),inset 0 1px 0 rgba(255,255,255,.32)}
+.talk-orb svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.talk.is-muted .talk-orb{background:rgba(48,53,61,.80);box-shadow:0 8px 18px rgba(1,7,5,.26),inset 0 1px 0 rgba(255,255,255,.12)}
+.talk-tx{font-size:12.5px;font-weight:800;letter-spacing:.025em;white-space:nowrap}
+.talk:active{transform:scale(.97)}
+.keybtn{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.89);
+  background:rgba(12,18,17,.60);box-shadow:0 10px 24px rgba(2,7,5,.24),inset 0 1px 0 rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(18px) saturate(1.55);backdrop-filter:blur(18px) saturate(1.55);transition:transform .12s ease}
+.keybtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.keybtn:active{transform:scale(.94)}
+.chrome-hidden .brand,.chrome-hidden .nav,.chrome-hidden .voice-dock{opacity:0!important;pointer-events:none;transform:translateX(5px)}
+.chrome-hidden .collapse svg{transform:rotate(180deg)}
+
+/* 横屏 UI 重排：左导航、右下语音、右上全屏、右侧玻璃键盘 */
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.collapse #collapseTx{display:none}
+.chrome-hidden .nav{transform:translate(5px,-50%)}
+.stage.keyboard-open .voice-dock{opacity:0!important;pointer-events:none;transform:translateX(8px)}
+.kbd-drawer{position:absolute;right:12px;top:50px;z-index:25;width:326px;height:260px;display:flex;flex-direction:column;padding:14px;border-radius:24px;
+  color:#f7fffb;background:linear-gradient(180deg,rgba(22,48,39,.26),rgba(7,26,20,.20));border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 18px 44px rgba(1,8,5,.26),inset 0 1px 0 rgba(255,255,255,.14);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);
+  opacity:0;visibility:hidden;transform:translateX(calc(100% + 20px));transition:transform .2s ease,opacity .18s ease,visibility 0s linear .2s;pointer-events:none;overflow:hidden}
+.kbd-drawer::before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.58),transparent)}
+.stage.keyboard-open .kbd-drawer{opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto;transition:transform .2s ease,opacity .18s ease}
+.kbd-head{position:relative;z-index:1;display:flex;align-items:center;gap:8px;height:38px;flex:none}
+.kbd-close,.kbd-send{width:36px;height:36px;flex:none;display:grid;place-items:center;border-radius:50%;background:rgba(244,255,250,.09);
+  border:1px solid rgba(255,255,255,.16);color:#effff8;box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+.kbd-close{width:30px;height:30px;color:rgba(244,255,249,.76)}
+.kbd-close svg,.kbd-send svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kbd-input{min-width:0;flex:1;height:38px;border-radius:13px;padding:0 12px;border:1px solid rgba(255,255,255,.16);outline:none;color:#fff;
+  background:rgba(247,255,251,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.10);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.kbd-input::placeholder{color:rgba(240,255,249,.42)}
+.kbd-input:focus{border-color:rgba(255,255,255,.28);background:rgba(247,255,251,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 0 0 2px rgba(220,255,240,.05)}
+.kbd-keys{position:relative;z-index:1;flex:1;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:5px;margin-top:11px}
+.kkey{min-width:0;border-radius:9px;border:1px solid rgba(255,255,255,.105);background:rgba(244,255,250,.07);color:rgba(248,255,252,.90);
+  font:700 11px/1 "Segoe UI",sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:background .12s ease,transform .1s ease}
+.kkey:active{background:rgba(244,255,250,.15);transform:scale(.96)}
+.kkey.span2{grid-column:span 2}.kkey.space{grid-column:span 4}.kkey.ret{grid-column:span 3}
+
+/* DEV 在画布外 */
+.dev{flex:none;display:flex;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 20px);align-items:center;gap:5px;padding:6px 8px;border-radius:13px;background:rgba(15,18,22,.88);
+  border:1.5px dashed rgba(173,164,222,.58);box-shadow:0 8px 22px rgba(0,0,0,.30);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:opacity .12s}
+.dev .tag{font-size:8px;font-weight:900;letter-spacing:.14em;color:#bcb2ff;margin:0 4px 0 2px}
+.dev-lang{display:flex;align-items:center;gap:4px;padding-right:7px;margin-right:2px;border-right:1px solid rgba(255,255,255,.13)}
+.dev-lang .lang-tag{font-size:7.5px;font-weight:800;letter-spacing:.08em;color:rgba(255,255,255,.38);margin-right:1px}
+.dev-lang button.on{background:#6552ff;border-color:#6552ff;color:#fff}
+.dev button{height:27px;min-width:27px;padding:0 7px;border-radius:8px;border:1px solid rgba(255,255,255,.17);
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.82);font-size:9px;font-weight:800;line-height:1;white-space:nowrap}
+.dev button.on{background:#6552ff;border-color:#6552ff;color:#fff;box-shadow:0 4px 12px rgba(76,53,232,.34)}
+.dev .shot-key{font-size:8px;font-weight:700;letter-spacing:.03em;color:rgba(255,255,255,.35);margin-left:5px;white-space:nowrap}
+body.immersive .dev{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:200}
+
+
+/* 中英单语压测：语言切换与英文排版 */
+body.lang-en .board{letter-spacing:-.005em}
+body.lang-en .chalk-title{font-size:22px;letter-spacing:-.015em;line-height:1.15;white-space:normal}
+body.lang-en .d2-head{font-size:22px}
+body.lang-en .d2-groups{grid-template-columns:178px 212px 144px;gap:22px;margin-top:13px}
+body.lang-en .d2-group h3{font-size:16px;font-weight:800;letter-spacing:.01em;margin-bottom:4px;color:rgba(240,248,242,.72)}
+body.lang-en .d2-list{gap:0}
+body.lang-en .lex .z{font-size:25px}
+body.lang-en .lex .p{font-size:11px}
+body.lang-en .d3-q{font-size:23px}
+body.lang-en .d3-note{right:0;top:-4px;width:218px;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:15px;font-weight:700;
+  line-height:1.18;letter-spacing:-.01em;color:rgba(242,249,243,.78)}
+body.lang-en .d3-note + .d3-note{top:47px}
+body.lang-en .d3-corrections{top:96px;grid-template-columns:238px 238px;gap:2px 14px;font-size:21px}
+body.lang-en .d4-title{font-size:22px;line-height:1.15}
+body.lang-en .d4-formulas{margin-top:6px!important;font-size:19px!important;line-height:1.22!important;letter-spacing:-.005em!important}
+body.lang-en .audio-btn{max-width:410px;font-size:17px;gap:7px;padding:0 14px}
+body.lang-en .practice-q{font-size:18px;letter-spacing:-.005em}
+body.lang-en .opt{font-size:18px;padding:0 12px;letter-spacing:-.005em}
+body.lang-en .d5-rule{font-size:17px;letter-spacing:.005em}
+body.lang-en .d6-head{font-size:22px}
+body.lang-en .d6-question{font-size:21px;line-height:1.18;white-space:normal}
+body.lang-en .d6-feedback{width:610px;top:98px}
+body.lang-en .d6-feedback strong{font-size:20px;line-height:1.15;letter-spacing:-.005em}
+body.lang-en .d6-feedback span{margin-top:5px;font-size:18px}
+body.lang-en .d7-note{left:286px;width:276px;min-height:150px;padding:9px 13px 10px}
+body.lang-en .d7-note .nt{font-size:16px;line-height:1.15;letter-spacing:-.005em}
+body.lang-en .d7-note .nt b{width:17px;height:17px;font-size:11px}
+body.lang-en .d7-note p{font-size:16px;line-height:1.25;letter-spacing:-.005em;margin-top:7px}
+body.lang-en .d7-updated{left:286px;top:160px;font-size:15px;letter-spacing:0;color:rgba(255,248,220,.56)}
+body.lang-en .subtitle{font-size:16.5px;line-height:1.3;letter-spacing:-.003em}
+</style>
+</head>
+<body class="classmate-edition">
+<div class="preview-stage" id="previewStage">
+<div class="stage-wrap" id="stageWrap">
+<main class="stage" id="stage" data-scene="classroom" data-pose="book" data-board-state="standby" data-classmate="idle" aria-label="第 5 课 · 我要两杯可乐 · 学伴版">
+
+  <div class="bg" aria-hidden="true"></div>
+  <div class="board-wash" aria-hidden="true"></div>
+  <div class="task-wash" aria-hidden="true"></div>
+  <img class="teacher-layer pose-book" src="../assets/nancy/nancy-teacher-clean.png?v=20261022" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-point" src="../assets/nancy/nancy-teacher-clean-point.png?v=20261022" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-look-classmate" src="../assets/nancy/nancy-teacher-clean-look-classmate.png?v=20261029" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-side" src="../assets/nancy/nancy-teacher-clean-point-v2.png?v=20261022" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-mouth" src="../assets/nancy/nancy-teacher-clean-mouth.png?v=20261023" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-coffee" src="../assets/nancy/nancy-teacher-clean-coffee.png?v=20261023" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-baozi" src="../assets/nancy/nancy-teacher-clean-baozi.png?v=20261023" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-two-cups" src="../assets/nancy/nancy-teacher-clean-two-cups.png?v=20261023" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-thumbs-up" src="../assets/nancy/nancy-teacher-clean-thumbs-up.png?v=20261023" loading="eager" decoding="async" alt="" aria-hidden="true">
+  <img class="teacher-layer pose-clap" src="../assets/nancy/nancy-teacher-clean-clap.png?v=20261023" loading="eager" decoding="async" alt="" aria-hidden="true">
+
+  <div class="classmate-layer" aria-hidden="true">
+    <img class="classmate-pose classmate-pose-idle" data-classmate-pose="idle" src="../assets/classmate/classmate-idle.png?v=20261029" loading="eager" decoding="async" alt="">
+    <img class="classmate-pose classmate-pose-look-user" data-classmate-pose="look-user" src="../assets/classmate/classmate-look-user.png?v=20261029" loading="eager" decoding="async" alt="">
+    <img class="classmate-pose classmate-pose-awkward-scratch" data-classmate-pose="awkward-scratch" src="../assets/classmate/classmate-awkward-scratch.png?v=20261029" loading="eager" decoding="async" alt="">
+    <img class="classmate-pose classmate-pose-eager-answer" data-classmate-pose="eager-answer" src="../assets/classmate/classmate-eager-answer.png?v=20261029" loading="eager" decoding="async" alt="">
+  </div>
+  <img class="classmate-foreground" src="../assets/classmate/user-desk-foreground.png?v=20261029" loading="eager" decoding="async" alt="" aria-hidden="true" draggable="false">
+
+  <div class="restaurant-scene" id="restaurantScene" aria-hidden="true">
+    <img class="restaurant-shot" data-restaurant-shot="01" src="../assets/restaurant/restaurant-01-waitress-classmate.png?v=20261023b" loading="eager" decoding="async" alt="">
+    <img class="restaurant-shot" data-restaurant-shot="02" src="../assets/restaurant/restaurant-02-waitress-nancy.png?v=20261023b" loading="eager" decoding="async" alt="">
+    <img class="restaurant-shot" data-restaurant-shot="03" src="../assets/restaurant/restaurant-03-user-turn.png?v=20261023b" loading="eager" decoding="async" alt="">
+    <img class="restaurant-shot" data-restaurant-shot="04" src="../assets/restaurant/restaurant-04-order-taken.png?v=20261023b" loading="eager" decoding="async" alt="">
+    <img class="restaurant-shot" data-restaurant-shot="05" src="../assets/restaurant/restaurant-05-order-arrived.png?v=20261023b" loading="eager" decoding="async" alt="">
+    <div class="restaurant-chalk-error" aria-hidden="true">二杯 × → 两杯 ✓</div>
+  </div>
+
+  <div class="theater-scene" id="theaterScene" aria-hidden="true">
+    <img class="theater-shot" data-theater-shot="follow" src="../assets/theater/night-01-follow-nancy.png?v=20261023c" loading="eager" decoding="async" alt="">
+    <img class="theater-shot" data-theater-shot="stall" src="../assets/theater/night-02-stall.png?v=20261023c" loading="eager" decoding="async" alt="">
+    <img class="theater-shot" data-theater-shot="handoff-baozi" src="../assets/theater/night-03-handoff-baozi.png?v=20261023c" loading="eager" decoding="async" alt="">
+    <img class="theater-shot" data-theater-shot="handoff-hamburger" src="../assets/theater/night-03-handoff-hamburger.png?v=20261023c" loading="eager" decoding="async" alt="">
+    <img class="theater-shot" data-theater-shot="handoff-milk-tea" src="../assets/theater/night-03-handoff-milk-tea.png?v=20261023c" loading="eager" decoding="async" alt="">
+    <img class="theater-shot" data-theater-shot="caught" src="../assets/theater/night-04-ending-caught.png?v=20261023c" loading="eager" decoding="async" alt="">
+    <img class="theater-shot" data-theater-shot="smug" src="../assets/theater/night-04-ending-smug.png?v=20261023c" loading="eager" decoding="async" alt="">
+  </div>
+
+  <div class="wall-props-layer">
+    <button type="button" class="board-memory-postcard" data-memory-id="restaurant" aria-label="重玩餐厅点单">
+      <img src="../assets/board-props/postcard-polaroid-restaurant-05.png?v=20261023d" loading="eager" decoding="async" alt="" aria-hidden="true" draggable="false">
+    </button>
+
+    <button type="button" class="board-theater-ticket" data-theater-entry aria-label="进入生活剧场" disabled>
+      <img src="../assets/board-props/theater-ticket-01.png?v=20261026" loading="eager" decoding="async" alt="" aria-hidden="true" draggable="false">
+      <span class="board-theater-ticket-copy" aria-hidden="true">
+        <span class="board-theater-ticket-title">生活剧场</span>
+      </span>
+    </button>
+  </div>
+
+  <!-- D1 · 生词卡 -->
+  <section class="density-layer on" id="d1" aria-label="D1 生词卡">
+    <div class="board">
+      <button class="d1-card" id="d1Card" type="button" aria-label="课堂黑板：待机">
+        <span class="d1-board">
+          <span class="d1-date-row">
+            <span class="d1-date" id="d1Date">10月22日 周四</span>
+          </span>
+          <span class="d1-review-layout">
+            <span class="d1-review-label">复习</span>
+            <span class="d1-review-row" aria-label="热，累，冷，渴，饿">
+              <span class="d1-unit"><span class="d1-char">热</span><span class="d1-pinyin">rè</span></span>
+              <span class="d1-unit"><span class="d1-char">累</span><span class="d1-pinyin">lèi</span></span>
+              <span class="d1-unit"><span class="d1-char">冷</span><span class="d1-pinyin">lěng</span></span>
+              <span class="d1-unit d1-target"><span class="d1-char">渴</span><span class="d1-pinyin">kě</span></span>
+              <span class="d1-unit d1-hungry"><span class="d1-char">饿</span><span class="d1-pinyin">è</span></span>
+            </span>
+            <span class="d1-last">昨天的量词小错误：二杯可乐 ×</span>
+          </span>
+          <span class="d1-new-layout">
+            <span class="d1-new-content">
+              <span class="d1-new-map">
+              <span class="d1-today-heading">今天：去餐厅点单</span>
+              <span class="d1-food-grid" aria-label="可乐，咖啡，奶茶，汉堡，包子，面包">
+                <span class="d1-food-unit"><span class="d1-char">可乐</span><span class="d1-pinyin">kělè</span></span>
+                <span class="d1-food-unit"><span class="d1-char">咖啡</span><span class="d1-pinyin">kāfēi</span></span>
+                <span class="d1-food-unit"><span class="d1-char">奶茶</span><span class="d1-pinyin">nǎichá</span></span>
+                <span class="d1-food-unit"><span class="d1-char">汉堡</span><span class="d1-pinyin">hànbǎo</span></span>
+                <span class="d1-food-unit"><span class="d1-char">包子</span><span class="d1-pinyin">bāozi</span></span>
+                <span class="d1-food-unit"><span class="d1-char">面包</span><span class="d1-pinyin">miànbāo</span></span>
+              </span>
+              </span>
+              <span class="d1-detail-panel d1-pinyin-panel">
+                <span class="d1-state-kicker">昨天那个音</span>
+                <span class="d1-pinyin-hero">
+                  <span class="d1-pinyin-mega">liǎng</span>
+                  <span class="d1-pinyin-han">两</span>
+                </span>
+                <span class="d1-pinyin-breakdown">l + iang → liǎng</span>
+                <span class="d1-pinyin-tone">第三声</span>
+              </span>
+              <span class="d1-detail-panel d1-single-panel d1-coffee-panel">
+                <span class="d1-single-word">咖啡</span>
+                <span class="d1-single-pinyin">kāfēi</span>
+                <span class="d1-single-question">你喝什么？</span>
+                <span class="d1-single-answer">我喝 ______。</span>
+              </span>
+              <span class="d1-detail-panel d1-single-panel d1-baozi-panel">
+                <span class="d1-single-word">包子</span>
+                <span class="d1-single-pinyin">bāozi</span>
+                <span class="d1-single-question">你吃什么？</span>
+                <span class="d1-single-answer">我吃 ______。</span>
+              </span>
+              <span class="d1-detail-panel d1-service-panel">
+                <span class="d1-state-kicker">服务员问</span>
+                <span class="d1-service-question">您要什么？</span>
+                <span class="d1-service-prompt">我 ______。</span>
+              </span>
+              <span class="d1-detail-panel d1-measure-panel">
+                <span class="d1-measure-rule">数字 2 + 量词 = <span class="d1-ring-word">两</span></span>
+                <span class="d1-measure-examples">
+                  <span class="d1-measure-line"><span class="d1-under-word">两</span> + <span class="d1-ring-word">杯</span> → <span class="d1-measure-result">两杯咖啡</span></span>
+                  <span class="d1-measure-line"><span class="d1-under-word">两</span> + <span class="d1-ring-word">个</span> → <span class="d1-measure-result">两个包子</span></span>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="d1-payoff-layout">
+            <span class="d1-payoff-old">
+              <span class="d1-payoff-tag">昨天：</span>
+              <span class="d1-payoff-wrong">二杯可乐 ×</span>
+            </span>
+            <svg class="d1-payoff-arrow" viewBox="0 0 62 42" aria-hidden="true">
+              <path d="M2 9 C17 33 36 35 56 18"></path>
+              <path d="M47 14 L56 18 L48 25"></path>
+            </svg>
+            <span class="d1-payoff-correct"><span class="d1-ring-word">两</span>杯可乐 <span class="d1-payoff-check">✓</span></span>
+            <span class="d1-payoff-today">今天</span>
+            <span class="d1-payoff-prompt">今天：我要 ____。</span>
+            <span class="d1-payoff-final">我要两杯可乐。</span>
+          </span>
+        </span>
+      </button>
+      <div class="wrap-board" aria-hidden="true">
+        <span class="wrap-board-line">今天完成：自己点单</span>
+        <span class="wrap-board-line">已修正：二杯 → 两杯</span>
+        <span class="wrap-board-line">下次复习：杯 / 个</span>
+      </div>
+      <span class="d1-date wrap-date" aria-hidden="true">10月22日 周四</span>
+    </div>
+  </section>
+
+  <!-- D2 · 八个词，三组 -->
+  <section class="density-layer" id="d2" aria-label="D2 八个词三组">
+    <div class="board">
+      <h2 class="chalk-title d2-head" id="d2Title">八个词，分三组</h2>
+      <div class="d2-groups">
+        <section class="d2-group">
+          <h3 id="d2G1">钟点</h3>
+          <div class="d2-list">
+            <button class="lex" type="button" data-word="点"><span class="z">点</span><span class="p">diǎn</span></button>
+            <button class="lex" type="button" data-word="分"><span class="z">分</span><span class="p">fēn</span></button>
+            <button class="lex" type="button" data-word="现在"><span class="z">现在</span><span class="p">xiànzài</span></button>
+          </div>
+        </section>
+        <section class="d2-group">
+          <h3 id="d2G2">日子</h3>
+          <div class="d2-list">
+            <button class="lex" type="button" data-word="今天"><span class="z">今天</span><span class="p">jīntiān</span></button>
+            <button class="lex" type="button" data-word="明天"><span class="z">明天</span><span class="p">míngtiān</span></button>
+            <button class="lex" type="button" data-word="星期"><span class="z">星期</span><span class="p">xīngqī</span></button>
+            <button class="lex" type="button" data-word="号"><span class="z">号</span><span class="p">hào</span></button>
+          </div>
+        </section>
+        <section class="d2-group">
+          <h3 id="d2G3">提问</h3>
+          <div class="d2-list">
+            <button class="lex focus" type="button" data-word="几"><span class="z">几</span><span class="p">jǐ</span></button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- D3 · 语法对照 -->
+  <section class="density-layer" id="d3" aria-label="D3 语法对照">
+    <div class="board">
+      <p class="d3-q q1">现在三点。<span class="d3-arrow">&rarr;</span>现在几点？</p>
+      <p class="d3-q q2">今天十五号。<span class="d3-arrow">&rarr;</span>今天几号？</p>
+      <p class="d3-note" id="d3Note1">数字换成「几」，<br>别的字不动</p>
+      <p class="d3-note" id="d3Note2">时间放在<br>动词前面</p>
+      <div class="d3-corrections">
+        <div class="corr no"><span class="sentence">现在是三点。</span><span class="mark">&#10007;</span></div>
+        <div class="corr no"><span class="sentence">见明天下午。</span><span class="mark">&#10007;</span></div>
+        <div class="corr yes"><span class="sentence">现在三点。</span><span class="mark">&#10003;</span></div>
+        <div class="corr yes"><span class="sentence">明天下午见。</span><span class="mark">&#10003;</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- D4 · 听力 -->
+  <section class="density-layer" id="d4" aria-label="D4 听力">
+    <div class="board">
+      <h2 class="chalk-title d4-title" id="d4Title">只抓两样：数字 + 后面那个字</h2>
+      <div class="d4-formulas" id="d4Formulas" style="margin-top:8px;display:grid;gap:0;font-size:21px;line-height:1.18;font-weight:800;letter-spacing:.02em">
+        <p id="d4F1">八 + 点 = 钟点</p>
+        <p id="d4F2">十五 + 号 = 日期</p>
+        <p id="d4F3">星期 + 三 = 星期三</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- D5 · 三声变调 + 跟读 -->
+  <section class="density-layer" id="d5" aria-label="D5 跟读">
+    <div class="board">
+      <div class="d5-tone">
+        <span class="term">jǐ</span>
+        <span>+</span>
+        <span class="term">diǎn</span>
+        <span class="to">&rarr;</span>
+        <span>jí + diǎn</span>
+      </div>
+      <div class="d5-curves" aria-hidden="true"><svg viewBox="0 0 55 14"><path d="M2 2C11 12 21 14 31 10c7-3 12-5 20-8"/></svg><svg viewBox="0 0 92 14"><path d="M2 2c17 12 39 14 57 8 8-3 18-5 30-8"/></svg></div>
+      <p class="d5-rule" id="d5Rule">第三声 <span class="to2">&rarr;</span> 第二声</p>
+      <div class="d5-lines">
+        <button class="d5-line current" type="button"><span class="zh">现在几点？</span><span class="p">xiànzài jǐ diǎn?</span></button>
+        <button class="d5-line" type="button"><span class="zh">今天几号？</span><span class="p">jīntiān jǐ hào?</span></button>
+        <button class="d5-line" type="button"><span class="zh">明天星期三。</span><span class="p">míngtiān xīngqīsān.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- D6 · 当堂小测 -->
+  <section class="density-layer" id="d6" aria-label="D6 当堂小测">
+    <div class="board">
+      <div class="d6-head">
+        <h2 class="chalk-title" id="d6Title">当堂小测　5 / 5</h2>
+        <span class="d6-dots" aria-label="五题中的第五题"><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+      <p class="d6-question" id="d6Question">别人问你「你几点来？」，你怎么回答？</p>
+      <div class="d6-feedback" id="d6Feedback"><strong></strong><span></span></div>
+    </div>
+  </section>
+
+  <!-- D7 · 小测讲评 + 记忆 -->
+  <section class="density-layer" id="d7" aria-label="D7 复盘记忆">
+    <div class="board">
+      <div class="d7-lines">
+        <div class="corr no"><span class="sentence">现在是三点。</span><span class="mark">&#10007;</span></div>
+        <div class="corr yes"><span class="sentence">现在三点。</span><span class="mark">&#10003;</span></div>
+        <div class="corr no"><span class="sentence">见明天下午。</span><span class="mark">&#10007;</span></div>
+        <div class="corr yes"><span class="sentence">明天下午见。</span><span class="mark">&#10003;</span></div>
+      </div>
+      <aside class="d7-note">
+        <div class="nt"><b>&#10003;</b><span id="d7NoteTitle">Nancy 记住了</span></div>
+        <p id="d7Note1">今天两次多加「是」</p>
+        <p id="d7Note2">明天开课先复习</p>
+      </aside>
+      <span class="d7-updated" id="d7Updated">记忆已更新</span>
+    </div>
+  </section>
+
+  <header class="status" aria-label="状态栏">
+    <span class="time">11:20</span>
+    <span class="right"><span class="five-g">5G</span><i class="battery" aria-hidden="true"></i></span>
+  </header>
+
+  <div class="brand" id="brand" data-state="online" role="status" aria-live="polite" aria-atomic="true" aria-label="Nancy · 在线"><span class="mini-ava" aria-hidden="true">N</span><span id="brandName">Nancy</span><span class="brand-sep">&middot;</span><span id="brandState">在线</span><i class="tdot" aria-hidden="true"></i></div>
+
+
+  <button class="collapse" id="collapseBtn" type="button" aria-label="收起悬浮控件">
+    <span id="collapseTx" class="visually-hidden">收起</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3H3v5.5M15.5 3H21v5.5M8.5 21H3v-5.5M15.5 21H21v-5.5"/></svg>
+  </button>
+
+  <nav class="nav" aria-label="页面导航（横屏）">
+    <button class="nav-item on" type="button" aria-label="今天"><svg viewBox="0 0 24 24"><path d="M4 10.2 12 3.5l8 6.7"/><path d="M6.2 9.2v10.3h11.6V9.2"/><path d="M9.5 19.5v-5.6h5v5.6"/></svg></button>
+    <button class="nav-item" type="button" aria-label="小安"><svg viewBox="0 0 24 24"><path d="M5.1 5.4h13.8a2 2 0 0 1 2 2v7.7a2 2 0 0 1-2 2h-7.2l-4.1 3v-3H5.1a2 2 0 0 1-2-2V7.4a2 2 0 0 1 2-2Z"/><path d="M8 10.4h.1M12 10.4h.1M16 10.4h.1"/></svg></button>
+    <button class="nav-item" type="button" aria-label="日历"><svg viewBox="0 0 24 24"><rect x="3.2" y="5.2" width="17.6" height="15.3" rx="3"/><path d="M7.2 3.5v3.3M16.8 3.5v3.3M3.2 9.2h17.6M7.5 13h.1M12 13h.1M16.5 13h.1M7.5 16.7h.1M12 16.7h.1"/></svg></button>
+    <button class="nav-item" type="button" aria-label="我的"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.7"/><path d="M4.6 20.2c.7-4.1 3.4-6.2 7.4-6.2s6.7 2.1 7.4 6.2"/></svg></button>
+  </nav>
+
+  <p class="subtitle" id="subtitle" aria-live="polite"></p>
+
+  <div class="voice-dock" id="voiceDock">
+    <button class="talk" id="talk" type="button" aria-label="点一下闭麦" aria-pressed="true">
+      <span class="talk-orb" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.6v3.2"/></svg>
+      </span>
+      <span class="talk-tx" id="talkTx">我在听 &middot; 点一下闭麦</span>
+    </button>
+    <button class="keybtn" id="keyBtn" type="button" aria-label="键盘输入" aria-expanded="false" aria-controls="kbdDrawer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.2" width="17.6" height="13.6" rx="3"/><path d="M6.7 9h.1M10 9h.1M13.3 9h.1M16.6 9h.1M6.7 12.3h.1M10 12.3h.1M13.3 12.3h.1M16.6 12.3h.1M7.2 15.6h9.6"/></svg>
+    </button>
+  </div>
+
+
+  <section class="kbd-drawer" id="kbdDrawer" aria-hidden="true" aria-label="键盘输入">
+    <div class="kbd-head">
+      <button class="kbd-close" id="kbdClose" type="button" aria-label="关闭键盘"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <input class="kbd-input" id="kbdInput" type="text" autocomplete="off" placeholder="Aa" aria-label="输入">
+      <button class="kbd-send" id="kbdSend" type="button" aria-label="发送"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="kbd-keys" id="kbdKeys">
+      <button type="button" class="kkey" data-key="1">1</button><button type="button" class="kkey" data-key="2">2</button><button type="button" class="kkey" data-key="3">3</button><button type="button" class="kkey" data-key="4">4</button><button type="button" class="kkey" data-key="5">5</button><button type="button" class="kkey" data-key="6">6</button><button type="button" class="kkey" data-key="7">7</button><button type="button" class="kkey" data-key="8">8</button><button type="button" class="kkey" data-key="9">9</button><button type="button" class="kkey" data-key="0">0</button>
+      <button type="button" class="kkey" data-key="q">Q</button><button type="button" class="kkey" data-key="w">W</button><button type="button" class="kkey" data-key="e">E</button><button type="button" class="kkey" data-key="r">R</button><button type="button" class="kkey" data-key="t">T</button><button type="button" class="kkey" data-key="y">Y</button><button type="button" class="kkey" data-key="u">U</button><button type="button" class="kkey" data-key="i">I</button><button type="button" class="kkey" data-key="o">O</button><button type="button" class="kkey" data-key="p">P</button>
+      <button type="button" class="kkey" data-key="a">A</button><button type="button" class="kkey" data-key="s">S</button><button type="button" class="kkey" data-key="d">D</button><button type="button" class="kkey" data-key="f">F</button><button type="button" class="kkey" data-key="g">G</button><button type="button" class="kkey" data-key="h">H</button><button type="button" class="kkey" data-key="j">J</button><button type="button" class="kkey" data-key="k">K</button><button type="button" class="kkey" data-key="l">L</button><button type="button" class="kkey" data-key="backspace">⌫</button>
+      <button type="button" class="kkey span2">123</button><button type="button" class="kkey" data-key=".">.</button><button type="button" class="kkey space" data-key=" ">space</button><button type="button" class="kkey ret" data-key="enter">↵</button>
+    </div>
+  </section>
+
+  <section class="practice practice-d4" id="practiceD4" aria-label="听力题">
+    <div class="practice-head">
+      <button class="audio-btn" id="audioBtn" type="button"><span class="play-ico"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span><span id="audioTx">现在几点？现在八点。</span></button>
+      <span class="practice-q" id="q4">现在几点？</span>
+    </div>
+    <div class="options" id="opts4">
+      <button class="opt" type="button" data-correct="false"><b>A</b>7:00</button>
+      <button class="opt" type="button" data-correct="true"><b>B</b>8:00</button>
+      <button class="opt" type="button" data-correct="false"><b>C</b>10:00</button>
+    </div>
+  </section>
+
+  <section class="practice practice-d6" id="practiceD6" aria-label="当堂小测选项">
+    <div class="options" id="opts6">
+      <button class="opt" type="button" data-correct="true"><b>A</b>我八点来。</button>
+      <button class="opt" type="button" data-correct="false"><b>B</b>我星期三。</button>
+      <button class="opt" type="button" data-correct="false"><b>C</b>现在几点？</button>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<aside class="dev" id="dev" aria-label="密度状态切换">
+  <span class="tag">DEV</span>
+  <button type="button" id="demoNext">下一句</button>
+  <button type="button" id="demoReset">重置</button>
+  <span class="restaurant-tests" role="group" aria-label="餐厅测试分支">
+    <button type="button" id="restaurantCorrect" disabled>答对</button>
+    <button type="button" id="restaurantWrong" disabled>说成二杯</button>
+    <button type="button" id="restaurantSilent" disabled>不说话</button>
+  </span>
+  <button type="button" id="enterTheater" data-theater-entry disabled>进入生活剧场</button>
+  <span class="theater-tests" role="group" aria-label="生活剧场测试分支">
+    <button type="button" id="theaterBaozi" disabled>选择包子</button>
+    <button type="button" id="theaterHamburger" disabled>选择汉堡</button>
+    <button type="button" id="theaterMilkTea" disabled>选择奶茶</button>
+    <button type="button" id="theaterQuantity" disabled>说：一个</button>
+    <button type="button" id="theaterSilent" disabled>不说话</button>
+  </span>
+  <button type="button" id="clearMemory">清空记忆</button>
+  <span class="classmate-tests" role="group" aria-label="学伴状态切换">
+    <button type="button" data-classmate-state="idle" aria-pressed="true" class="on">学伴：正常</button>
+    <button type="button" data-classmate-state="look-user" aria-pressed="false">看用户</button>
+    <button type="button" data-classmate-state="awkward-scratch" aria-pressed="false">挠头</button>
+    <button type="button" data-classmate-state="eager-answer" aria-pressed="false">抢答</button>
+  </span>
+  <span class="dev-lang" role="group" aria-label="语言切换">
+    <span class="lang-tag">语言</span>
+    <button type="button" data-lang="zh" class="on" aria-pressed="true">中文</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+  </span>
+  <button type="button" data-state="d1" class="on">D1 生词卡</button>
+  <button type="button" data-state="d2">D2 八词三组</button>
+  <button type="button" data-state="d3">D3 语法对照</button>
+  <button type="button" data-state="d4">D4 听力</button>
+  <button type="button" data-state="d5">D5 跟读</button>
+  <button type="button" data-state="d6">D6 小测</button>
+  <button type="button" data-state="d7">D7 复盘记忆</button>
+  <span class="shot-key">S 截图模式 · 1–7 切态 · L 切语言</span>
+</aside>
+</div>
+
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  var stageWrap = document.getElementById('stageWrap');
+  var previewStage = document.getElementById('previewStage');
+  var subtitle = document.getElementById('subtitle');
+  var htmlRoot = document.documentElement;
+  var body = document.body;
+  var layers = {
+    d1: document.getElementById('d1'),
+    d2: document.getElementById('d2'),
+    d3: document.getElementById('d3'),
+    d4: document.getElementById('d4'),
+    d5: document.getElementById('d5'),
+    d6: document.getElementById('d6'),
+    d7: document.getElementById('d7')
+  };
+  var devButtons = Array.prototype.slice.call(document.querySelectorAll('.dev [data-state]'));
+  var langButtons = Array.prototype.slice.call(document.querySelectorAll('.dev [data-lang]'));
+  var practiceD4 = document.getElementById('practiceD4');
+  var practiceD6 = document.getElementById('practiceD6');
+  var q4 = document.getElementById('q4');
+  var audioBtn = document.getElementById('audioBtn');
+  var audioTx = document.getElementById('audioTx');
+  var opts4 = Array.prototype.slice.call(document.querySelectorAll('#opts4 .opt'));
+  var opts6 = Array.prototype.slice.call(document.querySelectorAll('#opts6 .opt'));
+  var d6Feedback = document.getElementById('d6Feedback');
+  var d6FeedbackStrong = d6Feedback.querySelector('strong');
+  var d6FeedbackSpan = d6Feedback.querySelector('span');
+  var talk = document.getElementById('talk');
+  var talkTx = document.getElementById('talkTx');
+  var collapseBtn = document.getElementById('collapseBtn');
+  var collapseTx = document.getElementById('collapseTx');
+  var keyBtn = document.getElementById('keyBtn');
+  var kbdDrawer = document.getElementById('kbdDrawer');
+  var kbdInput = document.getElementById('kbdInput');
+  var kbdClose = document.getElementById('kbdClose');
+  var kbdSend = document.getElementById('kbdSend');
+  var kbdKeys = document.getElementById('kbdKeys');
+  var keyboardOpen = false;
+  var brand = document.getElementById('brand');
+  var brandName = document.getElementById('brandName');
+  var brandState = document.getElementById('brandState');
+  var d1Card = document.getElementById('d1Card');
+  var d2Title = document.getElementById('d2Title');
+  var d2G1 = document.getElementById('d2G1');
+  var d2G2 = document.getElementById('d2G2');
+  var d2G3 = document.getElementById('d2G3');
+  var d3Note1 = document.getElementById('d3Note1');
+  var d3Note2 = document.getElementById('d3Note2');
+  var d4Title = document.getElementById('d4Title');
+  var d4F1 = document.getElementById('d4F1');
+  var d4F2 = document.getElementById('d4F2');
+  var d4F3 = document.getElementById('d4F3');
+  var d5Rule = document.getElementById('d5Rule');
+  var d6Title = document.getElementById('d6Title');
+  var d6Question = document.getElementById('d6Question');
+  var d7NoteTitle = document.getElementById('d7NoteTitle');
+  var d7Note1 = document.getElementById('d7Note1');
+  var d7Note2 = document.getElementById('d7Note2');
+  var d7Updated = document.getElementById('d7Updated');
+  var lexButtons = Array.prototype.slice.call(document.querySelectorAll('.lex'));
+  var d5Lines = Array.prototype.slice.call(document.querySelectorAll('.d5-line'));
+  var navItems = Array.prototype.slice.call(document.querySelectorAll('.nav-item'));
+
+  var I18N = {
+    zh: {
+      brandOnline: '在线',
+      brandInClass: '上课中',
+      collapse: '收起',
+      expand: '展开',
+      listening: '我在听 \u00b7 点一下闭麦',
+      muted: '已闭麦 \u00b7 点一下打开',
+      nav: ['今天', '小安', '日历', '我的'],
+      d1: [
+        { z:'点', p:'diǎn', pos:'量词 \u00b7 钟点', eg:'现在八点。', egp:'xiànzài bā diǎn.', ege:'', progress:'生词 1 / 8', sub:'点，钟点。现在八点。' },
+        { z:'点', p:'diǎn', pos:'量词 \u00b7 钟点', eg:'你几点来？', egp:'nǐ jǐ diǎn lái?', ege:'', progress:'生词 1 / 8', sub:'点，钟点。你几点来？' }
+      ],
+      d2: {
+        title: '八个词，分三组',
+        groups: ['钟点', '日子', '提问'],
+        sub: '三组立住，八个词就不是八个孤零零的字了。',
+        words: {
+          '点': { sub:'点：现在八点。' },
+          '分': { sub:'分：八点十分。' },
+          '现在': { sub:'现在：现在几点？' },
+          '今天': { sub:'今天：今天星期三。' },
+          '明天': { sub:'明天：明天下午见。' },
+          '星期': { sub:'星期：星期六你有空吗？' },
+          '号': { sub:'号：今天几号？' },
+          '几': { sub:'几：你几点来？' }
+        }
+      },
+      d3: {
+        notes: ['数字换成「几」，<br>别的字不动', '时间放在<br>动词前面'],
+        sub: '问句不用调语序，只把数字换成「几」；时间要放在动词前面。'
+      },
+      d4: {
+        title: '只抓两样：数字 + 后面那个字',
+        formulas: ['八 + 点 = 钟点', '十五 + 号 = 日期', '星期 + 三 = 星期三'],
+        audio: '现在几点？现在八点。',
+        playing: '播放中…',
+        question: '现在几点？',
+        correct: '对。八加点，是钟点。',
+        wrongQ: '八 + 点 = 8:00',
+        wrongSub: '八 + 点 = 8:00',
+        sub: '别逐字翻译。只听数字，再听数字后面那个字。'
+      },
+      d5: {
+        rule: '第三声 <span class="to2">\u2192</span> 第二声',
+        sub: '写第三声，读第二声。几点，读作 jí diǎn。'
+      },
+      d6: {
+        title: '当堂小测　5 / 5',
+        question: '别人问你「你几点来？」，你怎么回答？',
+        sub: '最后一题。问几点，就答几点。',
+        good: { strong:'对。问几点，就答几点。', span:'', subtitle:'对。问几点，就答几点。' },
+        bad: { strong:'问几点 \u2192 答几点', span:'我八点来。', subtitle:'问几点 \u2192 答几点：我八点来。' }
+      },
+      d7: {
+        noteTitle: 'Nancy 记住了',
+        note1: '今天两次多加「是」',
+        note2: '明天开课先复习',
+        updated: '记忆已更新',
+        sub: '不是没学会，是今天多了一个字。明天我再考你。'
+      }
+    },
+    en: {
+      brandOnline: 'Online',
+      brandInClass: 'In class',
+      collapse: 'Hide',
+      expand: 'Show',
+      listening: 'Listening \u00b7 tap to mute',
+      muted: 'Muted \u00b7 tap to unmute',
+      nav: ['Today', 'Xiao An', 'Calendar', 'Me'],
+      d1: [
+        { z:'点', p:'diǎn', pos:'Measure word \u00b7 clock time', eg:'现在八点。', egp:'xiànzài bā diǎn.', ege:"It's eight o'clock.", progress:'Word 1 / 8', sub:"点 is the measure word for clock time. 现在八点 \u2014 it's eight o'clock." },
+        { z:'点', p:'diǎn', pos:'Measure word \u00b7 clock time', eg:'你几点来？', egp:'nǐ jǐ diǎn lái?', ege:'What time are you coming?', progress:'Word 1 / 8', sub:'点 is the measure word for clock time. 你几点来？\u2014 what time are you coming?' }
+      ],
+      d2: {
+        title: 'Eight words, three groups',
+        groups: ['Clock time', 'Dates', 'Questions'],
+        sub: 'Keep the three groups in view, and eight words stop feeling like eight isolated characters.',
+        words: {
+          '点': { sub:"点：点 is used for clock time. 现在八点 \u2014 it's eight o'clock." },
+          '分': { sub:'分：分 means minute. 八点十分 \u2014 ten past eight.' },
+          '现在': { sub:'现在：现在 means now. 现在几点？\u2014 what time is it now?' },
+          '今天': { sub:'今天：今天 means today. 今天星期三 \u2014 today is Wednesday.' },
+          '明天': { sub:'明天：明天 means tomorrow. 明天下午见 \u2014 see you tomorrow afternoon.' },
+          '星期': { sub:'星期：星期 means day of the week. 星期六你有空吗？\u2014 are you free on Saturday?' },
+          '号': { sub:"号：号 means day of the month. 今天几号？\u2014 what's the date today?" },
+          '几': { sub:'几：几 asks “how many” or “which”. 你几点来？\u2014 what time are you coming?' }
+        }
+      },
+      d3: {
+        notes: ['Number \u2192 几.<br>Nothing else changes.', 'Time goes<br>before the verb.'],
+        sub: 'Keep the word order. Replace the number with 几, and put the time before the verb.'
+      },
+      d4: {
+        title: 'Listen for two things: the number + the word after it',
+        formulas: ['8 + 点 = clock time', '15 + 号 = date', '星期 + 3 = Wednesday'],
+        audio: 'Play: 现在几点？现在八点。',
+        playing: 'Playing…',
+        question: 'What time is it?',
+        correct: "Right. 八 + 点 means eight o'clock.",
+        wrongQ: '8 + 点 = 8:00',
+        wrongSub: '8 + 点 = 8:00. Listen again.',
+        sub: "Don't translate word by word. Listen for the number, then the word right after it."
+      },
+      d5: {
+        rule: 'Third tone <span class="to2">\u2192</span> second tone',
+        sub: 'Write the third tone, say the second. 几点 is pronounced jí diǎn.'
+      },
+      d6: {
+        title: 'Quiz 5 / 5',
+        question: 'Someone asks 你几点来？ How do you answer?',
+        sub: 'Last one. If they ask what time, answer with a time.',
+        good: { strong:'Right. If they ask what time, answer with a time.', span:'', subtitle:'Right. If they ask what time, answer with a time.' },
+        bad: { strong:'Ask what time \u2192 answer with a time', span:'我八点来。', subtitle:'Ask what time \u2192 answer with a time. 我八点来。' }
+      },
+      d7: {
+        noteTitle: 'Nancy remembers',
+        note1: 'You added 是 twice today',
+        note2: "We'll review this first tomorrow",
+        updated: 'Memory updated',
+        sub: "You didn't forget it. You just added one extra 是 today. I'll test you again tomorrow."
+      }
+    }
+  };
+
+  var LANG = 'zh';
+  var currentState = 'd1';
+  var boardMode = 'standby';
+  var pickedWord = null;
+  var locked4 = false;
+  var answer4 = null;
+  var audioPlaying = false;
+  var locked6 = false;
+  var answer6 = null;
+  var muted = false;
+  var chromeHidden = false;
+  var brandInClass = false;
+  var audioTimer = 0;
+
+  function t() { return I18N[LANG]; }
+
+  function clearOptions(list) {
+    list.forEach(function (btn) {
+      btn.classList.remove('picked', 'wrong', 'correct');
+      btn.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  function applyD1() {
+    var labels = {
+      standby: '课堂黑板，待机：10月22日周四，复习热、累、冷、渴、饿，上次二杯可乐用错量词',
+      review: '课堂黑板，复习：圈出渴',
+      new: '课堂黑板，新课：去餐厅点单，可乐、咖啡、奶茶、汉堡、包子、面包，您要什么，我要两杯可乐'
+    };
+    d1Card.setAttribute('aria-label', labels[boardMode]);
+  }
+
+  function setBoardMode(next) {
+    boardMode = next === 'review' || next === 'new' ? next : 'standby';
+    stage.classList.toggle('board-review', boardMode === 'review');
+    stage.classList.toggle('board-new', boardMode === 'new');
+    applyD1();
+  }
+
+  function applyD2() {
+    var copy = t().d2;
+    d2Title.textContent = copy.title;
+    d2G1.textContent = copy.groups[0];
+    d2G2.textContent = copy.groups[1];
+    d2G3.textContent = copy.groups[2];
+  }
+
+  function applyD3() {
+    var copy = t().d3;
+    d3Note1.innerHTML = copy.notes[0];
+    d3Note2.innerHTML = copy.notes[1];
+  }
+
+  function syncD4() {
+    var copy = t().d4;
+    d4Title.textContent = copy.title;
+    d4F1.textContent = copy.formulas[0];
+    d4F2.textContent = copy.formulas[1];
+    d4F3.textContent = copy.formulas[2];
+    audioBtn.classList.toggle('playing', audioPlaying);
+    audioTx.textContent = audioPlaying ? copy.playing : copy.audio;
+    q4.textContent = answer4 === 'bad' ? copy.wrongQ : copy.question;
+  }
+
+  function applyD5() {
+    d5Rule.innerHTML = t().d5.rule;
+  }
+
+  function syncD6() {
+    var copy = t().d6;
+    d6Title.textContent = copy.title;
+    d6Question.textContent = copy.question;
+    d6Feedback.classList.remove('on', 'bad', 'good');
+    if (!answer6) {
+      d6FeedbackStrong.textContent = '';
+      d6FeedbackSpan.textContent = '';
+      return;
+    }
+    var result = answer6 === 'good' ? copy.good : copy.bad;
+    d6FeedbackStrong.textContent = result.strong;
+    d6FeedbackSpan.textContent = result.span;
+    d6Feedback.classList.add('on', answer6);
+  }
+
+  function applyD7() {
+    var copy = t().d7;
+    d7NoteTitle.textContent = copy.noteTitle;
+    d7Note1.textContent = copy.note1;
+    d7Note2.textContent = copy.note2;
+    d7Updated.textContent = copy.updated;
+  }
+
+  function applyBrandState() {
+    var copy = t();
+    var brandText = brandInClass ? copy.brandInClass : copy.brandOnline;
+    brandState.textContent = brandText;
+    brand.dataset.state = brandInClass ? 'in-class' : 'online';
+    brand.setAttribute('aria-label', brandName.textContent + ' \u00b7 ' + brandText);
+  }
+
+  window.addEventListener('teacher-lesson-state', function (event) {
+    brandInClass = !!(event.detail && event.detail.inClass);
+    applyBrandState();
+  });
+
+  function applyChrome() {
+    var copy = t();
+    applyBrandState();
+    collapseTx.textContent = chromeHidden ? copy.expand : copy.collapse;
+    collapseBtn.setAttribute('aria-label', chromeHidden
+      ? (LANG === 'en' ? 'Show floating controls' : '展开悬浮控件')
+      : (LANG === 'en' ? 'Hide floating controls' : '收起悬浮控件'));
+    collapseBtn.setAttribute('aria-expanded', chromeHidden ? 'false' : 'true');
+    talk.classList.toggle('is-muted', muted);
+    talk.setAttribute('aria-pressed', muted ? 'false' : 'true');
+    talk.setAttribute('aria-label', muted
+      ? (LANG === 'en' ? 'Tap to unmute' : '点一下打开麦克风')
+      : (LANG === 'en' ? 'Tap to mute' : '点一下闭麦'));
+    talkTx.textContent = muted ? copy.muted : copy.listening;
+    navItems.forEach(function (item, i) {
+      item.setAttribute('aria-label', copy.nav[i]);
+    });
+  }
+
+  function updateSubtitle() {
+    if (stage.dataset.scene === 'theater') return;
+    var copy = t();
+    if (currentState === 'd1') {
+      subtitle.textContent = '我在听。你来了就先看看这儿。';
+    } else if (currentState === 'd2') {
+      subtitle.textContent = pickedWord ? copy.d2.words[pickedWord].sub : copy.d2.sub;
+    } else if (currentState === 'd3') {
+      subtitle.textContent = copy.d3.sub;
+    } else if (currentState === 'd4') {
+      subtitle.textContent = answer4 === 'good' ? copy.d4.correct : (answer4 === 'bad' ? copy.d4.wrongSub : copy.d4.sub);
+    } else if (currentState === 'd5') {
+      subtitle.textContent = copy.d5.sub;
+    } else if (currentState === 'd6') {
+      subtitle.textContent = answer6 === 'good' ? copy.d6.good.subtitle : (answer6 === 'bad' ? copy.d6.bad.subtitle : copy.d6.sub);
+    } else if (currentState === 'd7') {
+      subtitle.textContent = copy.d7.sub;
+    }
+  }
+
+  function applyAll() {
+    applyD1();
+    applyD2();
+    applyD3();
+    syncD4();
+    applyD5();
+    syncD6();
+    applyD7();
+    applyChrome();
+    updateSubtitle();
+  }
+
+  function setLanguage(next) {
+    LANG = next === 'en' ? 'en' : 'zh';
+    document.title = LANG === 'en' ? 'Lesson 5 · Ordering at a Restaurant' : '第 5 课 · 我要两杯可乐';
+    htmlRoot.lang = LANG === 'en' ? 'en' : 'zh-CN';
+    htmlRoot.dataset.lang = LANG;
+    body.classList.toggle('lang-en', LANG === 'en');
+    body.classList.toggle('lang-zh', LANG === 'zh');
+    langButtons.forEach(function (btn) {
+      var active = btn.dataset.lang === LANG;
+      btn.classList.toggle('on', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    applyAll();
+    window.dispatchEvent(new CustomEvent('lesson-language-change', { detail: { lang: LANG } }));
+  }
+
+  function resetD4() {
+    window.clearTimeout(audioTimer);
+    locked4 = false;
+    answer4 = null;
+    audioPlaying = false;
+    audioBtn.classList.remove('playing');
+    clearOptions(opts4);
+    syncD4();
+  }
+
+  function resetD6() {
+    locked6 = false;
+    answer6 = null;
+    clearOptions(opts6);
+    syncD6();
+  }
+
+  function resetWords() {
+    pickedWord = null;
+    lexButtons.forEach(function (btn) {
+      btn.classList.remove('picked');
+      btn.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  function resetD5() {
+    d5Lines.forEach(function (line, i) { line.classList.toggle('current', i === 0); });
+  }
+
+  function setState(next) {
+    currentState = next;
+    stage.classList.toggle('d1-clean', next === 'd1');
+    Object.keys(layers).forEach(function (key) {
+      var on = key === next;
+      layers[key].classList.toggle('on', on);
+      layers[key].setAttribute('aria-hidden', on ? 'false' : 'true');
+    });
+    devButtons.forEach(function (btn) {
+      btn.classList.toggle('on', btn.dataset.state === next);
+    });
+    practiceD4.classList.toggle('on', next === 'd4');
+    practiceD6.classList.toggle('on', next === 'd6');
+    resetD4();
+    resetD6();
+    resetWords();
+    resetD5();
+    updateSubtitle();
+  }
+
+  devButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () { setState(btn.dataset.state); });
+  });
+
+  langButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () { setLanguage(btn.dataset.lang); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var key = (e.key || '').toLowerCase();
+    if (keyboardOpen) {
+      if (key === 'escape') {
+        e.preventDefault();
+        setKeyboardOpen(false);
+      }
+      return;
+    }
+    if (key === 's') {
+      e.preventDefault();
+      body.classList.toggle('shot');
+      return;
+    }
+    if (key === 'l') {
+      e.preventDefault();
+      setLanguage(LANG === 'zh' ? 'en' : 'zh');
+      return;
+    }
+    if (/^[1-7]$/.test(key)) {
+      e.preventDefault();
+      setState('d' + key);
+    }
+  });
+
+  lexButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var word = btn.dataset.word;
+      if (pickedWord === word) {
+        resetWords();
+        updateSubtitle();
+        return;
+      }
+      resetWords();
+      pickedWord = word;
+      btn.classList.add('picked');
+      btn.setAttribute('aria-pressed', 'true');
+      updateSubtitle();
+    });
+  });
+
+  d5Lines.forEach(function (line) {
+    line.addEventListener('click', function () {
+      d5Lines.forEach(function (other) { other.classList.toggle('current', other === line); });
+    });
+  });
+
+  audioBtn.addEventListener('click', function () {
+    if (currentState !== 'd4') return;
+    window.clearTimeout(audioTimer);
+    audioPlaying = true;
+    syncD4();
+    audioTimer = window.setTimeout(function () {
+      audioPlaying = false;
+      syncD4();
+    }, 1100);
+  });
+
+  function answerD4(btn) {
+    if (currentState !== 'd4' || locked4) return;
+    locked4 = true;
+    btn.classList.add('picked');
+    btn.setAttribute('aria-pressed', 'true');
+    if (btn.dataset.correct === 'true') {
+      btn.classList.remove('picked');
+      btn.classList.add('correct');
+      answer4 = 'good';
+    } else {
+      btn.classList.remove('picked');
+      btn.classList.add('wrong');
+      opts4.forEach(function (other) {
+        if (other.dataset.correct === 'true') other.classList.add('correct');
+      });
+      answer4 = 'bad';
+    }
+    syncD4();
+    updateSubtitle();
+  }
+
+  opts4.forEach(function (btn) { btn.addEventListener('click', function () { answerD4(btn); }); });
+
+  function answerD6(btn) {
+    if (currentState !== 'd6' || locked6) return;
+    locked6 = true;
+    btn.classList.add('picked');
+    btn.setAttribute('aria-pressed', 'true');
+    if (btn.dataset.correct === 'true') {
+      btn.classList.remove('picked');
+      btn.classList.add('correct');
+      answer6 = 'good';
+    } else {
+      btn.classList.remove('picked');
+      btn.classList.add('wrong');
+      opts6.forEach(function (other) {
+        if (other.dataset.correct === 'true') other.classList.add('correct');
+      });
+      answer6 = 'bad';
+    }
+    syncD6();
+    updateSubtitle();
+  }
+
+  opts6.forEach(function (btn) { btn.addEventListener('click', function () { answerD6(btn); }); });
+
+  talk.addEventListener('click', function () {
+    muted = !muted;
+    applyChrome();
+  });
+
+  collapseBtn.addEventListener('click', function () {
+    chromeHidden = !chromeHidden;
+    if (chromeHidden && keyboardOpen) closeKeyboard();
+    stage.classList.toggle('chrome-hidden', chromeHidden);
+    applyChrome();
+  });
+
+  function setKeyboardOpen(open) {
+    keyboardOpen = !!open;
+    stage.classList.toggle('keyboard-open', keyboardOpen);
+    kbdDrawer.setAttribute('aria-hidden', keyboardOpen ? 'false' : 'true');
+    keyBtn.setAttribute('aria-expanded', keyboardOpen ? 'true' : 'false');
+    if (keyboardOpen) {
+      window.setTimeout(function () { kbdInput.focus(); }, 210);
+    } else {
+      kbdInput.blur();
+    }
+  }
+
+  function closeKeyboard() {
+    setKeyboardOpen(false);
+  }
+
+  keyBtn.addEventListener('click', function () { setKeyboardOpen(true); });
+  kbdClose.addEventListener('click', closeKeyboard);
+  kbdSend.addEventListener('click', function () {
+    kbdInput.value = '';
+    closeKeyboard();
+  });
+  kbdInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      kbdInput.value = '';
+      closeKeyboard();
+    }
+  });
+  kbdKeys.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-key]');
+    if (!btn) return;
+    var key = btn.getAttribute('data-key');
+    if (key === 'enter') {
+      kbdInput.value = '';
+      closeKeyboard();
+      return;
+    }
+    if (key === 'backspace') {
+      kbdInput.value = kbdInput.value.slice(0, -1);
+    } else {
+      kbdInput.value += key;
+    }
+    kbdInput.focus();
+  });
+
+  navItems.forEach(function (item) {
+    item.addEventListener('click', function (e) { e.preventDefault(); });
+  });
+
+  var params = new URLSearchParams(location.search);
+  var immersive = params.get('frame') === '0';
+  var initialLang = params.get('lang') === 'en' ? 'en' : 'zh';
+  if (immersive) body.classList.add('immersive');
+
+  function fit() {
+    var availW = window.innerWidth - (immersive ? 0 : 24);
+    var availH = window.innerHeight - (immersive ? 0 : 78);
+    var k = Math.min(1, availW / 844, availH / 390);
+    stageWrap.style.width = (844 * k) + 'px';
+    stageWrap.style.height = (390 * k) + 'px';
+    stage.style.transform = 'scale(' + k + ')';
+  }
+
+  window.addEventListener('resize', fit);
+  fit();
+  setState('d1');
+  setLanguage(initialLang);
+  setBoardMode(params.get('board'));
+})();
+</script>
+
+<style>
+/* ==========================================================================
+   十九拍课堂演示：手动推进，仅覆盖 D1 的展示状态
+   ========================================================================== */
+.stage.classroom-demo{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.stage.classroom-demo *{-webkit-tap-highlight-color:transparent}
+.stage.classroom-demo .d1-card:focus,
+.stage.classroom-demo .d1-card:focus-visible{outline:none}
+
+/* 演示现场保留推进、分支测试和开发语言入口，继续隐藏 D 状态 */
+.dev.demo-only .tag,
+.dev.demo-only .shot-key,
+.dev.demo-only [data-state]{display:none!important}
+
+/* 正确答案留到纠错高光，不在复习时提前泄露 */
+.stage.classroom-demo .d1-fix,
+.stage.classroom-demo .d1-mini-fix{display:none}
+
+/* 人物硬切：未选中层保留不可见的合成占位，避免首切时重新上传纹理 */
+.stage .teacher-layer{right:47px;bottom:0;width:auto;height:363px;opacity:.005;transition:none!important}
+.stage[data-pose="book"] .teacher-layer.pose-book{right:10.3px;height:309.6px;opacity:1;z-index:4}
+.stage[data-pose="point"] .teacher-layer.pose-point{right:47px;height:363px;opacity:1;z-index:4}
+.stage[data-pose="look-classmate"] .teacher-layer.pose-look-classmate{right:39.5px;height:339.4px;opacity:1;z-index:4}
+.stage[data-pose="side"] .teacher-layer.pose-side{right:47px;height:362px;opacity:1;z-index:4}
+.stage[data-pose="mouth"] .teacher-layer.pose-mouth{right:38px;height:349px;opacity:1;z-index:4}
+.stage[data-pose="coffee"] .teacher-layer.pose-coffee{right:44px;height:346px;opacity:1;z-index:4}
+.stage[data-pose="baozi"] .teacher-layer.pose-baozi{right:45px;height:346px;opacity:1;z-index:4}
+.stage[data-pose="two-cups"] .teacher-layer.pose-two-cups{right:44px;height:343px;opacity:1;z-index:4}
+.stage[data-pose="thumbs-up"] .teacher-layer.pose-thumbs-up{right:10px;height:339px;opacity:1;z-index:4}
+.stage[data-pose="clap"] .teacher-layer.pose-clap{right:6px;height:342px;opacity:1;z-index:4}
+
+/* 场景入口只压暗现有板书，不补造餐厅画面 */
+.stage.classroom-demo .d1-board{transition:opacity .35s ease}
+.stage.classroom-demo.demo-board-exit .d1-board{opacity:.28}
+
+/* 视觉 D1 三帧直接接管；演示层只保留圈注和文字过渡 */
+.stage.classroom-demo .d1-date{transition:opacity .2s ease,color .2s ease}
+.stage.classroom-demo .d1-last{position:relative;transition:opacity .2s ease,color .2s ease}
+.stage.classroom-demo .d1-last::after{content:"";position:absolute;left:-3px;bottom:-4px;width:174px;height:3px;border-radius:50%;
+  background:linear-gradient(90deg,rgba(250,252,247,.9),rgba(250,252,247,.48) 78%,rgba(250,252,247,0));
+  transform:rotate(-.7deg);opacity:0;transition:opacity .2s ease;pointer-events:none}
+.stage.classroom-demo.demo-hl-last .d1-last{color:rgba(249,252,247,.92)}
+.stage.classroom-demo.demo-hl-last .d1-last::after{opacity:1}
+
+/* 粉笔圈：默认隐藏，按拍淡入 */
+.stage.classroom-demo .d1-target .d1-char::after,
+.stage.classroom-demo .d1-hungry .d1-char::after{content:"";position:absolute;left:-5px;right:-5px;top:-5px;bottom:-6px;opacity:0;
+  border:1.8px solid rgba(245,249,244,.82);border-radius:52% 47% 55% 46% / 44% 59% 41% 56%;
+  transform:rotate(-4deg);box-shadow:0 0 3px rgba(255,255,255,.08);transition:opacity .2s ease;pointer-events:none}
+.stage.classroom-demo .d1-hungry .d1-char{position:relative}
+.stage.classroom-demo.demo-ring-ke .d1-target .d1-char::after,
+.stage.classroom-demo.demo-ring-e .d1-hungry .d1-char::after{opacity:1}
+
+/* 字幕避开左侧导航与右下语音区 */
+.stage.classroom-demo.d1-clean .subtitle{left:76px;right:278px;bottom:34px;font-size:18px;line-height:1.38;
+  opacity:1;transition:none;display:block;overflow:visible;-webkit-line-clamp:unset}
+</style>
+
+<style id="d1-visual-polish">
+/* D1 视觉层：保留演示圈注，不接管演示节拍。 */
+.stage.classroom-demo .d1-target .d1-char::before,
+.stage.classroom-demo .d1-hungry .d1-char::before{content:"";position:absolute;left:-2px;right:-8px;top:-2px;bottom:-8px;opacity:0;
+  border:1px solid rgba(245,249,244,.30);border-radius:51% 46% 54% 47% / 45% 58% 42% 55%;transform:rotate(2deg);
+  transition:opacity .2s ease;pointer-events:none}
+.stage.classroom-demo.demo-ring-ke .d1-target .d1-char::before,
+.stage.classroom-demo.demo-ring-e .d1-hungry .d1-char::before{opacity:1}
+</style>
+
+<style>
+/* 餐厅段：五张同机位场景覆盖课堂，只保留状态栏、导航、字幕与语音坞 */
+.restaurant-scene{position:absolute;inset:0;z-index:8;display:block;overflow:hidden;pointer-events:none;
+  background:#13251e;opacity:0;visibility:hidden}
+.stage[data-scene="restaurant"] .restaurant-scene{opacity:1;visibility:visible}
+.stage.restaurant-exit .restaurant-scene{visibility:visible!important;pointer-events:none!important;will-change:opacity}
+.restaurant-shot{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+  opacity:0;transition:none}
+.stage[data-restaurant-state="01"] .restaurant-shot[data-restaurant-shot="01"],
+.stage[data-restaurant-state="02"] .restaurant-shot[data-restaurant-shot="02"],
+.stage[data-restaurant-state="03"] .restaurant-shot[data-restaurant-shot="03"],
+.stage[data-restaurant-state="04"] .restaurant-shot[data-restaurant-shot="04"],
+.stage[data-restaurant-state="05"] .restaurant-shot[data-restaurant-shot="05"]{opacity:1}
+.restaurant-scene::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:rgba(5,12,9,0);transition:background .18s ease}
+.stage.restaurant-error .restaurant-scene::before{background:rgba(5,12,9,.18)}
+.restaurant-scene::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(3,8,6,.24) 0%,rgba(3,8,6,0) 22%,rgba(3,8,6,0) 65%,rgba(3,8,6,.28) 100%)}
+.restaurant-chalk-error{position:absolute;left:86px;bottom:76px;z-index:3;opacity:0;pointer-events:none;
+  font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;font-size:28px;line-height:34px;letter-spacing:.045em;
+  color:rgba(255,248,224,.97);text-shadow:0 0 2px rgba(255,255,255,.35),0 2px 4px rgba(0,0,0,.42);transform:rotate(-.8deg);
+  transition:opacity .18s ease}
+.stage.restaurant-error .restaurant-chalk-error{opacity:1}
+
+.stage[data-scene="restaurant"] .bg,
+.stage[data-scene="restaurant"] .board-wash,
+.stage[data-scene="restaurant"] .task-wash,
+.stage[data-scene="restaurant"] .density-layer,
+.stage[data-scene="restaurant"] .teacher-layer,
+.stage[data-scene="restaurant"] .practice{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+.stage[data-scene="restaurant"] .brand{z-index:30;background:rgba(7,16,13,.78);border-color:rgba(255,255,255,.32);
+  box-shadow:0 8px 24px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.18)}
+.stage[data-scene="restaurant"] .collapse{z-index:30;background:rgba(7,16,13,.78);border-color:rgba(255,255,255,.44);color:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.20)}
+.stage[data-scene="restaurant"] .collapse::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+
+.stage.classroom-demo[data-scene="restaurant"] .subtitle{left:76px;right:278px;bottom:28px;font-size:18px;line-height:1.38;
+  text-shadow:0 2px 5px rgba(0,0,0,.88),0 0 18px rgba(0,0,0,.48)}
+/* 收束板书只占时结构，现有 review/new/payoff 保持原样 */
+.wrap-board{display:none;position:absolute;left:calc(var(--wrap-board-left) - var(--board-local-left));top:var(--wrap-board-top);width:max-content;height:100%;padding:20px 0;pointer-events:none;
+  font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;color:rgba(250,252,247,.96);
+  text-shadow:0 0 1.4px rgba(255,255,255,.34),0 1px 2px rgba(0,0,0,.20)}
+.stage[data-board-state="wrap"] .wrap-board{display:block}
+.wrap-date{display:none;position:absolute;left:34px;top:1px}
+.stage[data-board-state="wrap"] .wrap-date{display:block}
+.stage[data-board-state="wrap"] .d1-board{opacity:0!important;visibility:hidden!important}
+.board-memory-postcard{position:absolute;left:68px;top:117px;z-index:1;display:block;width:80px;height:auto;margin:0;padding:0;
+  border:0;border-radius:0;background:transparent;appearance:none;line-height:0;
+  opacity:0;visibility:hidden;pointer-events:none;user-select:none;transform:translateY(4px) scale(.97);transform-origin:50% 50%;
+  transition:opacity .38s ease,transform .38s cubic-bezier(.2,.7,.3,1),visibility 0s linear .38s}
+.board-memory-postcard img{display:block;width:100%;height:auto;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.28))}
+.board-memory-postcard:focus-visible{outline:2px solid rgba(246,242,210,.82);outline-offset:4px}
+.stage[data-scene="classroom"][data-board-state="standby"][data-memory-restaurant="true"] .board-memory-postcard{
+  opacity:1;visibility:visible;pointer-events:auto;cursor:pointer;transform:none;transition-delay:0s}
+.board-theater-ticket{position:absolute;left:158px;top:121px;z-index:2;display:block;width:80px;height:53px;margin:0;padding:0;
+  border:0;border-radius:0;background:transparent;appearance:none;line-height:0;transform-origin:50% 50%;
+  opacity:0;visibility:hidden;pointer-events:none;user-select:none;transform:translateY(4px) scale(.97);
+  transition:opacity .38s ease,transform .38s cubic-bezier(.2,.7,.3,1),visibility 0s linear .38s}
+.board-theater-ticket img{display:block;width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.30))}
+.board-theater-ticket-copy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#4c392d;font-family:"Kaiti SC","STKaiti","KaiTi","Microsoft YaHei",sans-serif;line-height:1;text-align:center;
+  transform:rotate(9.2deg);transform-origin:50% 50%;text-shadow:0 1px 0 rgba(255,255,255,.22);pointer-events:none}
+.board-theater-ticket-title{font-size:12.5px;font-weight:800;letter-spacing:0;white-space:nowrap}
+.stage[data-scene="classroom"][data-board-state="standby"][data-post-class-invite="true"] .board-theater-ticket{
+  opacity:1;visibility:visible;pointer-events:auto;cursor:pointer;transform:none;transition-delay:0s}
+.stage[data-scene="classroom"][data-board-state="standby"][data-post-class-invite="true"] .board-theater-ticket:hover{transform:translateY(-1px)}
+.stage[data-scene="classroom"][data-board-state="standby"][data-post-class-invite="true"] .board-theater-ticket:active{transform:translateY(0)}
+.board-theater-ticket:focus-visible{outline:2px solid rgba(246,242,210,.82);outline-offset:4px}
+.wrap-board-line{display:block;font-size:25px;font-weight:400;line-height:42px;letter-spacing:.035em;white-space:nowrap}
+.stage.classroom-demo[data-board-state="wrap"] .subtitle{left:var(--board-safe-left);right:calc(100% - var(--board-safe-right))}
+.stage.classroom-demo[data-post-class-invite="true"] .subtitle{left:160px}
+
+.restaurant-tests{display:flex;align-items:center;gap:4px;margin-left:2px;padding-left:7px;border-left:1px solid rgba(255,255,255,.13)}
+.theater-tests{display:flex;align-items:center;gap:4px;margin-left:2px;padding-left:7px;border-left:1px solid rgba(255,255,255,.13)}
+
+/* 生活剧场 · 夜市第一摊：独立场景，不接管课堂与餐厅状态 */
+.theater-scene{position:absolute;inset:0;z-index:8;display:block;overflow:hidden;pointer-events:none;
+  background:#0b1713;opacity:0;visibility:hidden}
+.stage[data-scene="theater"] .theater-scene{opacity:1;visibility:visible}
+.theater-shot{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+  opacity:0;transition:none}
+.stage[data-theater-stage="follow"] .theater-shot[data-theater-shot="follow"],
+.stage[data-theater-stage="follow-ack"] .theater-shot[data-theater-shot="follow"],
+.stage[data-theater-stage="follow-near"] .theater-shot[data-theater-shot="follow"],
+.stage[data-theater-stage="follow-seen"] .theater-shot[data-theater-shot="follow"],
+.stage[data-theater-stage="stall"] .theater-shot[data-theater-shot="stall"],
+.stage[data-theater-stage="options"] .theater-shot[data-theater-shot="stall"],
+.stage[data-theater-stage="quantity"] .theater-shot[data-theater-shot="stall"],
+.stage[data-theater-stage="handoff-baozi"] .theater-shot[data-theater-shot="handoff-baozi"],
+.stage[data-theater-stage="handoff-hamburger"] .theater-shot[data-theater-shot="handoff-hamburger"],
+.stage[data-theater-stage="handoff-milk-tea"] .theater-shot[data-theater-shot="handoff-milk-tea"],
+.stage[data-theater-stage="caught"] .theater-shot[data-theater-shot="caught"],
+.stage[data-theater-stage="smug"] .theater-shot[data-theater-shot="smug"]{opacity:1}
+.theater-scene::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(3,7,6,.30) 0%,rgba(3,7,6,0) 24%,rgba(3,7,6,0) 58%,rgba(3,7,6,.62) 100%)}
+
+.stage[data-scene="theater"] .bg,
+.stage[data-scene="theater"] .board-wash,
+.stage[data-scene="theater"] .task-wash,
+.stage[data-scene="theater"] .density-layer,
+.stage[data-scene="theater"] .teacher-layer,
+.stage[data-scene="theater"] .practice{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+.stage[data-scene="theater"] .brand{z-index:30;background:rgba(7,16,13,.82);border-color:rgba(255,255,255,.34);
+  box-shadow:0 8px 24px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.18)}
+.stage[data-scene="theater"] .collapse{z-index:30;background:rgba(7,16,13,.82);border-color:rgba(255,255,255,.46);color:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.20)}
+.stage[data-scene="theater"] .collapse::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.stage[data-scene="theater"] .nav{background:rgba(6,14,11,.70);border-color:rgba(255,255,255,.22);
+  box-shadow:0 12px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.14)}
+.stage.classroom-demo[data-scene="theater"] .subtitle{left:76px;right:278px;bottom:28px;font-size:18px;line-height:1.38;
+  text-shadow:0 2px 6px rgba(0,0,0,.92),0 0 22px rgba(0,0,0,.58)}
+
+.dev button:disabled{opacity:.28;cursor:default}
+
+/* 第 5 课英文演示：只覆盖实际产品界面的英文排版。 */
+.subtitle-gloss{display:block;margin-top:3px;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  font-size:14px;font-weight:400;line-height:1.25;letter-spacing:.002em;color:rgba(255,255,255,.82);
+  text-shadow:inherit;white-space:normal}
+body.lang-en .stage.classroom-demo .subtitle{font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  right:310px;font-size:16.5px;line-height:1.3;letter-spacing:-.004em}
+body.lang-en .subtitle-speaker{font-weight:750}
+
+body.lang-en .d1-review-layout{width:330px}
+body.lang-en .d1-review-label{font-family:var(--chalk-kai);
+  font-size:12.5px;line-height:17px;letter-spacing:.055em;white-space:nowrap}
+body.lang-en .d1-last{width:322px;font-family:var(--chalk-kai);
+  font-size:12.5px;line-height:15.5px;letter-spacing:0;white-space:normal}
+body.lang-en .d1-last::after{width:318px}
+body.lang-en .d1-today-heading{font-family:var(--chalk-kai);
+  font-size:21.5px;letter-spacing:-.012em}
+body.lang-en .d1-state-kicker{font-family:var(--chalk-kai);
+  font-size:11px;letter-spacing:.06em}
+body.lang-en .d1-pinyin-tone{font-family:var(--chalk-kai);
+  font-size:17px;letter-spacing:.04em}
+body.lang-en .d1-measure-rule{font-family:var(--chalk-kai);
+  font-size:21px;letter-spacing:-.006em}
+body.lang-en .d1-payoff-tag,body.lang-en .d1-payoff-today{font-family:var(--chalk-kai);
+  font-size:10.5px;letter-spacing:.05em}
+body.lang-en .d1-payoff-prompt{font-size:42px;letter-spacing:-.018em}
+body.lang-en .wrap-board-line{font-family:var(--chalk-kai);
+  font-size:22px;letter-spacing:-.006em}
+
+body.lang-en .board-theater-ticket-copy{font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif}
+body.lang-en .board-theater-ticket-title{font-size:8.2px;letter-spacing:-.01em}
+</style>
+
+<style>
+/* 学伴版：所有教室视觉沿用一张 1440×720 设计坐标系，再底边对齐缩放到 844×390。 */
+body.classmate-edition .stage .bg{
+  background-image:url("../assets/classmate/classroom-background.png?v=20261029");
+  background-position:center bottom;
+  background-size:cover;
+}
+body.classmate-edition .stage .board-wash{opacity:.22}
+
+.wall-props-layer{position:absolute;inset:0;z-index:3;pointer-events:none;user-select:none}
+.stage[data-scene="restaurant"] .wall-props-layer,
+.stage[data-scene="theater"] .wall-props-layer{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+
+.classmate-layer{position:absolute;inset:0;z-index:4;pointer-events:none;user-select:none}
+.classmate-pose{position:absolute;left:-0.555556%;bottom:-19.722222cqw;width:43.75%;height:auto;
+  opacity:.005;transition:none!important;pointer-events:none;user-select:none;
+  filter:brightness(.94) saturate(.92) contrast(1.03) drop-shadow(8px -4px 16px rgba(16,12,5,.14))}
+.classmate-pose-eager-answer{bottom:-15.208333cqw}
+.stage[data-classmate="idle"] .classmate-pose-idle,
+.stage[data-classmate="look-user"] .classmate-pose-look-user,
+.stage[data-classmate="awkward-scratch"] .classmate-pose-awkward-scratch,
+.stage[data-classmate="eager-answer"] .classmate-pose-eager-answer{opacity:1}
+
+.classmate-foreground{position:absolute;right:0;bottom:-7.291667cqw;z-index:6;width:75.763889%;height:auto;
+  pointer-events:none;user-select:none;
+  filter:brightness(.92) saturate(.93) contrast(1.03) drop-shadow(0 -5px 10px rgba(8,12,8,.16))}
+
+.stage[data-scene="restaurant"] .classmate-layer,
+.stage[data-scene="theater"] .classmate-layer,
+.stage[data-scene="restaurant"] .classmate-foreground,
+.stage[data-scene="theater"] .classmate-foreground{opacity:0!important;visibility:hidden!important}
+
+.classmate-tests{display:flex;align-items:center;gap:4px;margin-left:2px;padding-left:7px;border-left:1px solid rgba(255,255,255,.13)}
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  var stage = document.getElementById('stage');
+  if (!stage) return;
+
+  var subtitle = document.getElementById('subtitle');
+  var teacherImages = Array.prototype.slice.call(stage.querySelectorAll('.teacher-layer'));
+  var classmateImages = Array.prototype.slice.call(stage.querySelectorAll('.classmate-pose'));
+  var classmateButtons = Array.prototype.slice.call(document.querySelectorAll('.dev [data-classmate-state]'));
+  var restaurantImages = Array.prototype.slice.call(stage.querySelectorAll('.restaurant-shot'));
+  var restaurantScene = document.getElementById('restaurantScene');
+  var theaterImages = Array.prototype.slice.call(stage.querySelectorAll('.theater-shot'));
+  var theaterScene = document.getElementById('theaterScene');
+  var boardMemoryPostcard = stage.querySelector('.board-memory-postcard');
+  var boardTheaterTicket = stage.querySelector('.board-theater-ticket');
+  var boardPropImages = Array.prototype.slice.call(stage.querySelectorAll('.board-memory-postcard img, .board-theater-ticket img'));
+  var d1 = document.getElementById('d1');
+  var dev = document.getElementById('dev');
+  var nextButton = document.getElementById('demoNext');
+  var resetButton = document.getElementById('demoReset');
+  var restaurantCorrectButton = document.getElementById('restaurantCorrect');
+  var restaurantWrongButton = document.getElementById('restaurantWrong');
+  var restaurantSilentButton = document.getElementById('restaurantSilent');
+  var enterTheaterButton = document.getElementById('enterTheater');
+  var theaterBaoziButton = document.getElementById('theaterBaozi');
+  var theaterHamburgerButton = document.getElementById('theaterHamburger');
+  var theaterMilkTeaButton = document.getElementById('theaterMilkTea');
+  var theaterQuantityButton = document.getElementById('theaterQuantity');
+  var theaterSilentButton = document.getElementById('theaterSilent');
+  var clearMemoryButton = document.getElementById('clearMemory');
+  /* boardReveal 是 payoff 的 prompt / answer 第二层状态，供视觉样式消费。 */
+  var DEMO_BEATS = [
+    { pose:'book', board:'standby', mate:'idle', text:'我在听。你来了，就先看看这儿。' },
+    { pose:'book', board:'standby', mate:'idle', text:'下午好。先别急着开新课，先看黑板。' },
+    { pose:'point', board:'review', mate:'idle', hold:true, text:'昨天那五个词，还记得吗？' },
+    { pose:'look-classmate', board:'review', mate:'idle', text:'小安，你先来。' },
+    { pose:'look-classmate', board:'review', mate:'idle', text:'小安：热、累、冷、渴、饿。' },
+    { pose:'book', board:'review', mate:'look-user', text:'对。你也来一遍。' },
+    { pose:'book', board:'review', mate:'look-user', text:'你：热、累、冷、渴、饿。' },
+    { pose:'point', board:'review', mate:'idle', text:'全在。' },
+    { pose:'point', board:'review', boardRing:'ke', mate:'look-user', hold:true, text:'很渴，怎么说？' },
+    { pose:'point', board:'review', boardRing:'ke', mate:'look-user', text:'你：我渴了。' },
+    { pose:'point', board:'review', boardRing:'e', mate:'look-user', hold:true, text:'很饿呢？' },
+    { pose:'point', board:'review', boardRing:'e', mate:'look-user', text:'你：我饿了。' },
+    { pose:'point', board:'review', mate:'idle', text:'好，昨天的都回来了。' },
+    { pose:'look-classmate', board:'review', mate:'idle', text:'昨天有人把“两杯”说成“二杯”。' },
+    { pose:'look-classmate', board:'review', mate:'awkward-scratch', text:'小安：……二杯。' },
+    { pose:'book', board:'review', mate:'awkward-scratch', hold:true, text:'你教他。应该怎么说？' },
+    { pose:'point', board:'review', mate:'awkward-scratch', text:'你：两杯。' },
+    { pose:'point', board:'review', mate:'idle', text:'对。数字 2 在量词前，要说“两”。' },
+    { pose:'side', board:'new', mate:'idle', text:'今天只做一件事：进餐厅点单。' },
+    { pose:'mouth', board:'pinyin', mate:'idle', text:'不过先把这个音修好。跟我念，liǎng。' },
+    { pose:'mouth', board:'pinyin', mate:'idle', text:'你：liǎng。' },
+    { pose:'mouth', board:'pinyin', mate:'idle', text:'第三声，听清楚。' },
+    { pose:'mouth', board:'pinyin', mate:'idle', text:'不是二声，是第三声。再听，liǎng。' },
+    { pose:'mouth', board:'pinyin', mate:'idle', text:'你：liǎng。' },
+    { pose:'thumbs-up', board:'pinyin', mate:'idle', text:'对，就是 liǎng。' },
+    { pose:'coffee', board:'coffee', mate:'idle', hold:true, text:'看，这是什么？' },
+    { pose:'coffee', board:'coffee', mate:'look-user', text:'你：咖啡。' },
+    { pose:'coffee', board:'coffee', mate:'look-user', hold:true, text:'kāfēi。你喝什么？' },
+    { pose:'coffee', board:'coffee', mate:'look-user', text:'你：我喝咖啡。' },
+    { pose:'look-classmate', board:'coffee', mate:'idle', hold:true, text:'小安，你也喝咖啡吗？' },
+    { pose:'look-classmate', board:'coffee', mate:'idle', text:'小安：喝。' },
+    { pose:'baozi', board:'baozi', mate:'idle', hold:true, text:'好。那这个呢？' },
+    { pose:'look-classmate', board:'baozi', mate:'eager-answer', text:'小安，先等一下。' },
+    { pose:'book', board:'baozi', mate:'idle', text:'你来。' },
+    { pose:'book', board:'baozi', mate:'look-user', text:'你：包子。' },
+    { pose:'baozi', board:'baozi', mate:'look-user', hold:true, text:'bāozi。你吃什么？' },
+    { pose:'baozi', board:'baozi', mate:'look-user', text:'你：我吃包子。' },
+    { pose:'baozi', board:'baozi', mate:'idle', text:'对。' },
+    { pose:'point', board:'measure', mate:'idle', text:'杯子用“杯”，别的东西用“个”。' },
+    { pose:'point', board:'measure', mate:'look-user', hold:true, text:'咖啡用什么？' },
+    { pose:'point', board:'measure', mate:'look-user', text:'你：一杯咖啡。' },
+    { pose:'point', board:'measure', mate:'look-user', hold:true, text:'包子呢？' },
+    { pose:'point', board:'measure', mate:'look-user', text:'你：一个包子。' },
+    { pose:'point', board:'measure', mate:'idle', text:'对。数字 2 放在量词前。不是“二杯”，是——' },
+    { pose:'point', board:'measure', mate:'idle', text:'你：两杯。' },
+    { pose:'two-cups', board:'payoff', boardReveal:'prompt', mate:'look-user', hold:true, text:'完整说。我要——' },
+    { pose:'two-cups', board:'payoff', boardReveal:'prompt', mate:'look-user', text:'你：我要两杯可乐。' },
+    { pose:'two-cups', board:'payoff', boardReveal:'answer', mate:'look-user', hold:true, text:'再说一次，让服务员听清。' },
+    { pose:'two-cups', board:'payoff', boardReveal:'answer', mate:'look-user', text:'你：我要两杯可乐。' },
+    { pose:'clap', board:'payoff', boardReveal:'answer', mate:'idle', text:'这次对了。' },
+    { pose:'side', board:'payoff', boardReveal:'answer', boardDim:true, mate:'look-user', text:'走，我们进餐厅，真的点一次。' },
+    { pose:'side', board:'payoff', boardReveal:'answer', boardDim:true, mate:'look-user', text:'你：好。' },
+    { pose:'side', board:'payoff', boardReveal:'answer', boardDim:true, mate:'eager-answer', text:'小安：走！' }
+  ];
+
+  var RESTAURANT_LINES = [
+    { state:'01', text:'Nancy：到了。先听她怎么问。' },
+    { state:'01', text:'服务员：您要什么？' },
+    { state:'01', text:'同学：我要一杯咖啡。' },
+    { state:'02', text:'服务员：您要什么？' },
+    { state:'02', text:'Nancy：我要一个面包。' },
+    { state:'03', text:'Nancy：到你了。先说要喝什么。', wait:true }
+  ];
+
+  var THEATER_ITEMS = {
+    baozi: {
+      stage:'handoff-baozi',
+      text:'摊主：一个包子，好。来，拿着。',
+      countQuestion:'摊主：几个？',
+      countReply:'说：一个',
+      silentText:'Nancy：先说几个。'
+    },
+    hamburger: {
+      stage:'handoff-hamburger',
+      text:'摊主：一个汉堡，好。来，拿着。',
+      countQuestion:'摊主：几个？',
+      countReply:'说：一个',
+      silentText:'Nancy：先说几个。'
+    },
+    'milk-tea': {
+      stage:'handoff-milk-tea',
+      text:'摊主：一杯奶茶，好。来，拿着。',
+      countQuestion:'摊主：几杯？',
+      countReply:'说：一杯',
+      silentText:'Nancy：先说几杯。'
+    }
+  };
+
+  var THEATER_SILENCE_LINES = [
+    '摊主：要哪个？',
+    'Nancy：包子、汉堡、奶茶。你慢慢选。'
+  ];
+
+  var WRAP_LINES = [
+    'Nancy：停一下。今天你自己完成了什么？',
+    '你：自己点单。',
+    'Nancy：对。昨天哪里错了？',
+    '你：二杯。',
+    'Nancy：现在该怎么说？',
+    '你：两杯。',
+    'Nancy：完整说一次。',
+    '你：我要两杯可乐。',
+    'Nancy：这杯，我记住了。下次还考你“杯”和“个”。',
+    'Nancy：作业是找个朋友一起点饮料，说一次——',
+    '你：我要两杯___。',
+    'Nancy：对。再把整句说完整。',
+    '你：我要两杯可乐。'
+  ];
+
+  var POST_CLASS_INVITE_TEXT = 'Nancy：课上完了。小票还在，要不要一起去生活剧场？';
+
+  /*
+   * 英文演示只翻译实际产品流程。课堂里 Nancy 的指令用英文；
+   * 中文角色台词保留中文主句，并用 gloss 以小号英文释义。
+   */
+  var DEMO_SUBTITLE_EN = {
+    '我在听。你来了，就先看看这儿。': { text:'I’m listening. You’re here — start by looking at the board.' },
+    '下午好。先别急着开新课，先看黑板。': { text:'Good afternoon. Before we start something new, look at the board first.' },
+    '昨天那五个词，还记得吗？': { text:'Do you remember yesterday’s five words?' },
+    '小安，你先来。': { text:'Xiao An, you start.' },
+    '小安：热、累、冷、渴、饿。': { text:'Xiao An: 热、累、冷、渴、饿。', gloss:'Hot, tired, cold, thirsty, hungry.' },
+    '对。你也来一遍。': { text:'Right. Now you try it too.' },
+    '你：热、累、冷、渴、饿。': { text:'You: 热、累、冷、渴、饿。', gloss:'Hot, tired, cold, thirsty, hungry.' },
+    '全在。': { text:'They’re all there.' },
+    '很渴，怎么说？': { text:'How do you say “very thirsty”?' },
+    '你：我渴了。': { text:'You: 我渴了。', gloss:'I’m thirsty.' },
+    '很饿呢？': { text:'And “very hungry”?' },
+    '你：我饿了。': { text:'You: 我饿了。', gloss:'I’m hungry.' },
+    '好，昨天的都回来了。': { text:'Good — yesterday’s words are all back.' },
+    '昨天有人把“两杯”说成“二杯”。': { text:'Yesterday someone said 二杯 instead of 两杯.' },
+    '小安：……二杯。': { text:'Xiao An: …二杯。', gloss:'“…二杯.” — repeating the wrong form.' },
+    '你教他。应该怎么说？': { text:'You teach them. How should it be said?' },
+    '你：两杯。': { text:'You: 两杯。', gloss:'Two cups.' },
+    '对。数字 2 在量词前，要说“两”。': { text:'Right. Before a measure word, the number 2 is 两.' },
+    '今天只做一件事：进餐厅点单。': { text:'Today we’ll do one thing: order at a restaurant.' },
+    '不过先把这个音修好。跟我念，liǎng。': { text:'But first, let’s fix this sound. Repeat after me: liǎng.' },
+    '你：liǎng。': { text:'You: liǎng.' },
+    '第三声，听清楚。': { text:'Third tone — listen carefully.' },
+    '不是二声，是第三声。再听，liǎng。': { text:'Not second tone — third tone. Listen again: liǎng.' },
+    '对，就是 liǎng。': { text:'Yes — liǎng.' },
+    '看，这是什么？': { text:'Look — what’s this?' },
+    '你：咖啡。': { text:'You: 咖啡。', gloss:'Coffee.' },
+    'kāfēi。你喝什么？': { text:'kāfēi. What do you drink?' },
+    '你：我喝咖啡。': { text:'You: 我喝咖啡。', gloss:'I drink coffee.' },
+    '小安，你也喝咖啡吗？': { text:'Xiao An, do you drink coffee too?' },
+    '小安：喝。': { text:'Xiao An: 喝。', gloss:'Yes, I drink coffee.' },
+    '好。那这个呢？': { text:'Good. Then what’s this?' },
+    '小安，先等一下。': { text:'Xiao An, hold on a moment.' },
+    '你来。': { text:'You — your turn.' },
+    '你：包子。': { text:'You: 包子。', gloss:'Steamed bun.' },
+    'bāozi。你吃什么？': { text:'bāozi. What do you eat?' },
+    '你：我吃包子。': { text:'You: 我吃包子。', gloss:'I eat a steamed bun.' },
+    '对。': { text:'Right.' },
+    '杯子用“杯”，别的东西用“个”。': { text:'Use 杯 for cups and 个 for other things.' },
+    '咖啡用什么？': { text:'What measure word goes with coffee?' },
+    '你：一杯咖啡。': { text:'You: 一杯咖啡。', gloss:'A cup of coffee.' },
+    '包子呢？': { text:'And for 包子?' },
+    '你：一个包子。': { text:'You: 一个包子。', gloss:'One steamed bun.' },
+    '对。数字 2 放在量词前。不是“二杯”，是——': { text:'Right. Use 两 before the measure word — not 二杯.' },
+    '你：两杯。': { text:'You: 两杯。', gloss:'Two cups.' },
+    '完整说。我要——': { text:'Say the whole thing: 我要—' },
+    '你：我要两杯可乐。': { text:'You: 我要两杯可乐。', gloss:'I’d like two colas.' },
+    '再说一次，让服务员听清。': { text:'Say it again so the server can hear you clearly.' },
+    '两杯，不是二杯。这次对了。': { text:'两杯, not 二杯. That was right this time.' },
+    '这次对了。': { text:'That’s right this time.' },
+    '走，我们进餐厅，真的点一次。': { text:'Let’s go into the restaurant and order for real.' },
+    '你：好。': { text:'You: 好。', gloss:'Okay.' },
+    '小安：走！': { text:'Xiao An: 走！', gloss:'Let’s go!' },
+
+    'Nancy：到了。先听她怎么问。': { text:'Nancy: We’re here. Listen to how she orders first.' },
+    '服务员：您要什么？': { text:'Server: 您要什么？', gloss:'What would you like?' },
+    '同学：我要一杯咖啡。': { text:'Classmate: 我要一杯咖啡。', gloss:'I’d like a coffee.' },
+    'Nancy：我要一个面包。': { text:'Nancy: 我要一个面包。', gloss:'I’d like a bun.' },
+    'Nancy：到你了。先说要喝什么。': { text:'Nancy: Your turn. Start with what you want to drink.' },
+    'Nancy：再说一次。我要——': { text:'Nancy: Try again. 我要—' },
+    'Nancy：两杯可乐，一杯给我。刚才这句是你自己说出来的。': { text:'Nancy: 两杯可乐，一杯给我。刚才这句是你自己说出来的。', gloss:'Two colas — one for me. You said that yourself.' },
+    '服务员：好的。': { text:'Server: 好的。', gloss:'Okay.' },
+    'Nancy：数字 2 放在‘杯’前，要说‘两’。两杯。': { text:'Nancy: Put the number 2 before the measure word and say 两. 两杯.' },
+    '先说数量，再说饮料。': { text:'Start with the quantity, then the drink.' },
+    '跟我说：两杯可乐。': { text:'Say it with me: 两杯可乐.' },
+
+    'Nancy：停一下。今天你自己完成了什么？': { text:'Nancy: Stop here. What did you do on your own today?' },
+    '你：自己点单。': { text:'You: 自己点单。', gloss:'I ordered on my own.' },
+    'Nancy：对。昨天哪里错了？': { text:'Nancy: Right. What was wrong yesterday?' },
+    '你：二杯。': { text:'You: 二杯。', gloss:'二杯 — the wrong form.' },
+    'Nancy：现在该怎么说？': { text:'Nancy: How should you say it now?' },
+    'Nancy：完整说一次。': { text:'Nancy: Say the whole sentence.' },
+    'Nancy：这杯，我记住了。下次还考你“杯”和“个”。': { text:'Nancy: I’ll remember this one. Next time I’ll test you on 杯 and 个.' },
+    'Nancy：作业是找个朋友一起点饮料，说一次——': { text:'Nancy: For homework, find a friend and order a drink together. Say—' },
+    '你：我要两杯___。': { text:'You: 我要两杯___。', gloss:'I’d like two ___.' },
+    'Nancy：对。再把整句说完整。': { text:'Nancy: Right. Now say the whole sentence.' },
+    'Nancy：课上完了。小票还在，要不要一起去生活剧场？': { text:'Nancy: Class is over. The ticket’s still here — want to come to Life Theater?' },
+
+    'Nancy：这边。': { text:'Nancy: 这边。', gloss:'This way.' },
+    '你：来了。': { text:'You: 来了。', gloss:'Coming.' },
+    'Nancy：前面那家，蒸汽最大。': { text:'Nancy: 前面那家，蒸汽最大。', gloss:'That stall ahead has the most steam.' },
+    '你：看到了。': { text:'You: 看到了。', gloss:'Got it.' },
+    '摊主：您要什么？': { text:'Stall owner: 您要什么？', gloss:'What would you like?' },
+    'Nancy：有包子、汉堡，还有奶茶。你要哪个？': { text:'Nancy: 有包子、汉堡，还有奶茶。你要哪个？', gloss:'We have baozi, burgers, and milk tea. Which one do you want?' },
+    '摊主：要哪个？': { text:'Stall owner: 要哪个？', gloss:'Which one?' },
+    'Nancy：包子、汉堡、奶茶。你慢慢选。': { text:'Nancy: 包子、汉堡、奶茶。你慢慢选。', gloss:'Baozi, burgers, milk tea. Take your time.' },
+    '摊主：几个？': { text:'Stall owner: 几个？', gloss:'How many?' },
+    '摊主：几杯？': { text:'Stall owner: 几杯？', gloss:'How many cups?' },
+    'Nancy：先说几个。': { text:'Nancy: 先说几个。', gloss:'Start with how many.' },
+    'Nancy：先说几杯。': { text:'Nancy: 先说几杯。', gloss:'Start with how many cups.' },
+    '摊主：一个包子，好。来，拿着。': { text:'Stall owner: 一个包子，好。来，拿着。', gloss:'One baozi — okay. Here, take it.' },
+    '摊主：一个汉堡，好。来，拿着。': { text:'Stall owner: 一个汉堡，好。来，拿着。', gloss:'One burger — okay. Here, take it.' },
+    '摊主：一杯奶茶，好。来，拿着。': { text:'Stall owner: 一杯奶茶，好。来，拿着。', gloss:'One milk tea — okay. Here, take it.' },
+    '你：谢谢。': { text:'You: 谢谢。', gloss:'Thank you.' },
+    'Nancy：边走边吃，前边还有一家。': { text:'Nancy: 边走边吃，前边还有一家。', gloss:'Eat while we walk — there’s another stall ahead.' },
+    'Nancy：你选的，我先替你尝了。': { text:'Nancy: 你选的，我先替你尝了。', gloss:'I tried the one you picked first.' },
+    'Nancy：嗯，下次记得点两份。': { text:'Nancy: 嗯，下次记得点两份。', gloss:'Mm. Next time, remember to order two.' }
+  };
+
+  var lastBeat = DEMO_BEATS.length - 1;
+  var beat = -1;
+  var posesReady = false;
+  var restaurantState = null;
+  var restaurantLine = -1;
+  var restaurantSilenceHint = 0;
+  var restaurantWrongSeen = false;
+  var restaurantLeaving = false;
+  var restaurantReplay = false;
+  var restaurantExitAnimation = null;
+  var restaurantExitTimer = 0;
+  var theaterStage = null;
+  var theaterChoice = null;
+  var theaterSilenceHint = 0;
+  var theaterHandoffStep = 0;
+  var wrapStep = -1;
+  var postClassInvite = false;
+  var lessonActive = false;
+  var MEMORY_KEY = 'ai-chinese-6.memory.v1';
+  var lastSubtitleSource = '';
+
+  function demoIsEnglish() {
+    return document.body.classList.contains('lang-en');
+  }
+
+  function setLessonActive(active) {
+    active = !!active;
+    if (lessonActive === active) return;
+    lessonActive = active;
+    window.dispatchEvent(new CustomEvent('teacher-lesson-state', { detail: { inClass: lessonActive } }));
+  }
+
+  function setPose(nextPose) {
+    if (!nextPose || stage.dataset.pose === nextPose) return;
+    stage.dataset.pose = nextPose;
+  }
+
+  function setClassmateState(nextState) {
+    if (!nextState) return;
+    stage.dataset.classmate = nextState;
+    classmateButtons.forEach(function (button) {
+      var selected = button.getAttribute('data-classmate-state') === nextState;
+      button.classList.toggle('on', selected);
+      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+  }
+
+  function setBoardState(name, options) {
+    options = options || {};
+    stage.dataset.boardState = name;
+
+    if (name === 'standby' || name === 'wrap') {
+      stage.classList.remove('board-review', 'board-new');
+    } else if (name === 'review') {
+      stage.classList.add('board-review');
+      stage.classList.remove('board-new');
+    } else if (name === 'new') {
+      stage.classList.add('board-new');
+      stage.classList.remove('board-review');
+    }
+
+    var ring = options.ring === 'ke' || options.ring === 'e' ? options.ring : '';
+    stage.classList.toggle('demo-ring-ke', ring === 'ke');
+    stage.classList.toggle('demo-ring-e', ring === 'e');
+    if (ring) stage.dataset.boardRing = ring;
+    else stage.removeAttribute('data-board-ring');
+
+    if (options.reveal === 'prompt' || options.reveal === 'answer') stage.dataset.boardReveal = options.reveal;
+    else stage.removeAttribute('data-board-reveal');
+
+    stage.classList.toggle('demo-board-exit', !!options.dim);
+    updateDemoBoardAria();
+  }
+
+  function updateDemoBoardAria() {
+    var en = demoIsEnglish();
+    var state = stage.dataset.boardState || 'standby';
+    var labelsEn = {
+      standby: 'Classroom board: standby',
+      review: 'Classroom board: review',
+      new: 'Classroom board: ordering',
+      pinyin: 'Classroom board: pronunciation',
+      coffee: 'Classroom board: coffee',
+      baozi: 'Classroom board: baozi',
+      service: 'Classroom board: server question',
+      measure: 'Classroom board: measure words',
+      payoff: 'Classroom board: correction',
+      wrap: 'Classroom board: lesson wrap-up'
+    };
+    var labelsZh = {
+      standby: '课堂黑板：待机',
+      review: '课堂黑板：复习',
+      new: '课堂黑板：去餐厅点单',
+      pinyin: '课堂黑板：昨天那个音',
+      coffee: '课堂黑板：咖啡',
+      baozi: '课堂黑板：包子',
+      service: '课堂黑板：服务问句',
+      measure: '课堂黑板：量词',
+      payoff: '课堂黑板：量词纠错',
+      wrap: '课堂黑板：课堂收束'
+    };
+    d1Card.setAttribute('aria-label', (en ? labelsEn : labelsZh)[state] || (en ? 'Classroom board' : '课堂黑板'));
+  }
+
+  function applyDemoLanguage() {
+    var en = demoIsEnglish();
+    var reviewLabel = document.querySelector('.d1-review-label');
+    var mistakeLine = document.querySelector('.d1-last');
+    var todayHeading = document.querySelector('.d1-today-heading');
+    var pinyinKicker = document.querySelector('.d1-pinyin-panel .d1-state-kicker');
+    var toneLabel = document.querySelector('.d1-pinyin-tone');
+    var serviceKicker = document.querySelector('.d1-service-panel .d1-state-kicker');
+    var measureRule = document.querySelector('.d1-measure-rule');
+    var payoffTag = document.querySelector('.d1-payoff-tag');
+    var payoffToday = document.querySelector('.d1-payoff-today');
+    var payoffPrompt = document.querySelector('.d1-payoff-prompt');
+    var wrapLines = document.querySelectorAll('.wrap-board-line');
+    var ticketTitle = document.querySelector('.board-theater-ticket-title');
+    var boardDates = document.querySelectorAll('.d1-date');
+    var reviewRow = document.querySelector('.d1-review-row');
+    var foodGrid = document.querySelector('.d1-food-grid');
+
+    document.title = en ? 'Lesson 5 · Ordering at a Restaurant' : '第 5 课 · 我要两杯可乐';
+    stage.setAttribute('aria-label', en ? 'Lesson 5 · Ordering at a Restaurant' : '第 5 课 · 我要两杯可乐');
+    document.querySelector('.status').setAttribute('aria-label', en ? 'Status bar' : '状态栏');
+    document.querySelector('.nav').setAttribute('aria-label', en ? 'Page navigation (landscape)' : '页面导航（横屏）');
+    if (boardTheaterTicket) boardTheaterTicket.setAttribute('aria-label', en ? 'Open Life Theater' : '进入生活剧场');
+    if (boardMemoryPostcard) boardMemoryPostcard.setAttribute('aria-label', en ? 'Replay the restaurant order' : '重玩餐厅点单');
+    d1.setAttribute('aria-label', en ? 'Lesson 5 classroom board' : '第 5 课课堂黑板');
+
+    keyBtn.setAttribute('aria-label', en ? 'Keyboard input' : '键盘输入');
+    kbdDrawer.setAttribute('aria-label', en ? 'Keyboard input' : '键盘输入');
+    kbdClose.setAttribute('aria-label', en ? 'Close keyboard' : '关闭键盘');
+    kbdInput.setAttribute('aria-label', en ? 'Text input' : '输入');
+    kbdSend.setAttribute('aria-label', en ? 'Send' : '发送');
+
+    if (reviewLabel) reviewLabel.textContent = en ? 'Review' : '复习';
+    if (mistakeLine) mistakeLine.textContent = en ? "Yesterday's measure-word mistake: 二杯可乐 ×" : '昨天的量词小错误：二杯可乐 ×';
+    if (todayHeading) todayHeading.textContent = en ? 'Today: Ordering' : '今天：去餐厅点单';
+    if (pinyinKicker) pinyinKicker.textContent = en ? "Yesterday's sound" : '昨天那个音';
+    if (toneLabel) toneLabel.textContent = en ? 'Third tone' : '第三声';
+    if (serviceKicker) serviceKicker.textContent = en ? 'Server asks' : '服务员问';
+    if (measureRule) measureRule.innerHTML = en ? '2 + measure word = <span class="d1-ring-word">两</span>' : '数字 2 + 量词 = <span class="d1-ring-word">两</span>';
+    if (payoffTag) payoffTag.textContent = en ? 'Yesterday:' : '昨天：';
+    if (payoffToday) payoffToday.textContent = en ? 'Today' : '今天';
+    if (payoffPrompt) payoffPrompt.textContent = en ? 'Today: 我要 ____。' : '今天：我要 ____。';
+    if (wrapLines.length === 3) {
+      wrapLines[0].textContent = en ? 'Done: ordered on your own' : '今天完成：自己点单';
+      wrapLines[1].textContent = en ? 'Fixed: 二杯 → 两杯' : '已修正：二杯 → 两杯';
+      wrapLines[2].textContent = en ? 'Next: 杯 / 个' : '下次复习：杯 / 个';
+    }
+    if (ticketTitle) ticketTitle.textContent = en ? 'Life Theater' : '生活剧场';
+    boardDates.forEach(function (date) {
+      date.textContent = en ? 'Oct 22 · Thu' : '10月22日 周四';
+    });
+    if (reviewRow) reviewRow.setAttribute('aria-label', en ? 'Review words: 热, 累, 冷, 渴, 饿' : '热，累，冷，渴，饿');
+    if (foodGrid) foodGrid.setAttribute('aria-label', en ? 'Target food words: 可乐, 咖啡, 奶茶, 汉堡, 包子, 面包' : '可乐，咖啡，奶茶，汉堡，包子，面包');
+
+    updateDemoBoardAria();
+    if (lastSubtitleSource) setSubtitleContent(lastSubtitleSource);
+  }
+
+  function localizedSubtitle(source) {
+    if (!demoIsEnglish()) return { text: source, gloss: '' };
+    var copy = DEMO_SUBTITLE_EN[source];
+    if (!copy) return { text: source, gloss: '' };
+    return { text: copy.text || source, gloss: copy.gloss || '' };
+  }
+
+  function setSubtitleContent(text) {
+    lastSubtitleSource = String(text || '');
+    var localized = localizedSubtitle(lastSubtitleSource);
+    var content = localized.text;
+    var match = content.match(/^(Classmate|Server|Stall owner|Xiao An|You|Nancy|小安|服务员|摊主|同学|你)(：|:)\s*/);
+    subtitle.textContent = '';
+    subtitle.classList.toggle('has-gloss', !!localized.gloss);
+    if (!match) {
+      subtitle.appendChild(document.createTextNode(content));
+    } else {
+      var label = document.createElement('span');
+      var speaker = match[1];
+      label.className = 'subtitle-speaker' + (speaker === '小安' || speaker === 'Xiao An' || speaker === 'Classmate' ? ' mate' : '') + (speaker === '你' || speaker === 'You' ? ' you' : '');
+      label.textContent = speaker + (match[2] === '：' ? '：' : ': ');
+      subtitle.appendChild(label);
+      subtitle.appendChild(document.createTextNode(content.slice(match[0].length)));
+    }
+    if (localized.gloss) {
+      var gloss = document.createElement('span');
+      gloss.className = 'subtitle-gloss';
+      gloss.textContent = localized.gloss;
+      subtitle.appendChild(gloss);
+    }
+  }
+
+  function fadeSubtitle(text) {
+    setSubtitleContent(text);
+    if (!subtitle.animate || typeof subtitle.getAnimations !== 'function') return;
+    subtitle.getAnimations().forEach(function (animation) { animation.cancel(); });
+    subtitle.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 180, easing: 'cubic-bezier(.2,.7,.3,1)' }
+    );
+  }
+
+  function syncRestaurantStatus() {
+    var inRestaurant = stage.dataset.scene === 'restaurant';
+    var inTheater = stage.dataset.scene === 'theater';
+    var waiting = inRestaurant && restaurantState === '03';
+    var theaterChoosing = inTheater && theaterStage === 'options';
+    var theaterQuantity = inTheater && theaterStage === 'quantity';
+    var theaterLocked = theaterChoosing || theaterQuantity;
+    var theaterChoiceData = theaterChoice ? THEATER_ITEMS[theaterChoice] : null;
+    var wrapEnded = wrapStep === WRAP_LINES.length - 1;
+    [restaurantCorrectButton, restaurantWrongButton, restaurantSilentButton].forEach(function (button) {
+      if (button) button.disabled = !posesReady || !waiting;
+    });
+    if (enterTheaterButton) enterTheaterButton.disabled = !posesReady || inTheater;
+    if (boardTheaterTicket) boardTheaterTicket.disabled = !posesReady || inTheater || inRestaurant;
+    [theaterBaoziButton, theaterHamburgerButton, theaterMilkTeaButton].forEach(function (button) {
+      if (button) button.disabled = !posesReady || !theaterChoosing;
+    });
+    if (theaterQuantityButton) {
+      theaterQuantityButton.disabled = !posesReady || !theaterQuantity || !theaterChoiceData;
+      theaterQuantityButton.textContent = theaterChoiceData && theaterChoiceData.countReply ? theaterChoiceData.countReply : '\u8bf4\uff1a\u4e00\u4e2a';
+    }
+    if (theaterSilentButton) theaterSilentButton.disabled = !posesReady || !theaterLocked;
+    if (posesReady) nextButton.disabled = waiting || restaurantLeaving || theaterLocked;
+    stage.dataset.beatHold = waiting || restaurantLeaving || wrapEnded || theaterLocked ? 'true' : 'false';
+  }
+
+  function setRestaurantState(nextState) {
+    restaurantState = nextState || null;
+    if (restaurantState) stage.dataset.restaurantState = restaurantState;
+    else stage.removeAttribute('data-restaurant-state');
+    syncRestaurantStatus();
+  }
+
+  function clearRestaurantErrorClass() {
+    stage.classList.remove('restaurant-error');
+  }
+
+  function setRestaurantLine(nextLine) {
+    restaurantLine = Math.max(0, Math.min(RESTAURANT_LINES.length - 1, nextLine));
+    var line = RESTAURANT_LINES[restaurantLine];
+    setRestaurantState(line.state);
+    fadeSubtitle(line.text);
+  }
+
+  function setTheaterStage(nextStage, text) {
+    theaterStage = nextStage || null;
+    if (theaterStage) stage.dataset.theaterStage = theaterStage;
+    else stage.removeAttribute('data-theater-stage');
+    fadeSubtitle(text);
+    syncRestaurantStatus();
+  }
+
+  function enterTheater() {
+    if (!posesReady || stage.dataset.scene === 'theater') return;
+    postClassInvite = false;
+    stage.removeAttribute('data-post-class-invite');
+    cancelRestaurantExit();
+    clearRestaurantErrorClass();
+    restaurantLine = -1;
+    wrapStep = -1;
+    theaterChoice = null;
+    theaterSilenceHint = 0;
+    theaterHandoffStep = 0;
+    stage.dataset.scene = 'theater';
+    setRestaurantState(null);
+    setLessonActive(false);
+    setTheaterStage('follow', 'Nancy：这边。');
+  }
+
+  function resetTheater() {
+    theaterStage = null;
+    theaterChoice = null;
+    theaterSilenceHint = 0;
+    theaterHandoffStep = 0;
+    stage.removeAttribute('data-theater-stage');
+  }
+
+  function chooseTheaterItem(item) {
+    if (stage.dataset.scene !== 'theater' || theaterStage !== 'options') return;
+    var choice = THEATER_ITEMS[item];
+    if (!choice) return;
+    theaterChoice = item;
+    theaterSilenceHint = 0;
+    theaterHandoffStep = 0;
+    setTheaterStage('quantity', choice.countQuestion);
+  }
+
+  function commitTheaterQuantity() {
+    if (stage.dataset.scene !== 'theater' || theaterStage !== 'quantity' || !theaterChoice) return;
+    var choice = THEATER_ITEMS[theaterChoice];
+    if (!choice) return;
+    theaterHandoffStep = 0;
+    setTheaterStage(choice.stage, choice.text);
+  }
+
+  function chooseTheaterSilent() {
+    if (stage.dataset.scene !== 'theater') return;
+    if (theaterStage === 'options') {
+      fadeSubtitle(THEATER_SILENCE_LINES[theaterSilenceHint]);
+      theaterSilenceHint = Math.min(THEATER_SILENCE_LINES.length - 1, theaterSilenceHint + 1);
+      syncRestaurantStatus();
+      return;
+    }
+    if (theaterStage === 'quantity' && theaterChoice) {
+      var choice = THEATER_ITEMS[theaterChoice];
+      if (choice && choice.silentText) fadeSubtitle(choice.silentText);
+      syncRestaurantStatus();
+    }
+  }
+
+  function advanceTheater() {
+    if (!theaterStage || theaterStage === 'options' || theaterStage === 'quantity') return;
+    if (theaterStage === 'follow') {
+      setTheaterStage('follow-ack', '你：来了。');
+      return;
+    }
+    if (theaterStage === 'follow-ack') {
+      setTheaterStage('follow-near', 'Nancy：前面那家，蒸汽最大。');
+      return;
+    }
+    if (theaterStage === 'follow-near') {
+      setTheaterStage('follow-seen', '你：看到了。');
+      return;
+    }
+    if (theaterStage === 'follow-seen') {
+      setTheaterStage('stall', '摊主：您要什么？');
+      return;
+    }
+    if (theaterStage === 'stall') {
+      theaterSilenceHint = 0;
+      setTheaterStage('options', 'Nancy：有包子、汉堡，还有奶茶。你要哪个？');
+      return;
+    }
+    if (theaterStage === 'handoff-baozi' || theaterStage === 'handoff-hamburger' || theaterStage === 'handoff-milk-tea') {
+      if (theaterHandoffStep === 0) {
+        theaterHandoffStep = 1;
+        fadeSubtitle('你：谢谢。');
+        syncRestaurantStatus();
+        return;
+      }
+      if (theaterHandoffStep === 1) {
+        theaterHandoffStep = 2;
+        fadeSubtitle('Nancy：边走边吃，前边还有一家。');
+        syncRestaurantStatus();
+        return;
+      }
+      theaterHandoffStep = 0;
+      setTheaterStage('caught', 'Nancy：你选的，我先替你尝了。');
+      return;
+    }
+    if (theaterStage === 'caught') {
+      setTheaterStage('smug', 'Nancy：嗯，下次记得点两份。');
+      return;
+    }
+    if (theaterStage === 'smug') resetBeat();
+  }
+
+  function readLessonMemory() {
+    try {
+      var raw = window.localStorage.getItem(MEMORY_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function persistLessonMemory() {
+    var previous = readLessonMemory();
+    var history = previous && Array.isArray(previous.history) ? previous.history.slice() : [];
+    if (restaurantWrongSeen && history.indexOf('曾错二杯') === -1) history.push('曾错二杯');
+    if (history.indexOf('后来改对') === -1) history.push('后来改对');
+    var record = {
+      course: '第 5 课',
+      completed: '餐厅独立点单',
+      corrected: '二杯 → 两杯',
+      successExpression: '我要两杯可乐',
+      nextReview: '杯、个',
+      wrongAttemptSeen: !!restaurantWrongSeen || !!(previous && previous.wrongAttemptSeen),
+      history: history,
+      updatedAt: new Date().toISOString()
+    };
+    try {
+      window.localStorage.setItem(MEMORY_KEY, JSON.stringify(record));
+    } catch (error) {}
+    syncMemoryProps();
+  }
+
+  function clearLessonMemory() {
+    try {
+      window.localStorage.removeItem(MEMORY_KEY);
+    } catch (error) {}
+    syncMemoryProps();
+  }
+
+  function hasRestaurantOrderMemory() {
+    var memory = readLessonMemory();
+    return !!(memory && memory.completed === '\u9910\u5385\u72ec\u7acb\u70b9\u5355');
+  }
+
+  function syncMemoryProps() {
+    stage.dataset.memoryRestaurant = hasRestaurantOrderMemory() ? 'true' : 'false';
+  }
+
+  function cancelRestaurantExit() {
+    if (restaurantExitAnimation) {
+      try { restaurantExitAnimation.cancel(); } catch (error) {}
+      restaurantExitAnimation = null;
+    }
+    if (restaurantExitTimer) {
+      window.clearTimeout(restaurantExitTimer);
+      restaurantExitTimer = 0;
+    }
+    restaurantLeaving = false;
+    stage.classList.remove('restaurant-exit');
+  }
+
+  function finishRestaurantExit() {
+    if (!restaurantLeaving) return;
+    if (restaurantExitTimer) {
+      window.clearTimeout(restaurantExitTimer);
+      restaurantExitTimer = 0;
+    }
+    if (restaurantExitAnimation) {
+      try { restaurantExitAnimation.cancel(); } catch (error) {}
+      restaurantExitAnimation = null;
+    }
+    restaurantLeaving = false;
+    stage.classList.remove('restaurant-exit');
+    syncRestaurantStatus();
+  }
+
+  function enterRestaurant(replay) {
+    cancelRestaurantExit();
+    postClassInvite = false;
+    stage.removeAttribute('data-post-class-invite');
+    restaurantReplay = !!replay;
+    if (restaurantReplay) setLessonActive(true);
+    stage.dataset.scene = 'restaurant';
+    wrapStep = -1;
+    restaurantSilenceHint = 0;
+    restaurantWrongSeen = false;
+    restaurantLine = 0;
+    clearRestaurantErrorClass();
+    setRestaurantLine(0);
+  }
+
+  function resetRestaurant() {
+    cancelRestaurantExit();
+    clearRestaurantErrorClass();
+    restaurantSilenceHint = 0;
+    restaurantWrongSeen = false;
+    restaurantReplay = false;
+    restaurantLine = -1;
+    wrapStep = -1;
+    stage.dataset.scene = 'classroom';
+    setRestaurantState(null);
+  }
+
+  function advanceRestaurant() {
+    if (stage.classList.contains('restaurant-error')) {
+      clearRestaurantErrorClass();
+      fadeSubtitle('Nancy：再说一次。我要——');
+      syncRestaurantStatus();
+      return;
+    }
+    if (!restaurantState || restaurantState === '03') return;
+    if (restaurantState === '05') {
+      if (restaurantReplay) resetBeat();
+      else enterWrap();
+      return;
+    }
+    if (restaurantState === '04') {
+      setRestaurantState('05');
+      fadeSubtitle('Nancy：两杯可乐，一杯给我。刚才这句是你自己说出来的。');
+      return;
+    }
+    if (restaurantLine < RESTAURANT_LINES.length - 1) setRestaurantLine(restaurantLine + 1);
+  }
+
+  function chooseRestaurantSuccess() {
+    if (stage.dataset.scene !== 'restaurant' || restaurantState !== '03') return;
+    clearRestaurantErrorClass();
+    restaurantSilenceHint = 0;
+    setRestaurantState('04');
+    fadeSubtitle('服务员：好的。');
+    persistLessonMemory();
+  }
+
+  function chooseRestaurantWrong() {
+    if (stage.dataset.scene !== 'restaurant' || restaurantState !== '03') return;
+    restaurantSilenceHint = 0;
+    restaurantWrongSeen = true;
+    stage.classList.add('restaurant-error');
+    fadeSubtitle('Nancy：数字 2 放在‘杯’前，要说‘两’。两杯。');
+    syncRestaurantStatus();
+  }
+
+  function chooseRestaurantSilent() {
+    if (stage.dataset.scene !== 'restaurant' || restaurantState !== '03') return;
+    clearRestaurantErrorClass();
+    restaurantSilenceHint = Math.min(2, restaurantSilenceHint + 1);
+    fadeSubtitle(restaurantSilenceHint === 1 ? '先说数量，再说饮料。' : '跟我说：两杯可乐。');
+    syncRestaurantStatus();
+  }
+
+  function enterWrap() {
+    if (stage.dataset.scene !== 'restaurant' || restaurantState !== '05' || restaurantLeaving) return;
+    restaurantLeaving = true;
+    stage.classList.add('restaurant-exit');
+    stage.dataset.scene = 'classroom';
+    setRestaurantState(null);
+    clearRestaurantErrorClass();
+    setBoardState('wrap');
+    setPose('book');
+    setClassmateState('idle');
+    wrapStep = 0;
+    fadeSubtitle(WRAP_LINES[0]);
+    syncRestaurantStatus();
+
+    if (restaurantScene && typeof restaurantScene.animate === 'function') {
+      restaurantExitAnimation = restaurantScene.animate(
+        [{ opacity: 1 }, { opacity: 0 }],
+        { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
+      );
+      restaurantExitTimer = window.setTimeout(finishRestaurantExit, 540);
+      restaurantExitAnimation.finished.then(finishRestaurantExit).catch(function () {});
+    } else {
+      restaurantExitTimer = window.setTimeout(finishRestaurantExit, 500);
+    }
+  }
+
+  function enterPostClassStandby() {
+    var d1Button = document.querySelector('.dev [data-state="d1"]');
+    if (d1Button && d1 && !d1.classList.contains('on')) d1Button.click();
+    resetRestaurant();
+    resetTheater();
+    renderBeat(0, false);
+    wrapStep = -1;
+    postClassInvite = true;
+    stage.dataset.postClassInvite = 'true';
+    fadeSubtitle(POST_CLASS_INVITE_TEXT);
+  }
+
+  function advanceWrap() {
+    if (restaurantLeaving || wrapStep < 0) return;
+    if (wrapStep >= WRAP_LINES.length - 1) {
+      enterPostClassStandby();
+      return;
+    }
+    wrapStep += 1;
+    fadeSubtitle(WRAP_LINES[wrapStep]);
+    syncRestaurantStatus();
+  }
+
+  function renderBeat(nextBeat, animateSubtitle) {
+    beat = Math.max(0, Math.min(lastBeat, nextBeat));
+    var step = DEMO_BEATS[beat];
+    stage.dataset.demoBeat = String(beat);
+    stage.dataset.beatHold = step.hold ? 'true' : 'false';
+    setLessonActive(beat >= 2);
+
+    setBoardState(step.board, { ring: step.boardRing, reveal: step.boardReveal, dim: step.boardDim });
+    setPose(step.pose);
+    setClassmateState(step.mate);
+    if (animateSubtitle) {
+      fadeSubtitle(step.text);
+    } else {
+      setSubtitleContent(step.text);
+    }
+  }
+
+  function nextBeat() {
+    if (!posesReady || restaurantLeaving) return;
+    if (postClassInvite) {
+      postClassInvite = false;
+      stage.removeAttribute('data-post-class-invite');
+      renderBeat(0, true);
+      syncRestaurantStatus();
+      return;
+    }
+    if (stage.dataset.scene === 'theater') {
+      advanceTheater();
+      return;
+    }
+    if (stage.dataset.scene === 'restaurant') {
+      advanceRestaurant();
+      return;
+    }
+    if (wrapStep >= 0) {
+      advanceWrap();
+      return;
+    }
+    if (beat >= lastBeat) {
+      enterRestaurant();
+      return;
+    }
+    renderBeat(beat + 1, true);
+  }
+
+  function resetBeat() {
+    postClassInvite = false;
+    stage.removeAttribute('data-post-class-invite');
+    var d1Button = document.querySelector('.dev [data-state="d1"]');
+    if (d1Button && d1 && !d1.classList.contains('on')) d1Button.click();
+    resetRestaurant();
+    resetTheater();
+    setClassmateState('idle');
+    renderBeat(0, true);
+    syncRestaurantStatus();
+  }
+
+  if (dev) dev.classList.add('demo-only');
+  syncMemoryProps();
+
+  document.addEventListener('keydown', function (event) {
+    var target = event.target;
+    if (target && target.closest && target.closest('input,textarea,[contenteditable="true"]')) return;
+    var key = (event.key || '').toLowerCase();
+    if (key === 'l' || /^[1-7]$/.test(key)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
+
+  stage.classList.add('classroom-demo');
+  stage.setAttribute('aria-busy', 'true');
+  nextButton.disabled = true;
+  resetButton.disabled = true;
+
+  stage.addEventListener('click', function (event) {
+    if (!posesReady || stage.classList.contains('keyboard-open')) return;
+    var target = event.target;
+    if (!target || !target.closest) return;
+    if (target.closest('.nav,.voice-dock,.talk,.keybtn,.collapse,.brand,.kbd-drawer,.dev,input,textarea,.board-memory-postcard,[data-theater-entry]')) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (document.activeElement && stage.contains(document.activeElement)) document.activeElement.blur();
+    nextBeat();
+  }, true);
+
+  nextButton.addEventListener('click', nextBeat);
+  classmateButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      setClassmateState(button.getAttribute('data-classmate-state'));
+    });
+  });
+  resetButton.addEventListener('click', function () {
+    clearLessonMemory();
+    resetBeat();
+  });
+  if (boardMemoryPostcard) boardMemoryPostcard.addEventListener('click', function (event) {
+    if (!posesReady || stage.classList.contains('keyboard-open')) return;
+    if (stage.dataset.scene !== 'classroom' || stage.dataset.boardState !== 'standby' || stage.dataset.memoryRestaurant !== 'true') return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (document.activeElement && stage.contains(document.activeElement)) document.activeElement.blur();
+    enterRestaurant(true);
+  });
+  if (restaurantCorrectButton) restaurantCorrectButton.addEventListener('click', chooseRestaurantSuccess);
+  if (restaurantWrongButton) restaurantWrongButton.addEventListener('click', chooseRestaurantWrong);
+  if (restaurantSilentButton) restaurantSilentButton.addEventListener('click', chooseRestaurantSilent);
+  document.addEventListener('click', function (event) {
+    var entry = event.target && event.target.closest ? event.target.closest('[data-theater-entry]') : null;
+    if (!entry || entry.disabled || entry.getAttribute('aria-disabled') === 'true') return;
+    event.preventDefault();
+    event.stopPropagation();
+    enterTheater();
+  }, false);
+  if (theaterBaoziButton) theaterBaoziButton.addEventListener('click', function () { chooseTheaterItem('baozi'); });
+  if (theaterHamburgerButton) theaterHamburgerButton.addEventListener('click', function () { chooseTheaterItem('hamburger'); });
+  if (theaterMilkTeaButton) theaterMilkTeaButton.addEventListener('click', function () { chooseTheaterItem('milk-tea'); });
+  if (theaterQuantityButton) theaterQuantityButton.addEventListener('click', commitTheaterQuantity);
+  if (theaterSilentButton) theaterSilentButton.addEventListener('click', chooseTheaterSilent);
+  if (clearMemoryButton) clearMemoryButton.addEventListener('click', clearLessonMemory);
+
+  window.addEventListener('lesson-language-change', applyDemoLanguage);
+  applyDemoLanguage();
+  setClassmateState('idle');
+  renderBeat(0, false);
+  syncRestaurantStatus();
+
+  Promise.all(teacherImages.concat(classmateImages, restaurantImages, theaterImages, boardPropImages).map(function (image) {
+    return image.decode().catch(function () {});
+  })).then(function () {
+    return new Promise(function (resolve) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          window.setTimeout(resolve, 250);
+        });
+      });
+    });
+  }).then(function () {
+    posesReady = true;
+    document.documentElement.classList.remove('app-booting');
+    stage.removeAttribute('aria-busy');
+    nextButton.disabled = false;
+    resetButton.disabled = false;
+    syncRestaurantStatus();
+  });
+})();
+</script>
+</body>
+</html>

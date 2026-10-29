@@ -20,6 +20,7 @@
 以下动作图均为 853x1280，RGBA 透明底，可直接作为课堂人物叠层使用。
 
 - `nancy-teacher-clean-mouth.png` — 张嘴发音示范，用于拼音。
+- `nancy-teacher-clean-look-classmate.png` — 侧头看向小安并抬手示意，用于直接点名和“先等一下”。
 - `nancy-teacher-clean-coffee.png` — 手拿咖啡，用于“咖啡 / 你喝什么”。
 - `nancy-teacher-clean-baozi.png` — 手托包子，用于“包子 / 你吃什么”。
 - `nancy-teacher-clean-two-cups.png` — 双手两杯可乐，用于“我要两杯可乐”的收口。
